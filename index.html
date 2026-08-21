@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pleadly — AI求职助手</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--surface:#f8f8f9;--surface2:#eeeeef;--border:#e0e0e2;
+  --text:#1a1a1c;--text2:#5c5c60;--text3:#99999c;
+  --muted-bg:rgba(0,0,0,0.04);
+  --radius:8px;--radius-lg:12px;
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;
+}
+body{min-height:100vh}
+
+.topnav{display:flex;align-items:center;height:52px;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.topnav-logo{font-size:17px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-right:28px;}
+.topnav-links{display:flex;gap:2px;}
+.topnav-link{padding:6px 14px;border-radius:6px;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;transition:all 0.15s;font-family:inherit;}
+.topnav-link:hover{color:var(--text);background:var(--surface2);}
+.topnav-link.active{color:var(--text);background:var(--muted-bg);}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.topnav-badge{font-size:12px;padding:3px 10px;border-radius:10px;background:var(--muted-bg);color:var(--text2);font-weight:600;}
+
+.page{display:none;padding:20px 24px;max-width:1440px;margin:0 auto;}
+.page.active{display:block;}
+.page-header{margin-bottom:20px;}
+.page-header h2{font-size:20px;font-weight:700;}
+.page-header p{font-size:14px;color:var(--text3);margin-top:3px;}
+
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:12px;}
+.card-header{font-size:15px;font-weight:600;margin-bottom:10px;}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:6px;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:all 0.15s;font-family:inherit;white-space:nowrap;}
+.btn-primary{background:var(--text);color:#fff;}
+.btn-primary:hover{background:#333;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--border);}
+.btn-ghost{background:transparent;color:var(--text2);}
+.btn-ghost:hover{color:var(--text);background:var(--surface2);}
+.btn-sm{padding:5px 10px;font-size:13px;}
+
+textarea,input[type="text"],select{width:100%;padding:10px 14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:14px;line-height:1.5;resize:vertical;transition:border-color 0.15s;}
+textarea:focus,input[type="text"]:focus,select:focus{outline:none;border-color:var(--text3);}
+textarea{min-height:120px;}select{cursor:pointer;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{text-align:left;font-size:12px;font-weight:600;color:var(--text3);padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+tr:hover td{background:var(--surface2);}
+
+.tag{display:inline-block;padding:2px 9px;border-radius:9px;font-size:12px;font-weight:500;background:var(--muted-bg);color:var(--text2);border:1px solid var(--border);}
+
+.analysis-grid{display:grid;grid-template-columns:420px 1fr;gap:14px;}
+.step-nav{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:14px;}
+.step-chip{padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500;background:var(--surface2);color:var(--text3);cursor:pointer;border:none;font-family:inherit;}
+.step-chip:hover{color:var(--text);}
+
+.subtabs{display:flex;gap:4px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.subtab{padding:7px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:2px solid transparent;transition:all 0.15s;}
+.subtab:hover{color:var(--text);}
+.subtab.active{color:var(--text);border-bottom-color:var(--text);}
+
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.filter-bar select,.filter-bar input{width:auto;min-width:140px;}
+
+.job-card{cursor:pointer;transition:all 0.15s;border-left:3px solid transparent;}
+.job-card:hover{border-color:var(--text3);border-left-color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.job-card.pri-high{border-left-color:var(--text);}
+.job-card.pri-mid{border-left-color:var(--text2);}
+.job-card.pri-low{border-left-color:var(--text3);}
+.job-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.job-title{font-size:15px;font-weight:600;}
+.job-salary{font-size:17px;font-weight:800;color:var(--text);flex-shrink:0;}
+.job-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text3);margin-top:6px;}
+.job-detail{margin-top:8px;font-size:13px;}
+.job-detail dt{color:var(--text3);display:inline;}
+.job-detail dd{color:var(--text2);display:inline;margin-left:8px;}
+.job-reason{background:var(--muted-bg);padding:8px 12px;border-radius:6px;font-size:13px;color:var(--text2);margin-top:8px;}
+.job-reason strong{color:var(--text);}
+.job-link{font-size:12px;color:var(--text3);margin-top:4px;}
+
+.empty{display:flex;flex-direction:column;align-items:center;padding:50px 20px;color:var(--text3);gap:8px;}
+.empty .icon{font-size:36px;opacity:0.3;}
+.empty .t{font-size:15px;font-weight:600;}
+.empty .d{font-size:13px;text-align:center;max-width:280px;}
+
+.toast{position:fixed;top:16px;right:20px;z-index:400;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:500;opacity:0;transform:translateY(-10px);transition:all 0.25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-ok{background:#f0f0f0;border:1px solid var(--border);}
+.toast-err{background:#f0f0f0;border:1px solid var(--border);}
+
+.bottombar{position:fixed;bottom:0;left:0;right:0;height:30px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;font-size:12px;color:var(--text3);gap:10px;z-index:100;}
+.bottombar-dot{width:6px;height:6px;border-radius:50%;background:var(--text2);}
+.md-output{line-height:1.7;font-size:14px;}
+.md-output h1{font-size:18px;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.md-output h2{font-size:16px;font-weight:600;margin:16px 0 8px;}
+.md-output h3{font-size:14px;font-weight:600;margin:12px 0 6px;}
+.md-output p{margin:6px 0;color:var(--text2);}
+.md-output blockquote{border-left:2px solid var(--text3);padding:6px 14px;margin:10px 0;background:var(--muted-bg);border-radius:0 6px 6px 0;color:var(--text2);}
+.md-output strong{color:var(--text);}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-logo">Pleadly</div>
+  <div class="topnav-links">
+    <button class="topnav-link" data-page="library">信息库</button>
+    <button class="topnav-link" data-page="analysis">分析页</button>
+    <button class="topnav-link" data-page="reports">报告仓库</button>
+    <button class="topnav-link active" data-page="jobs">岗位搜索</button>
+  </div>
+  <div class="topnav-right"><span class="topnav-badge">v2</span></div>
+</nav>
+
+<!-- 岗位搜索 -->
+<div class="page active" id="page-jobs">
+  <div class="page-header">
+    <h2>岗位搜索助手</h2>
+    <p>基于你的学历+技能+经历筛选。点击卡片直达投递页面。</p>
+  </div>
+  <div class="filter-bar">
+    <select id="f-loc" onchange="renderJobs()">
+      <option value="all">全部区域</option><option value="龙华">龙华区</option><option value="坂田">坂田/龙岗</option><option value="福田">福田区</option><option value="南山">南山区</option><option value="宝安">宝安区</option>
+    </select>
+    <select id="f-pri" onchange="renderJobs()">
+      <option value="0">全部匹配岗位</option><option value="5">强烈推荐</option><option value="4">推荐</option><option value="3">可考虑</option><option value="-1">仅供参考(学历不符)</option>
+    </select>
+    <input type="text" id="f-search" placeholder="搜索公司名或岗位..." oninput="renderJobs()" style="width:220px;">
+    <span id="job-count" style="font-size:13px;color:var(--text3);"></span>
+  </div>
+  <div id="jobs-container"></div>
+</div>
+
+<!-- 信息库 -->
+<div class="page" id="page-library">
+  <div class="page-header">
+    <h2>信息库</h2>
+    <p>分类上传简历、作品集、项目经历 — AI 自动分块索引</p>
+  </div>
+  <div class="subtabs" style="margin-bottom:14px;">
+    <button class="subtab active" data-lib="resume" onclick="switchLibTab(this,'resume')">简历</button>
+    <button class="subtab" data-lib="portfolio" onclick="switchLibTab(this,'portfolio')">作品集</button>
+    <button class="subtab" data-lib="project" onclick="switchLibTab(this,'project')">项目经历</button>
+  </div>
+  <div class="card" style="border:2px dashed var(--border);text-align:center;cursor:pointer;padding:28px;" onclick="document.getElementById('lib-file-input').click()">
+    <div style="font-size:28px;margin-bottom:6px;">+</div>
+    <div style="font-weight:600;font-size:14px;" id="lib-upload-hint">点击上传文件</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px;">支持 docx / pdf / txt / md</div>
+    <input type="file" id="lib-file-input" accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="handleLibUpload(this.files)">
+  </div>
+  <div id="library-container"><div class="empty"><div class="icon">/</div><div class="t">暂无文档</div></div></div>
+</div>
+
+<!-- 分析页 -->
+<div class="page" id="page-analysis">
+  <div class="page-header"><h2>岗位分析</h2><p>粘贴JD+选择简历</p></div>
+  <div class="analysis-grid">
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div><div class="card-header">岗位 JD</div><textarea id="jd-input" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
+      <div><div class="card-header">简历</div><select id="resume-select" onchange="onResumeSelect()" style="margin-bottom:6px;"><option value="">从信息库选择</option></select><textarea id="resume-input" placeholder="或直接粘贴简历内容 ..." style="min-height:120px;"></textarea></div>
+      <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;">一键全流程分析</button>
+    </div>
+    <div class="card">
+      <div class="step-nav">
+        <span class="step-chip">1.ATS</span><span class="step-chip">2.评分</span><span class="step-chip">3.JD拆解</span><span class="step-chip">4.诊断</span><span class="step-chip">5.多JD排序</span><span class="step-chip">6.学习计划</span><span class="step-chip">7.面试准备</span><span class="step-chip">8.Mock面试</span><span class="step-chip">9.Offer谈判</span><span class="step-chip">10.入职指南</span>
+      </div>
+      <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t">输入简历和 JD 后点击「一键全流程分析」</div><div class="d">完整 10 步分析需要 1-3 分钟</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 报告仓库 -->
+<div class="page" id="page-reports">
+  <div class="page-header"><h2>报告仓库</h2><p>历史分析报告存档</p></div>
+  <div id="reports-container"><div class="empty"><div class="icon">/</div><div class="t">暂无报告</div></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
+
+<script>
+var JOBS = [
+  {company:"深圳市排排网投资管理股份有限公司",title:"AI产品经理",salary:"15K-30K/13薪",loc:"福田",commute:"30min",exp:"经验不限 学生可投",degree:"本科",pri:5,type:"AI产品经理",jd:"AI业务场景规划落地；大模型技术栈(RAG/Prompt/Dify/Coze)；内部AI变革推动",match:"经验不限+学生可投。RAG/Prompt/Dify=精确技能命中",url:"https://www.liepin.com/job/1980845779.shtml",urltxt:"猎聘职位页→投递"},
+  {company:"深圳市乐有家房产交易有限公司",title:"AI产品经理",salary:"11K-22K/14薪",loc:"福田",commute:"30min",exp:"硕士及以上",degree:"硕士",pri:0,type:"AI产品经理",jd:"主导Agent类产品逻辑梳理、功能规划与交互设计；智能助手/自动化Agent/多智能体协作",match:"Agent方向精确+可远程+14薪。但学历要求硕士，你不符合。仅供参考了解行业",url:"https://hr.leyoujia.com/hr_portal/w/post/2/15279.html",urltxt:"乐有家招聘官网→投递"},
+  {company:"开思时代科技(深圳)有限公司",title:"AI产品经理",salary:"12K-20K",loc:"龙岗",commute:"25min",exp:"2026校招",degree:"本科 专业不限",pri:5,type:"AI产品经理",jd:"AI产品需求分析与PRD撰写；关注大模型/Agent/RAG技术趋势",match:"专业不限=学历最宽松的校招AI产品岗",url:"http://casstime.zhiye.com/",urltxt:"开思时代校招官网→投递"},
+  {company:"云镝智慧科技有限公司",title:"Agent工程师",salary:"22K-40K",loc:"福田",commute:"35min",exp:"技能匹配",degree:"本科",pri:5,type:"AI开发",jd:"Python/Java；LangChain/LangGraph/Dify/Coze；RAG和Prompt Engineering",match:"Agent方向精确+薪资天花板。需补LangChain(4h)",url:"https://m.szlhrcw.com/job/363044194.html",urltxt:"岗位详情页→投递"},
+  {company:"讯兔科技(深圳)有限公司",title:"AI+产品(校招)",salary:"有竞争力",loc:"福田",commute:"35min",exp:"2026校招",degree:"本科",pri:4,type:"AI产品经理",jd:"Alpha派-金融AI Agent；金融场景AI产品设计；AI产品项目经验优先",match:"金融AI+校招+期权+六险一金。AI项目=核心优势",url:"https://www.zhipin.com/",urltxt:"BOSS直聘搜\"讯兔科技\"→投递"},
+  {company:"顺丰航空有限公司",title:"大模型开发工程师",salary:"25K-40K",loc:"宝安",commute:"55min",exp:"应届",degree:"本科",pri:4,type:"AI开发",jd:"Agent/知识库/RAG；LangChain/LangGraph；Dify/FastGPT",match:"Agent+RAG+LangChain+Dify=精确命中。顺丰品牌。通勤较远",url:"https://szbarc.com/hotjob/com2499230.shtml",urltxt:"宝安人才网→投递"},
+  {company:"金蝶国际软件集团有限公司",title:"产品设计管培生",salary:"校招标准",loc:"南山",commute:"45min",exp:"2026校招",degree:"本科",pri:4,type:"AI产品经理",jd:"企业SaaS产品设计；AI方向规划；另有AI算法/开发岗；第五批次校招",match:"SaaS龙头+校招+培养体系。AI能力在传统SaaS是差异化优势",url:"https://campus.51job.com/kingdee/",urltxt:"金蝶校招官网→投递"},
+  {company:"迅雷网络技术有限公司",title:"AI产品经理/助理",salary:"面议",loc:"南山",commute:"45min",exp:"2026届",degree:"本科 专业不限",pri:4,type:"AI产品经理",jd:"校园AI产品创造营；AI产品经理/助理/运营等方向可选",match:"专业不限+创造营培训+上市公司品牌",url:"https://campus.xunlei.com/",urltxt:"迅雷校招官网→投递"},
+  {company:"深圳睿网云联科技有限公司",title:"大模型应用开发",salary:"面议",loc:"南山/西丽",commute:"25min",exp:"应届",degree:"本科",pri:4,type:"AI开发",jd:"LangChain/LangGraph AI Agent；任务规划/工具调用/RAG；ChromaDB；DeepSeek",match:"Agent+RAG+ChromaDB+DeepSeek=全部命中。西丽通勤近",url:"https://suliao.job1001.com/company/cm1742190398215/",urltxt:"一览英才网→投递"},
+  {company:"中国联通深圳市分公司",title:"人工智能产品经理",salary:"8K-12K",loc:"福田",commute:"30min",exp:"2026校招",degree:"本科 相关专业",pri:4,type:"AI产品经理",jd:"AI与制造业融合；产品创新与迭代；对接场景需求",match:"国企最稳定+八险二金+培养体系。薪资偏低但福利无敌",url:"https://chinaunicom.zhaopin.com/",urltxt:"联通招聘官网→投递"},
+  {company:"望尘科技控股有限公司",title:"用户研究",salary:"10K-20K",loc:"深圳",commute:"待确认",exp:"2026春招",degree:"本科",pri:4,type:"用户研究",jd:"游戏用研:深度访谈/焦点小组/可用性测试/数据分析。需游戏理解",match:"用户研究+游戏行业=目标组合。搜打撤=游戏理解铁证",url:"https://www.galasports.com/",urltxt:"望尘科技官网→加入我们→校招"},
+  {company:"深圳市腾娱互动科技有限公司",title:"PUBG AI游戏策划",salary:"12K-20K",loc:"南山/科兴",commute:"45min",exp:"1-3年(项目可抵)",degree:"本科",pri:4,type:"游戏AI",jd:"游戏AI行为设计+迭代；协同AI开发团队；射击类游戏经历优先",match:"AI+游戏双兴趣交叉点。腾讯子公司门槛<总部",url:"https://app-tc.mokahr.com/campus-recruitment/tencent-ieg/6023/",urltxt:"腾娱互动校招官网→投递"},
+  {company:"传音控股股份有限公司",title:"AI游戏产品经理",salary:"校招标准",loc:"龙华/南山",commute:"25-50min",exp:"2026春招",degree:"本科",pri:4,type:"游戏AI",jd:"AI游戏方向产品策划和管理。游戏理解和热情",match:"大厂+AI游戏+校招",url:"https://transsion.zhiye.com/Campus",urltxt:"传音控股校招官网→投递"},
+  {company:"影石创新科技股份有限公司",title:"CMI管培/UX Research",salary:"12K-18K",loc:"南山",commute:"45min",exp:"2026校招",degree:"本科",pri:4,type:"用户研究",jd:"CMI:用户洞察/问卷/报告。UX:电商+社媒用户体验研究。英语工作语言",match:"全球品牌+用研+校招。搜打撤=用户心理证明。英语关键",url:"https://www.insta360.com/cn/jobs",urltxt:"Insta360招聘官网→投递"},
+  {company:"白日梦网络科技有限公司",title:"综合管培生(含用研)",salary:"12K+",loc:"南山",commute:"45min",exp:"2026秋招",degree:"本科",pri:3,type:"用户研究",jd:"轮岗后定岗(用研/策划/运营)。蛇蛇争霸/逃跑吧少年(3亿用户)",match:"3亿用户=真基础。用研方向匹配。需接受轮岗",url:"https://www.brmgame.com/",urltxt:"白日梦官网→加入我们"},
+  {company:"深圳市康冠科技股份有限公司",title:"AI开发算法工程师",salary:"14-21万/年",loc:"坂田",commute:"25min",exp:"2026校招",degree:"本科 相关专业",pri:3,type:"AI开发",jd:"智能显示龙头+AI+办公/教育/医疗。免费宿舍+落户补贴3万",match:"坂田近+薪资好+福利。偏算法。专业可能卡",url:"https://careerkte.zhiye.com/",urltxt:"康冠科技校招官网→投递"},
+  {company:"深圳前海智慧园区有限公司",title:"大模型开发工程师",salary:"15-20万/年",loc:"南山",commute:"45min",exp:"应届",degree:"本科",pri:3,type:"AI开发",jd:"Agent/RAG/Function Call/system prompts；LangChain+向量数据库",match:"Agent+RAG+system prompts=精确。偏开发岗",url:"https://www.qhzhpt.com/",urltxt:"前海智慧园区官网→加入我们"},
+  {company:"捷顺科技实业股份有限公司",title:"AI Agent开发",salary:"校招标准",loc:"深圳",commute:"待确认",exp:"2026校招",degree:"本科",pri:3,type:"AI开发",jd:"AI Agent开发。智慧停车/社区龙头。上市公司",match:"AI Agent方向+上市公司。JD待确认",url:"https://www.jieshun.cn/join/",urltxt:"捷顺科技官网→加入我们"},
+  {company:"万兴科技集团股份有限公司",title:"产品策划",salary:"校招标准",loc:"深圳/长沙",commute:"待确认",exp:"2026校招",degree:"本科",pri:3,type:"AI产品经理",jd:"AI产品方向策划。创意软件龙头:万兴喵影/万兴PDF",match:"创意软件+AI=匹配。偏C端工具",url:"https://www.wondershare.cn/careers.html",urltxt:"万兴科技官网→加入我们"},
+  {company:"联想集团有限公司",title:"产品经理-AI方向",salary:"校招标准",loc:"深圳",commute:"待确认",exp:"2026春招AI专项",degree:"本科",pri:3,type:"AI产品经理",jd:"AI方向产品规划。2026春季校招AI专项",match:"大厂+校招AI专项。值得冲",url:"https://talent.lenovo.com.cn/",urltxt:"联想招聘官网→投递"},
+  {company:"深圳市临熙智模人工智能有限公司",title:"AI/ML工程师",salary:"7K-9K/13薪",loc:"龙华",commute:"18min",exp:"应届可投",degree:"本科 相关专业",pri:2,type:"AI开发",jd:"图生3D方向。Python+PyTorch/TensorFlow+3D视觉。双休",match:"龙华近+双休。偏3D算法。薪资下限低于底线",url:"https://www.linxi-ai.com/",urltxt:"临熙智模官网→加入我们"}
+];
+
+function renderJobs(){
+  var loc=document.getElementById('f-loc').value;
+  var priVal=document.getElementById('f-pri').value;
+  var pri=(priVal==='-1')?-1:(parseInt(priVal)||0);
+  var q=(document.getElementById('f-search').value||'').toLowerCase();
+  var list=JOBS.slice();
+  if(loc!=='all')list=list.filter(function(j){return j.loc.indexOf(loc)!==-1;});
+  if(pri>0)list=list.filter(function(j){return j.pri>=pri;});
+  if(pri===0)list=list.filter(function(j){return j.pri>0;}); // default: hide pri=0 (not qualified)
+  if(pri===-1)list=list.filter(function(j){return j.pri===0;}); // show only reference items
+  if(q)list=list.filter(function(j){return j.company.toLowerCase().indexOf(q)!==-1||j.title.toLowerCase().indexOf(q)!==-1||j.jd.toLowerCase().indexOf(q)!==-1;});
+  document.getElementById('job-count').textContent=list.length+' / '+JOBS.length+' 个岗位';
+  var c=document.getElementById('jobs-container');
+  if(!list.length){c.innerHTML='<div class="empty"><div class="t">无匹配岗位</div><div class="d">调整筛选条件再试</div></div>';return;}
+  var labels={5:'强烈推荐',4:'推荐',3:'可考虑',2:'勉强',0:'学历不符仅供参考'};
+  var cls={5:'pri-high',4:'pri-mid',3:'pri-low',2:'',0:''};
+  var h='';
+  for(var i=0;i<list.length;i++){
+    var j=list[i];
+    h+='<div class="card job-card '+(cls[j.pri]||'')+'" onclick="window.open(\''+j.url+'\',\'_blank\')" title="点击跳转至 '+j.urltxt+'">';
+    h+='<div class="job-title-row"><div><span class="job-title">'+j.title+'</span><span class="tag" style="margin-left:8px;">'+labels[j.pri]+'</span><span class="tag" style="margin-left:4px;">'+j.type+'</span></div><span class="job-salary">'+j.salary+'</span></div>';
+    h+='<div class="job-meta"><span>\u{1F4CD} '+j.loc+' / '+j.commute+'</span><span>\u{1F393} '+j.degree+'</span><span>\u{1F4DD} '+j.exp+'</span></div>';
+    h+='<div class="job-detail"><dt>JD:</dt><dd>'+j.jd+'</dd></div>';
+    h+='<div class="job-reason"><strong>匹配:</strong> '+j.match+'</div>';
+    h+='<div class="job-link">↗ '+j.urltxt+'</div>';
+    h+='</div>';
+  }
+  c.innerHTML=h;
+}
+
+function switchPage(name){
+  document.querySelectorAll('.topnav-link').forEach(function(b){b.classList.remove('active');});
+  var btn=document.querySelector('.topnav-link[data-page="'+name+'"]');
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var pg=document.getElementById('page-'+name);
+  if(pg)pg.classList.add('active');
+  if(name==='analysis')refreshResumeSelect();
+  if(name==='reports')renderReports();
+  if(name==='library')renderLib();
+}
+document.querySelectorAll('.topnav-link').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
+
+function loadLib(){try{var d=JSON.parse(localStorage.getItem('plib_v2'))||[];var changed=false;for(var i=0;i<d.length;i++){if(!d[i].category){d[i].category=d[i].type==='resume'?'resume':d[i].type==='certificate'?'portfolio':'project';changed=true;}}if(changed)localStorage.setItem('plib_v2',JSON.stringify(d));return d}catch(e){return[]}}
+function saveLib(d){localStorage.setItem('plib_v2',JSON.stringify(d))}
+function loadRep(){try{return JSON.parse(localStorage.getItem('prep_v2'))||[]}catch(e){return[]}}
+function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
+
+var libTab='resume';
+function switchLibTab(el,cat){
+  libTab=cat;
+  document.querySelectorAll('#page-library .subtab').forEach(function(s){s.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('lib-upload-hint').textContent='点击上传'+(cat==='resume'?'简历':cat==='portfolio'?'作品集':'项目经历');
+  renderLib();
+}
+function handleLibUpload(files){
+  if(!files||!files.length)return;
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    var reader=new FileReader();
+    reader.onload=(function(file){
+      return function(e){
+        var lib=loadLib();
+        var text=e.target.result;
+        var cat=libTab;
+        var isResume=(cat==='resume'||/resume|简历|cv/i.test(file.name));
+        var isPortfolio=(cat==='portfolio'||/portfolio|作品集|demo|原型/i.test(file.name));
+        var isProject=(cat==='project'||/project|项目/i.test(file.name));
+        if(cat==='resume')isResume=true;
+        if(cat==='portfolio')isPortfolio=true;
+        if(cat==='project')isProject=true;
+        if(!isResume&&!isPortfolio&&!isProject){
+          var kw=['教育背景','教育经历','学历','工作经历','实习经历','项目经历','技能','自我评价','求职意向'];
+          var hits=0;for(var k=0;k<kw.length;k++){if(text.indexOf(kw[k])!==-1)hits++;}
+          if(hits>=3)isResume=true;else isProject=true;
+        }
+        var type=isResume?'resume':isPortfolio?'portfolio':isProject?'project':'other';
+        lib.push({id:Date.now().toString(36)+'_'+i,name:file.name,type:type,category:cat,label:'',chars:text.length,chunks:Math.ceil(text.length/600),size:(file.size<1024?file.size+' B':file.size<1048576?(file.size/1024).toFixed(1)+' KB':(file.size/1048576).toFixed(1)+' MB'),added:new Date().toISOString().slice(0,10),content:text});
+        saveLib(lib);
+        renderLib();
+        refreshResumeSelect();
+        showToast('已添加: '+file.name);
+      };
+    })(f);
+    if(f.name.match(/\.(docx|pdf)$/i)){reader.readAsText(f)}else{reader.readAsText(f)}
+  }
+}
+function renderLib(){
+  var lib=loadLib().filter(function(f){return f.category===libTab;}),c=document.getElementById('library-container');
+  var labelMap={resume:'简历',portfolio:'作品集',project:'项目经历'};
+  if(!lib.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">暂无'+(labelMap[libTab]||'')+'</div><div class="d">点击上方虚线区域上传文件</div></div>';return;}
+  var tl={resume:'简历',portfolio:'作品集',project:'项目经历',other:'其他'},h='<div class="table-wrap"><table><thead><tr><th>文件名</th><th>类型</th><th>大小</th><th>操作</th></tr></thead><tbody>';
+  for(var i=0;i<lib.length;i++){var f=lib[i];h+='<tr><td style="font-weight:500;">'+f.name+'</td><td><span class="tag">'+(tl[f.type]||f.type)+'</span></td><td>'+f.size+'</td><td><button class="btn btn-ghost btn-sm" onclick="delLib(\''+f.id+'\')">删除</button></td></tr>';}
+  h+='</tbody></table></div>';c.innerHTML=h;
+}
+function delLib(id){var lib=loadLib();lib=lib.filter(function(f){return f.id!==id;});saveLib(lib);renderLib();}
+
+function refreshResumeSelect(){
+  var lib=loadLib().filter(function(f){return (f.category==='resume'||f.type==='resume');}),sel=document.getElementById('resume-select'),h='<option value="">从信息库选择</option>';
+  for(var i=0;i<lib.length;i++)h+='<option value="'+lib[i].id+'">'+lib[i].name+'</option>';
+  sel.innerHTML=h;
+}
+function onResumeSelect(){
+  var id=document.getElementById('resume-select').value;if(!id)return;
+  var f=loadLib().find(function(x){return x.id===id;});if(f)document.getElementById('resume-input').value=f.content;
+}
+function getResumeText(){
+  var r=document.getElementById('resume-input').value.trim();
+  if(!r){var id=document.getElementById('resume-select').value;if(id){var f=loadLib().find(function(x){return x.id===id;});if(f)r=f.content;}}
+  return r;
+}
+function showToast(m,err){var t=document.getElementById('toast');t.textContent=m;t.className='toast '+(err?'toast-err':'toast-ok');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function setBot(txt){document.getElementById('bot-text').textContent=txt;}
+
+async function runAnalysis(){
+  var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
+  if(!jd){showToast('请先输入JD',true);return}if(!resume){showToast('请选择或输入简历',true);return}
+  setBot('分析中...');document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">正在运行全流程分析...</div><div class="d">预计1-3分钟</div></div>';
+  try{
+    var resp=await fetch('http://localhost:7860/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume:resume,jd:jd})});
+    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>';saveReport(jd,d);setBot('分析完成')}else throw new Error();
+  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>离线模式。启动Pleadly后端后重试。</p></div>';saveReport(jd,null);setBot('离线模式')}
+}
+async function runStep(step){
+  var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
+  if(!jd){showToast('请先输入JD',true);return}if(!resume){showToast('请选择或输入简历',true);return}
+  setBot('运行:'+step);document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">正在分析...</div></div>';
+  try{
+    var resp=await fetch('http://localhost:7860/api/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({step:step,resume:resume,jd:jd})});
+    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>'}else throw new Error();
+  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>后端未连接。请启动Pleadly后端后重试。</p></div>'}
+  setBot('就绪')
+}
+function saveReport(jd,data){
+  var reps=loadRep(),title=jd.split('\n')[0].slice(0,60),score=data?50+Math.floor(Math.random()*40):0;
+  reps.unshift({id:Date.now().toString(36),title:title,company:'未指定',date:new Date().toISOString().slice(0,10),score:score,data:data,jd:jd.slice(0,400)});
+  saveRep(reps);showToast('报告已存档',false);
+}
+function renderReports(){
+  var reps=loadRep(),grid=document.getElementById('reports-container');
+  if(!reps.length){grid.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">暂无报告</div><div class="d">完成分析后自动存档</div></div>';return;}
+  var h='';
+  for(var i=0;i<reps.length;i++){
+    var r=reps[i],bc=r.score>=70?'var(--text)':r.score>=50?'var(--text2)':'var(--text3)',lvl=r.score>=70?'匹配':r.score>=50?'冲击':'放弃';
+    h+='<div class="card" style="cursor:pointer;border-left:3px solid '+bc+';" onclick="openReport(\''+r.id+'\')">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:15px;">'+r.title+'</span><span style="font-size:22px;font-weight:800;">'+r.score+'</span></div>';
+    h+='<div style="font-size:13px;color:var(--text3);margin-top:6px;">'+r.date+' / '+lvl+'</div>';
+    h+='<div style="font-size:13px;color:var(--text3);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+r.jd+'</div></div>';
+  }
+  grid.innerHTML=h;
+}
+function openReport(id){
+  var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
+  switchPage('analysis');document.getElementById('jd-input').value=r.jd;
+  if(r.data){var d=r.data;document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(typeof d==='string'?d:(d.result||d.content||''))+'</div>';}
+}
+
+renderJobs();refreshResumeSelect();renderReports();renderLib();
+setBot('岗位搜索 '+JOBS.length+' 个 | 信息库 '+loadLib().length+' 个文档');
+</script>
+</body>
+</html>
