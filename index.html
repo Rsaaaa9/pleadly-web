@@ -105,6 +105,26 @@ tr:hover td{background:var(--surface2);}
 .md-output p{margin:6px 0;color:var(--text2);}
 .md-output blockquote{border-left:2px solid var(--text3);padding:6px 14px;margin:10px 0;background:var(--muted-bg);border-radius:0 6px 6px 0;color:var(--text2);}
 .md-output strong{color:var(--text);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal.show{display:flex;}
+.modal-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.18);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-head h3{font-size:16px;font-weight:700;}
+.modal-close{cursor:pointer;font-size:22px;color:var(--text3);border:none;background:none;line-height:1;font-family:inherit;}
+.modal-close:hover{color:var(--text);}
+.settings-field{margin-bottom:12px;}
+.settings-field label{display:block;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;}
+.settings-field input[type="password"]{width:100%;padding:10px 14px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:14px;}
+.settings-field input[type="password"]:focus{outline:none;border-color:var(--text3);}
+.settings-note{font-size:12px;color:var(--text3);margin-top:12px;line-height:1.5;}
+.pro-badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;background:var(--text);color:#fff;margin-left:6px;vertical-align:middle;}
+.paywall{margin-top:16px;padding:22px;border:1px dashed var(--text3);border-radius:var(--radius-lg);text-align:center;background:var(--surface);}
+.paywall .icon{font-size:30px;}
+.paywall h3{font-size:16px;font-weight:700;margin:8px 0 6px;}
+.paywall p{font-size:13px;color:var(--text2);margin:0 auto 14px;max-width:380px;}
+.paywall .pay-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
+.paywall .license-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.paywall .license-row input{width:220px;}
 </style>
 </head>
 <body>
@@ -118,6 +138,7 @@ tr:hover td{background:var(--surface2);}
     <button class="topnav-link active" data-page="jobs" data-i18n="nav.jobs">岗位搜索</button>
   </div>
   <div class="topnav-right">
+    <button class="lang-btn" onclick="openSettings()" title="Settings / 设置">⚙</button>
     <button class="lang-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / 切换语言">EN</button>
     <span class="topnav-badge">v2</span>
   </div>
@@ -195,6 +216,37 @@ tr:hover td{background:var(--surface2);}
   <div id="reports-container"><div class="empty"><div class="icon">/</div><div class="t">暂无报告</div></div></div>
 </div>
 
+<div class="modal" id="settings-modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 data-i18n="settings.title">设置</h3><button class="modal-close" onclick="closeSettings()">×</button></div>
+    <div class="settings-field">
+      <label data-i18n="settings.apiKey">API Key</label>
+      <input type="password" id="set-apikey" data-i18n-ph="settings.apiKey.ph" placeholder="sk-...">
+    </div>
+    <div class="settings-field">
+      <label data-i18n="settings.baseUrl">Base URL</label>
+      <select id="set-baseurl" onchange="onBaseUrlChange()">
+        <option value="https://api.deepseek.com">DeepSeek</option>
+        <option value="https://api.openai.com/v1">OpenAI</option>
+        <option value="https://api.groq.com/openai/v1">Groq</option>
+        <option value="https://api.moonshot.cn/v1">Moonshot</option>
+        <option value="__custom__" data-i18n-opt="settings.baseUrl.custom">自定义 Custom</option>
+      </select>
+      <input type="text" id="set-baseurl-custom" data-i18n-ph="settings.baseUrl.ph" placeholder="https://.../v1" style="margin-top:6px;display:none;">
+    </div>
+    <div class="settings-field">
+      <label data-i18n="settings.model">Model</label>
+      <input type="text" id="set-model" data-i18n-ph="settings.model.ph" placeholder="deepseek-chat">
+    </div>
+    <div class="settings-field">
+      <label><span data-i18n="settings.license">License</span><span id="pro-state"></span></label>
+      <input type="text" id="set-license" data-i18n-ph="settings.license.ph" placeholder="PLD-XXXXXXXX-XXXXXXXX">
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()" style="width:100%;justify-content:center;" data-i18n="settings.save">保存</button>
+    <div class="settings-note" data-i18n="settings.privacy">🔒 你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
@@ -229,7 +281,18 @@ zh:{
  'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档',
  'report.unspecified':'未指定','report.match':'匹配','report.stretch':'冲击','report.pass':'放弃',
  'bot.ready':'就绪','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
- 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请选择或输入简历','toast.saved':'报告已存档'
+ 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请选择或输入简历','toast.saved':'报告已存档',
+ 'settings.title':'设置','settings.apiKey':'API Key','settings.apiKey.ph':'粘贴你的 API Key (sk-...)',
+ 'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'自定义 Custom',
+ 'settings.model':'模型 Model','settings.model.ph':'deepseek-chat',
+ 'settings.license':'激活码 License','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
+ 'settings.save':'保存','settings.privacy':'🔒 你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。',
+ 'settings.pro':'Pro','settings.free':'免费版',
+ 'license.invalid':'激活码无效','license.valid':'Pro 已解锁 🎉',
+ 'paywall.title':'前 2 步已免费生成 🔒','paywall.desc':'解锁全部分析：JD拆解 / 简历诊断改写 / 学习计划 / 面试准备',
+ 'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
+ 'needkey':'请先在设置里填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
+ 'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
@@ -260,7 +323,18 @@ en:{
  'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis',
  'report.unspecified':'Unspecified','report.match':'Match','report.stretch':'Stretch','report.pass':'Pass',
  'bot.ready':'Ready','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
- 'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Please select or enter a resume','toast.saved':'Report saved'
+ 'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Please select or enter a resume','toast.saved':'Report saved',
+ 'settings.title':'Settings','settings.apiKey':'API Key','settings.apiKey.ph':'Paste your API key (sk-...)',
+ 'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'Custom',
+ 'settings.model':'Model','settings.model.ph':'deepseek-chat',
+ 'settings.license':'License Key','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
+ 'settings.save':'Save','settings.privacy':'🔒 Your API key is stored only in your browser and sent directly to your chosen provider. It never touches Pleadly servers.',
+ 'settings.pro':'Pro','settings.free':'Free',
+ 'license.invalid':'Invalid license key','license.valid':'Pro unlocked 🎉',
+ 'paywall.title':'First 2 steps generated free 🔒','paywall.desc':'Unlock the full analysis: JD breakdown / resume tailoring / study plan / interview prep',
+ 'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
+ 'needkey':'Please enter your API key in Settings first','err.invalidkey':'Invalid API key or insufficient balance (401)',
+ 'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.'
 }
 };
 var TYPE_EN={'AI产品经理':'AI Product Manager','AI开发':'AI Engineering','用户研究':'User Research','游戏AI':'Game AI'};
@@ -352,6 +426,146 @@ function saveLib(d){localStorage.setItem('plib_v2',JSON.stringify(d))}
 function loadRep(){try{return JSON.parse(localStorage.getItem('prep_v2'))||[]}catch(e){return[]}}
 function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 
+/* ============ BYOK 设置 + 激活码 ============ */
+var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
+var BUY_URL='https://buy.example.com/pleadly-pro'; // TODO: 替换为你的 Gumroad/LemonSqueezy 商品链接
+var pendingCtx=null;
+
+function loadSettings(){
+  return {apiKey:localStorage.getItem('p_apiKey')||'',baseUrl:localStorage.getItem('p_baseUrl')||DEFAULT_BASE_URL,model:localStorage.getItem('p_model')||DEFAULT_MODEL,license:localStorage.getItem('p_license')||''};
+}
+function saveSettingsToStore(s){localStorage.setItem('p_apiKey',s.apiKey);localStorage.setItem('p_baseUrl',s.baseUrl);localStorage.setItem('p_model',s.model);localStorage.setItem('p_license',s.license);}
+
+// FNV-1a 32bit 校验和（纯客户端、只挡普通用户）
+function h32(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).toUpperCase().padStart(8,'0');}
+// 激活码格式: PLD-<8位大写字母数字>-<h32(前8位)>
+// 生成示例(浏览器控制台): 'PLD-' + 'AB12CD34' + '-' + h32('AB12CD34')
+function checkKey(k){
+  if(!k)return false;
+  k=k.toUpperCase().trim();
+  var m=k.match(/^PLD-([A-Z0-9]{8})-([A-Z0-9]{8})$/);
+  if(!m)return false;
+  return h32(m[1])===m[2];
+}
+function isPro(){return checkKey(loadSettings().license);}
+
+function openSettings(){
+  var s=loadSettings();
+  document.getElementById('set-apikey').value=s.apiKey;
+  document.getElementById('set-model').value=s.model;
+  document.getElementById('set-license').value=s.license;
+  var sel=document.getElementById('set-baseurl'),custom=document.getElementById('set-baseurl-custom');
+  var presets=['https://api.deepseek.com','https://api.openai.com/v1','https://api.groq.com/openai/v1','https://api.moonshot.cn/v1'];
+  if(presets.indexOf(s.baseUrl)!==-1){sel.value=s.baseUrl;custom.style.display='none';custom.value='';}
+  else{sel.value='__custom__';custom.style.display='block';custom.value=s.baseUrl;}
+  updateProState();
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('show');}
+function onBaseUrlChange(){document.getElementById('set-baseurl-custom').style.display=(document.getElementById('set-baseurl').value==='__custom__')?'block':'none';}
+function updateProState(){var el=document.getElementById('pro-state');el.innerHTML=isPro()?'<span class="pro-badge">'+t('settings.pro')+'</span>':'<span class="pro-badge" style="background:var(--text3);">'+t('settings.free')+'</span>';}
+function saveSettings(){
+  var s=loadSettings();
+  s.apiKey=document.getElementById('set-apikey').value.trim();
+  var base=document.getElementById('set-baseurl').value;
+  s.baseUrl=(base==='__custom__')?document.getElementById('set-baseurl-custom').value.trim():base;
+  s.model=document.getElementById('set-model').value.trim()||DEFAULT_MODEL;
+  s.license=document.getElementById('set-license').value.trim();
+  if(s.license&&!checkKey(s.license)){showToast(t('license.invalid'),true);return;}
+  saveSettingsToStore(s);
+  closeSettings();
+  showToast(isPro()?t('license.valid'):t('toast.saved'),false);
+}
+
+/* ============ 主系统提示词 + 6 步模板（搬自 core/engine.py） ============ */
+var SYSTEM_PROMPT='你是Pleadly的AI招聘经理。严格按以下要求输出分析结果。禁止编造信息。所有公司信息、行业数据如不确定，明确标注「推测」，不得凭空编造。分析结果用 Markdown 格式输出（表格用管道语法 | |）。输出语言与岗位JD一致：JD为英文则全程英文输出，JD为中文则全程中文输出。';
+
+var STEPS=[
+  {key:'step.1',free:true,prompt:'你是ATS简历筛选系统。请执行以下任务：\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 任务\n1. 从JD中提取所有高频关键词和必须出现的技能/经验术语\n2. 逐条检测简历中是否出现这些关键词\n3. 输出表格:\n\n| 关键词 | JD中出现位置 | 简历中是否命中 | 如未命中建议插入位置 |\n|------|------|:---:|------|\n\n如关键硬性要求缺失，标红警告。'},
+  {key:'step.2',free:true,prompt:'你是招聘评估专家。为候选人进行岗位匹配度评分。\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 评分维度(6维加权)\n- 硬性门槛(学历/专业/年限/证书): 30分\n- 技能栈匹配: 25分\n- 行业经验匹配: 15分\n- 项目/作品匹配: 15分\n- 加分项命中: 10分\n- 隐性匹配(学习能力/自驱力): 5分\n\n## 输出格式\n总分: XX/100 → 🟢高度匹配/🟡较匹配/🟠可冲/🔴不匹配/⚫放弃\n\n每个维度写出评分依据和扣分点。'},
+  {key:'step.3',free:false,prompt:'你是行业分析师。全面拆解以下岗位JD。注意：你没有联网能力，公司背景仅基于JD本身推断，不确定处标注「推测」。\n\n## JD\n{JD}\n\n## 输出结构\n1. 公司背景(2-3句话讲清商业模式，不确定处标推测)\n2. 岗位业务分析(入职后实际在做什么)\n3. 硬性要求(🔴必须/🟡优选/🟢加分)\n4. 隐形需求(JD没写但面试官在意的)\n5. 面试追问方向(6-8题，标注真正在测什么)'},
+  {key:'step.4',free:false,prompt:'你是简历诊断师。逐行对照JD诊断简历。\n\n## JD分析(前面已完成)\n{JD_ANALYSIS}\n\n## 简历\n{RESUME}\n\n## 输出四部分\n1. 匹配点(简历原文→JD哪条→强度⭐⭐⭐/⭐⭐/⭐)\n2. 冗余点(简历原文→为什么冗余→删除/压缩/改写)\n3. 缺失点(JD要求→现状→严重度🔴/🟡/🟢)\n4. 风险点(原文→负面信号→风险等级→修复方案)\n\n最后给定向改写建议：用STAR/量化改写每条经历，只改写真实具备的经历，绝不编造数字和经历。'},
+  {key:'step.6',free:false,prompt:'你是学习规划师。基于简历诊断中的缺失点，输出学习计划。\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出: 每条学习任务包含\n- 要补的缺口(对应JD哪条)\n- 学习内容 + 学习资源(优先免费)\n- 预计周期 + 重要程度(🔴必须/🟡建议/🟢可选)\n- 可验证产出(学到什么程度算学完了)\n\n按 严重度+紧急度+学习周期 综合排序。'},
+  {key:'step.7',free:false,prompt:'你是面试教练。基于JD和候选人背景，准备全流程面试题库。注意：你没有联网能力，面试题基于JD和简历推断，不确定处标注「推测」。\n\n## JD分析\n{JD_ANALYSIS}\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出6阶段\nA. HR电话初筛(9题逐字话术)\nB. 笔试/测评(预测题型+答题框架)\nC. 技术面(分级题库 ⭐→⭐⭐→⭐⭐⭐)\nD. 行为面(5个STAR故事，每个≤90秒)\nE. 总监/终面(5-8个高层次问题)\nF. 情景模拟(3-5角色扮演脚本)'}
+];
+
+function fillPrompt(tpl,ctx){return tpl.replace(/\{RESUME\}/g,ctx.resume||'').replace(/\{JD\}/g,ctx.jd||'').replace(/\{JD_ANALYSIS\}/g,ctx.jd_analysis||'').replace(/\{DIAGNOSIS\}/g,ctx.diag||'');}
+
+/* ============ LLM 直连（OpenAI 兼容 /chat/completions） ============ */
+async function callLLM(system,user){
+  var s=loadSettings();
+  if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
+  var base=s.baseUrl.replace(/\/$/,'');
+  var resp=await fetch(base+'/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+    body:JSON.stringify({model:s.model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:0.3,max_tokens:8192})
+  });
+  if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
+  if(!resp.ok){throw new Error('API error '+resp.status);}
+  var d=await resp.json();
+  var content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
+  if(!content)throw new Error('empty response');
+  return content;
+}
+
+/* ============ Markdown → HTML 渲染 ============ */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inline(s){
+  return esc(s)
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
+}
+function mdToHtml(md){
+  if(!md)return '';
+  var lines=md.split('\n');
+  var html='',i=0,inCode=false,codeBuf=[],inList=null,listBuf='',inTable=false,tableBuf=[],inBlock=false,blockBuf=[];
+  function flushList(){if(inList){html+='<'+inList+'>'+listBuf+'</'+inList+'>';inList=null;listBuf='';}}
+  function flushTable(){if(inTable){var h='<div class="table-wrap"><table>';for(var r=0;r<tableBuf.length;r++){var cells=tableBuf[r],tag=(r===0)?'th':'td';h+='<tr>';for(var c=0;c<cells.length;c++){h+='<'+tag+'>'+inline(cells[c])+'</'+tag+'>';}h+='</tr>';}h+='</table></div>';html+=h;inTable=false;tableBuf=[];}}
+  function flushBlock(){if(inBlock){html+='<blockquote>'+inline(blockBuf.join(' '))+'</blockquote>';inBlock=false;blockBuf=[];}}
+  while(i<lines.length){
+    var ln=lines[i];
+    if(ln.trim().indexOf('```')===0){flushList();flushTable();flushBlock();if(inCode){html+='<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>';codeBuf=[];inCode=false;}else{inCode=true;}i++;continue;}
+    if(inCode){codeBuf.push(ln);i++;continue;}
+    if(/^\s*\|/.test(ln)){flushList();flushBlock();if(!inTable)inTable=true;var cells=ln.trim().replace(/^\||\|$/g,'').split('|').map(function(x){return x.trim();});if(!/^\s*\|?[\s:\-|]+\|?\s*$/.test(ln))tableBuf.push(cells);i++;continue;}
+    else flushTable();
+    if(/^\s*>\s?/.test(ln)){flushList();if(!inBlock)inBlock=true;blockBuf.push(ln.replace(/^\s*>\s?/,''));i++;continue;}
+    else flushBlock();
+    var hm=ln.match(/^(#{1,6})\s+(.*)/);
+    if(hm){flushList();html+='<h'+hm[1].length+'>'+inline(hm[2])+'</h'+hm[1].length+'>';i++;continue;}
+    var um=ln.match(/^\s*([-*+])\s+(.*)/);
+    if(um){if(inList!=='ul'){flushList();inList='ul';}listBuf+='<li>'+inline(um[2])+'</li>';i++;continue;}
+    var om=ln.match(/^\s*\d+\.\s+(.*)/);
+    if(om){if(inList!=='ol'){flushList();inList='ol';}listBuf+='<li>'+inline(om[1])+'</li>';i++;continue;}
+    flushList();
+    if(ln.trim()===''){i++;continue;}
+    html+='<p>'+inline(ln)+'</p>';i++;
+  }
+  flushList();flushTable();flushBlock();
+  if(inCode){html+='<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>';}
+  return html;
+}
+
+/* ============ 付费墙 ============ */
+function renderPaywall(){
+  var h='<div class="paywall">';
+  h+='<div class="icon">🔒</div><h3>'+t('paywall.title')+'</h3><p>'+t('paywall.desc')+'</p>';
+  h+='<div class="pay-actions"><button class="btn btn-primary" onclick="window.open(\''+BUY_URL+'\',\'_blank\')">'+t('paywall.upgrade')+'</button></div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">'+t('paywall.havekey')+'</div>';
+  h+='<div class="license-row"><input type="text" id="pay-license" data-i18n-ph="settings.license.ph" placeholder="PLD-XXXXXXXX-XXXXXXXX"><button class="btn btn-secondary" onclick="activateLicense()">'+t('paywall.activate')+'</button></div>';
+  h+='</div>';
+  return h;
+}
+function activateLicense(){
+  var k=document.getElementById('pay-license').value.trim();
+  if(!checkKey(k)){showToast(t('license.invalid'),true);return;}
+  var s=loadSettings();s.license=k;saveSettingsToStore(s);
+  showToast(t('license.valid'),false);
+  if(pendingCtx){var p=pendingCtx;pendingCtx=null;runPro(p.ctx,p.acc,p.jd).catch(handleError);}
+  else{openSettings();}
+}
+
 var libTab='resume';
 function switchLibTab(el,cat){
   libTab=cat;
@@ -418,24 +632,37 @@ function getResumeText(){
 function showToast(m,err){var t=document.getElementById('toast');t.textContent=m;t.className='toast '+(err?'toast-err':'toast-ok');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function setBot(txt){document.getElementById('bot-text').textContent=txt;}
 
+function prog(){return '<div style="text-align:center;color:var(--text3);font-size:13px;margin-top:12px;">'+t('analysis.analyzing')+'</div>';}
+function renderOut(acc,extra){document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(acc)+'</div>'+(extra||'');}
+function appendAcc(acc,content,key){return acc+((acc?'\n\n':'')+'### '+t(key)+'\n\n'+content);}
+function handleError(e){
+  var m=e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors'));
+  renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
+  setBot(t('bot.offline'));
+}
+async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));return await callLLM(SYSTEM_PROMPT,fillPrompt(st.prompt,ctx));}
+async function runPro(ctx,acc,jd){
+  var a3=await execStep(STEPS[2],ctx);ctx.jd_analysis=a3;acc=appendAcc(acc,a3,STEPS[2].key);renderOut(acc,prog());
+  var a4=await execStep(STEPS[3],ctx);ctx.diag=a4;acc=appendAcc(acc,a4,STEPS[3].key);renderOut(acc,prog());
+  var a5=await execStep(STEPS[4],ctx);acc=appendAcc(acc,a5,STEPS[4].key);renderOut(acc,prog());
+  var a6=await execStep(STEPS[5],ctx);acc=appendAcc(acc,a6,STEPS[5].key);
+  renderOut(acc,'');saveReport(jd,{content:acc});setBot(t('bot.done'));pendingCtx=null;
+}
 async function runAnalysis(){
   var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
-  if(!jd){showToast(t('toast.needjd'),true);return}if(!resume){showToast(t('toast.needresume'),true);return}
-  setBot(t('bot.analyzing'));document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
+  if(!jd){showToast(t('toast.needjd'),true);return;}
+  if(!resume){showToast(t('toast.needresume'),true);return;}
+  if(!loadSettings().apiKey){showToast(t('needkey'),true);openSettings();return;}
+  setBot(t('bot.analyzing'));
+  document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
+  var ctx={jd:jd,resume:resume,jd_analysis:'',diag:''};
+  var acc='';
   try{
-    var resp=await fetch('http://localhost:7860/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume:resume,jd:jd})});
-    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>';saveReport(jd,d);setBot(t('bot.done'))}else throw new Error();
-  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>'+t('analysis.offline')+'</p></div>';saveReport(jd,null);setBot(t('bot.offline'))}
-}
-async function runStep(step){
-  var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
-  if(!jd){showToast(t('toast.needjd'),true);return}if(!resume){showToast(t('toast.needresume'),true);return}
-  setBot(t('bot.running')+' '+step);document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.analyzing')+'</div></div>';
-  try{
-    var resp=await fetch('http://localhost:7860/api/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({step:step,resume:resume,jd:jd})});
-    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>'}else throw new Error();
-  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>'+t('analysis.noBackend')+'</p></div>'}
-  setBot(t('bot.ready'))
+    var a1=await execStep(STEPS[0],ctx);acc=appendAcc(acc,a1,STEPS[0].key);renderOut(acc,prog());
+    var a2=await execStep(STEPS[1],ctx);acc=appendAcc(acc,a2,STEPS[1].key);
+    if(!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:resume,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
+    await runPro(ctx,acc,jd);
+  }catch(e){handleError(e);}
 }
 function saveReport(jd,data){
   var reps=loadRep(),title=jd.split('\n')[0].slice(0,60),score=data?50+Math.floor(Math.random()*40):0;
@@ -458,7 +685,7 @@ function renderReports(){
 function openReport(id){
   var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
   switchPage('analysis');document.getElementById('jd-input').value=r.jd;
-  if(r.data){var d=r.data;document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(typeof d==='string'?d:(d.result||d.content||''))+'</div>';}
+  if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';}
 }
 
 applyLang();
