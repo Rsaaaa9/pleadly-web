@@ -24,6 +24,8 @@ body{min-height:100vh}
 .topnav-link.active{color:var(--text);background:var(--muted-bg);}
 .topnav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
 .topnav-badge{font-size:12px;padding:3px 10px;border-radius:10px;background:var(--muted-bg);color:var(--text2);font-weight:600;}
+.lang-btn{font-size:13px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;transition:all 0.15s;}
+.lang-btn:hover{color:var(--text);background:var(--surface2);}
 
 .page{display:none;padding:20px 24px;max-width:1440px;margin:0 auto;}
 .page.active{display:block;}
@@ -110,28 +112,40 @@ tr:hover td{background:var(--surface2);}
 <nav class="topnav">
   <div class="topnav-logo">Pleadly</div>
   <div class="topnav-links">
-    <button class="topnav-link" data-page="library">信息库</button>
-    <button class="topnav-link" data-page="analysis">分析页</button>
-    <button class="topnav-link" data-page="reports">报告仓库</button>
-    <button class="topnav-link active" data-page="jobs">岗位搜索</button>
+    <button class="topnav-link" data-page="library" data-i18n="nav.library">信息库</button>
+    <button class="topnav-link" data-page="analysis" data-i18n="nav.analysis">分析页</button>
+    <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
+    <button class="topnav-link active" data-page="jobs" data-i18n="nav.jobs">岗位搜索</button>
   </div>
-  <div class="topnav-right"><span class="topnav-badge">v2</span></div>
+  <div class="topnav-right">
+    <button class="lang-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / 切换语言">EN</button>
+    <span class="topnav-badge">v2</span>
+  </div>
 </nav>
 
 <!-- 岗位搜索 -->
 <div class="page active" id="page-jobs">
   <div class="page-header">
-    <h2>岗位搜索助手</h2>
-    <p>基于你的学历+技能+经历筛选。点击卡片直达投递页面。</p>
+    <h2 data-i18n="jobs.title">岗位搜索助手</h2>
+    <p data-i18n="jobs.subtitle">基于你的学历+技能+经历筛选。点击卡片直达投递页面。</p>
   </div>
   <div class="filter-bar">
     <select id="f-loc" onchange="renderJobs()">
-      <option value="all">全部区域</option><option value="龙华">龙华区</option><option value="坂田">坂田/龙岗</option><option value="福田">福田区</option><option value="南山">南山区</option><option value="宝安">宝安区</option>
+      <option value="all" data-i18n-opt="filter.loc">全部区域</option>
+      <option value="龙华" data-i18n-opt="filter.loc.longhua">龙华区</option>
+      <option value="坂田" data-i18n-opt="filter.loc.bantian">坂田/龙岗</option>
+      <option value="福田" data-i18n-opt="filter.loc.futian">福田区</option>
+      <option value="南山" data-i18n-opt="filter.loc.nanshan">南山区</option>
+      <option value="宝安" data-i18n-opt="filter.loc.baoan">宝安区</option>
     </select>
     <select id="f-pri" onchange="renderJobs()">
-      <option value="0">全部匹配岗位</option><option value="5">强烈推荐</option><option value="4">推荐</option><option value="3">可考虑</option><option value="-1">仅供参考(学历不符)</option>
+      <option value="0" data-i18n-opt="filter.pri.all">全部匹配岗位</option>
+      <option value="5" data-i18n-opt="filter.pri.5">强烈推荐</option>
+      <option value="4" data-i18n-opt="filter.pri.4">推荐</option>
+      <option value="3" data-i18n-opt="filter.pri.3">可考虑</option>
+      <option value="-1" data-i18n-opt="filter.pri.-1">仅供参考(学历不符)</option>
     </select>
-    <input type="text" id="f-search" placeholder="搜索公司名或岗位..." oninput="renderJobs()" style="width:220px;">
+    <input type="text" id="f-search" data-i18n-ph="filter.search" placeholder="搜索公司名或岗位..." oninput="renderJobs()" style="width:220px;">
     <span id="job-count" style="font-size:13px;color:var(--text3);"></span>
   </div>
   <div id="jobs-container"></div>
@@ -140,18 +154,18 @@ tr:hover td{background:var(--surface2);}
 <!-- 信息库 -->
 <div class="page" id="page-library">
   <div class="page-header">
-    <h2>信息库</h2>
-    <p>分类上传简历、作品集、项目经历 — AI 自动分块索引</p>
+    <h2 data-i18n="library.title">信息库</h2>
+    <p data-i18n="library.subtitle">分类上传简历、作品集、项目经历 — AI 自动分块索引</p>
   </div>
   <div class="subtabs" style="margin-bottom:14px;">
-    <button class="subtab active" data-lib="resume" onclick="switchLibTab(this,'resume')">简历</button>
-    <button class="subtab" data-lib="portfolio" onclick="switchLibTab(this,'portfolio')">作品集</button>
-    <button class="subtab" data-lib="project" onclick="switchLibTab(this,'project')">项目经历</button>
+    <button class="subtab active" data-lib="resume" data-i18n="lib.resume" onclick="switchLibTab(this,'resume')">简历</button>
+    <button class="subtab" data-lib="portfolio" data-i18n="lib.portfolio" onclick="switchLibTab(this,'portfolio')">作品集</button>
+    <button class="subtab" data-lib="project" data-i18n="lib.project" onclick="switchLibTab(this,'project')">项目经历</button>
   </div>
   <div class="card" style="border:2px dashed var(--border);text-align:center;cursor:pointer;padding:28px;" onclick="document.getElementById('lib-file-input').click()">
     <div style="font-size:28px;margin-bottom:6px;">+</div>
-    <div style="font-weight:600;font-size:14px;" id="lib-upload-hint">点击上传文件</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:4px;">支持 docx / pdf / txt / md</div>
+    <div style="font-weight:600;font-size:14px;" id="lib-upload-hint" data-i18n="lib.upload">点击上传文件</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px;" data-i18n="lib.supported">支持 docx / pdf / txt / md</div>
     <input type="file" id="lib-file-input" accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="handleLibUpload(this.files)">
   </div>
   <div id="library-container"><div class="empty"><div class="icon">/</div><div class="t">暂无文档</div></div></div>
@@ -159,32 +173,113 @@ tr:hover td{background:var(--surface2);}
 
 <!-- 分析页 -->
 <div class="page" id="page-analysis">
-  <div class="page-header"><h2>岗位分析</h2><p>粘贴JD+选择简历</p></div>
+  <div class="page-header"><h2 data-i18n="analysis.title">岗位分析</h2><p data-i18n="analysis.subtitle">粘贴JD+选择简历</p></div>
   <div class="analysis-grid">
     <div class="card" style="display:flex;flex-direction:column;gap:10px;">
-      <div><div class="card-header">岗位 JD</div><textarea id="jd-input" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
-      <div><div class="card-header">简历</div><select id="resume-select" onchange="onResumeSelect()" style="margin-bottom:6px;"><option value="">从信息库选择</option></select><textarea id="resume-input" placeholder="或直接粘贴简历内容 ..." style="min-height:120px;"></textarea></div>
-      <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;">一键全流程分析</button>
+      <div><div class="card-header" data-i18n="analysis.jd">岗位 JD</div><textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
+      <div><div class="card-header" data-i18n="analysis.resume">简历</div><select id="resume-select" onchange="onResumeSelect()" style="margin-bottom:6px;"><option value="" data-i18n-opt="analysis.resume.select">从信息库选择</option></select><textarea id="resume-input" data-i18n-ph="analysis.resume.ph" placeholder="或直接粘贴简历内容 ..." style="min-height:120px;"></textarea></div>
+      <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;" data-i18n="analysis.run">一键全流程分析</button>
     </div>
     <div class="card">
       <div class="step-nav">
-        <span class="step-chip">1.ATS</span><span class="step-chip">2.评分</span><span class="step-chip">3.JD拆解</span><span class="step-chip">4.诊断</span><span class="step-chip">5.多JD排序</span><span class="step-chip">6.学习计划</span><span class="step-chip">7.面试准备</span><span class="step-chip">8.Mock面试</span><span class="step-chip">9.Offer谈判</span><span class="step-chip">10.入职指南</span>
+        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip" data-i18n="step.5">5.多JD排序</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span><span class="step-chip" data-i18n="step.8">8.Mock面试</span><span class="step-chip" data-i18n="step.9">9.Offer谈判</span><span class="step-chip" data-i18n="step.10">10.入职指南</span>
       </div>
-      <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t">输入简历和 JD 后点击「一键全流程分析」</div><div class="d">完整 10 步分析需要 1-3 分钟</div></div></div>
+      <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
     </div>
   </div>
 </div>
 
 <!-- 报告仓库 -->
 <div class="page" id="page-reports">
-  <div class="page-header"><h2>报告仓库</h2><p>历史分析报告存档</p></div>
+  <div class="page-header"><h2 data-i18n="reports.title">报告仓库</h2><p data-i18n="reports.subtitle">历史分析报告存档</p></div>
   <div id="reports-container"><div class="empty"><div class="icon">/</div><div class="t">暂无报告</div></div></div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
+<div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
 <script>
+var I18N={
+zh:{
+ 'app.title':'Pleadly — AI求职助手',
+ 'nav.jobs':'岗位搜索','nav.library':'信息库','nav.analysis':'分析页','nav.reports':'报告仓库',
+ 'jobs.title':'岗位搜索助手',
+ 'jobs.subtitle':'基于你的学历+技能+经历筛选。点击卡片直达投递页面。',
+ 'filter.loc':'全部区域','filter.loc.longhua':'龙华区','filter.loc.bantian':'坂田/龙岗','filter.loc.futian':'福田区','filter.loc.nanshan':'南山区','filter.loc.baoan':'宝安区',
+ 'filter.pri.all':'全部匹配岗位','filter.pri.5':'强烈推荐','filter.pri.4':'推荐','filter.pri.3':'可考虑','filter.pri.-1':'仅供参考(学历不符)',
+ 'filter.search':'搜索公司名或岗位...',
+ 'jobs.count':'个岗位',
+ 'empty.nomatch':'无匹配岗位','empty.nomatch.desc':'调整筛选条件再试',
+ 'job.goto':'点击跳转至','job.jd':'JD:','job.match':'匹配:',
+ 'pri.5':'强烈推荐','pri.4':'推荐','pri.3':'可考虑','pri.2':'勉强','pri.0':'学历不符仅供参考',
+ 'library.title':'信息库','library.subtitle':'分类上传简历、作品集、项目经历 — AI 自动分块索引',
+ 'lib.resume':'简历','lib.portfolio':'作品集','lib.project':'项目经历','lib.other':'其他',
+ 'lib.upload':'点击上传文件','lib.upload.hint':'点击上传','lib.supported':'支持 docx / pdf / txt / md',
+ 'lib.empty':'暂无文档','lib.empty.desc':'点击上方虚线区域上传文件',
+ 'lib.th.name':'文件名','lib.th.type':'类型','lib.th.size':'大小','lib.th.action':'操作','lib.del':'删除',
+ 'analysis.title':'岗位分析','analysis.subtitle':'粘贴JD+选择简历',
+ 'analysis.jd':'岗位 JD','analysis.jd.ph':'在此粘贴岗位 JD ...',
+ 'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
+ 'analysis.run':'一键全流程分析',
+ 'step.1':'1.ATS','step.2':'2.评分','step.3':'3.JD拆解','step.4':'4.诊断','step.5':'5.多JD排序','step.6':'6.学习计划','step.7':'7.面试准备','step.8':'8.Mock面试','step.9':'9.Offer谈判','step.10':'10.入职指南',
+ 'analysis.empty':'输入简历和 JD 后点击「一键全流程分析」','analysis.empty.desc':'完整 10 步分析需要 1-3 分钟',
+ 'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
+ 'analysis.offline':'离线模式。启动Pleadly后端后重试。','analysis.noBackend':'后端未连接。请启动Pleadly后端后重试。',
+ 'reports.title':'报告仓库','reports.subtitle':'历史分析报告存档',
+ 'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档',
+ 'report.unspecified':'未指定','report.match':'匹配','report.stretch':'冲击','report.pass':'放弃',
+ 'bot.ready':'就绪','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
+ 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请选择或输入简历','toast.saved':'报告已存档'
+},
+en:{
+ 'app.title':'Pleadly — AI Job Assistant',
+ 'nav.jobs':'Jobs','nav.library':'Library','nav.analysis':'Analysis','nav.reports':'Reports',
+ 'jobs.title':'Job Search Assistant',
+ 'jobs.subtitle':'Filtered by education, skills and experience. Click a card to open the application page. Job data is Shenzhen-focused.',
+ 'filter.loc':'All areas','filter.loc.longhua':'Longhua','filter.loc.bantian':'Bantian / Longgang','filter.loc.futian':'Futian','filter.loc.nanshan':'Nanshan','filter.loc.baoan':"Bao'an",
+ 'filter.pri.all':'All jobs','filter.pri.5':'Top match','filter.pri.4':'Recommended','filter.pri.3':'Consider','filter.pri.-1':'Reference (degree mismatch)',
+ 'filter.search':'Search company or role...',
+ 'jobs.count':'jobs',
+ 'empty.nomatch':'No matching jobs','empty.nomatch.desc':'Adjust filters and try again',
+ 'job.goto':'Open','job.jd':'JD:','job.match':'Match:',
+ 'pri.5':'Top match','pri.4':'Recommended','pri.3':'Consider','pri.2':'Marginal','pri.0':'Degree mismatch (reference)',
+ 'library.title':'Library','library.subtitle':'Upload resumes, portfolios and projects — auto-chunked & indexed by AI',
+ 'lib.resume':'Resume','lib.portfolio':'Portfolio','lib.project':'Projects','lib.other':'Other',
+ 'lib.upload':'Click to upload','lib.upload.hint':'Upload','lib.supported':'Supports docx / pdf / txt / md',
+ 'lib.empty':'No documents','lib.empty.desc':'Click the dashed area above to upload',
+ 'lib.th.name':'File','lib.th.type':'Type','lib.th.size':'Size','lib.th.action':'Actions','lib.del':'Delete',
+ 'analysis.title':'Job Analysis','analysis.subtitle':'Paste a JD and pick a resume',
+ 'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here...',
+ 'analysis.resume':'Resume','analysis.resume.select':'Select from Library','analysis.resume.ph':'Or paste your resume directly...',
+ 'analysis.run':'Run Full Analysis',
+ 'step.1':'1. ATS','step.2':'2. Score','step.3':'3. JD Breakdown','step.4':'4. Diagnosis','step.5':'5. Priority Rank','step.6':'6. Study Plan','step.7':'7. Interview Prep','step.8':'8. Mock Interview','step.9':'9. Offer Negotiation','step.10':'10. Onboarding',
+ 'analysis.empty':'Enter a resume and JD, then click "Run Full Analysis"','analysis.empty.desc':'Full 10-step analysis takes 1-3 min',
+ 'analysis.running':'Running full analysis...','analysis.running.desc':'Estimated 1-3 min','analysis.analyzing':'Analyzing...',
+ 'analysis.offline':'Offline mode. Start the Pleadly backend and retry.','analysis.noBackend':'Backend not connected. Start the Pleadly backend and retry.',
+ 'reports.title':'Reports','reports.subtitle':'Archive of past analysis reports',
+ 'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis',
+ 'report.unspecified':'Unspecified','report.match':'Match','report.stretch':'Stretch','report.pass':'Pass',
+ 'bot.ready':'Ready','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
+ 'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Please select or enter a resume','toast.saved':'Report saved'
+}
+};
+var TYPE_EN={'AI产品经理':'AI Product Manager','AI开发':'AI Engineering','用户研究':'User Research','游戏AI':'Game AI'};
+var lang=localStorage.getItem('plang')||'zh';
+function t(k){return (I18N[lang]&&I18N[lang][k])||I18N.zh[k]||k;}
+function typeLabel(tp){return lang==='en'?(TYPE_EN[tp]||tp):tp;}
+function toggleLang(){setLang(lang==='en'?'zh':'en');}
+function setLang(l){lang=l;localStorage.setItem('plang',l);applyLang();}
+function applyLang(){
+  document.documentElement.lang=lang==='en'?'en':'zh-CN';
+  document.title=t('app.title');
+  document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-ph'));});
+  document.querySelectorAll('[data-i18n-opt]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n-opt'));});
+  var lb=document.getElementById('lang-btn');if(lb)lb.textContent=lang==='en'?'中文':'EN';
+  renderJobs();refreshResumeSelect();renderReports();renderLib();
+  setBot(t('bot.ready')+' · '+t('jobs.count')+' '+JOBS.length+' | '+t('library.title')+' '+loadLib().length);
+}
+
 var JOBS = [
   {company:"深圳市排排网投资管理股份有限公司",title:"AI产品经理",salary:"15K-30K/13薪",loc:"福田",commute:"30min",exp:"经验不限 学生可投",degree:"本科",pri:5,type:"AI产品经理",jd:"AI业务场景规划落地；大模型技术栈(RAG/Prompt/Dify/Coze)；内部AI变革推动",match:"经验不限+学生可投。RAG/Prompt/Dify=精确技能命中",url:"https://www.liepin.com/job/1980845779.shtml",urltxt:"猎聘职位页→投递"},
   {company:"深圳市乐有家房产交易有限公司",title:"AI产品经理",salary:"11K-22K/14薪",loc:"福田",commute:"30min",exp:"硕士及以上",degree:"硕士",pri:0,type:"AI产品经理",jd:"主导Agent类产品逻辑梳理、功能规划与交互设计；智能助手/自动化Agent/多智能体协作",match:"Agent方向精确+可远程+14薪。但学历要求硕士，你不符合。仅供参考了解行业",url:"https://hr.leyoujia.com/hr_portal/w/post/2/15279.html",urltxt:"乐有家招聘官网→投递"},
@@ -220,19 +315,19 @@ function renderJobs(){
   if(pri===0)list=list.filter(function(j){return j.pri>0;}); // default: hide pri=0 (not qualified)
   if(pri===-1)list=list.filter(function(j){return j.pri===0;}); // show only reference items
   if(q)list=list.filter(function(j){return j.company.toLowerCase().indexOf(q)!==-1||j.title.toLowerCase().indexOf(q)!==-1||j.jd.toLowerCase().indexOf(q)!==-1;});
-  document.getElementById('job-count').textContent=list.length+' / '+JOBS.length+' 个岗位';
+  document.getElementById('job-count').textContent=list.length+' / '+JOBS.length+' '+t('jobs.count');
   var c=document.getElementById('jobs-container');
-  if(!list.length){c.innerHTML='<div class="empty"><div class="t">无匹配岗位</div><div class="d">调整筛选条件再试</div></div>';return;}
-  var labels={5:'强烈推荐',4:'推荐',3:'可考虑',2:'勉强',0:'学历不符仅供参考'};
+  if(!list.length){c.innerHTML='<div class="empty"><div class="t">'+t('empty.nomatch')+'</div><div class="d">'+t('empty.nomatch.desc')+'</div></div>';return;}
+  var labels={5:t('pri.5'),4:t('pri.4'),3:t('pri.3'),2:t('pri.2'),0:t('pri.0')};
   var cls={5:'pri-high',4:'pri-mid',3:'pri-low',2:'',0:''};
   var h='';
   for(var i=0;i<list.length;i++){
     var j=list[i];
-    h+='<div class="card job-card '+(cls[j.pri]||'')+'" onclick="window.open(\''+j.url+'\',\'_blank\')" title="点击跳转至 '+j.urltxt+'">';
-    h+='<div class="job-title-row"><div><span class="job-title">'+j.title+'</span><span class="tag" style="margin-left:8px;">'+labels[j.pri]+'</span><span class="tag" style="margin-left:4px;">'+j.type+'</span></div><span class="job-salary">'+j.salary+'</span></div>';
+    h+='<div class="card job-card '+(cls[j.pri]||'')+'" onclick="window.open(\''+j.url+'\',\'_blank\')" title="'+t('job.goto')+' '+j.urltxt+'">';
+    h+='<div class="job-title-row"><div><span class="job-title">'+j.title+'</span><span class="tag" style="margin-left:8px;">'+labels[j.pri]+'</span><span class="tag" style="margin-left:4px;">'+typeLabel(j.type)+'</span></div><span class="job-salary">'+j.salary+'</span></div>';
     h+='<div class="job-meta"><span>\u{1F4CD} '+j.loc+' / '+j.commute+'</span><span>\u{1F393} '+j.degree+'</span><span>\u{1F4DD} '+j.exp+'</span></div>';
-    h+='<div class="job-detail"><dt>JD:</dt><dd>'+j.jd+'</dd></div>';
-    h+='<div class="job-reason"><strong>匹配:</strong> '+j.match+'</div>';
+    h+='<div class="job-detail"><dt>'+t('job.jd')+'</dt><dd>'+j.jd+'</dd></div>';
+    h+='<div class="job-reason"><strong>'+t('job.match')+'</strong> '+j.match+'</div>';
     h+='<div class="job-link">↗ '+j.urltxt+'</div>';
     h+='</div>';
   }
@@ -262,7 +357,7 @@ function switchLibTab(el,cat){
   libTab=cat;
   document.querySelectorAll('#page-library .subtab').forEach(function(s){s.classList.remove('active');});
   el.classList.add('active');
-  document.getElementById('lib-upload-hint').textContent='点击上传'+(cat==='resume'?'简历':cat==='portfolio'?'作品集':'项目经历');
+  document.getElementById('lib-upload-hint').textContent=t('lib.upload.hint')+' '+t('lib.'+cat);
   renderLib();
 }
 function handleLibUpload(files){
@@ -291,24 +386,23 @@ function handleLibUpload(files){
         saveLib(lib);
         renderLib();
         refreshResumeSelect();
-        showToast('已添加: '+file.name);
+        showToast(t('toast.added')+': '+file.name);
       };
     })(f);
-    if(f.name.match(/\.(docx|pdf)$/i)){reader.readAsText(f)}else{reader.readAsText(f)}
+    reader.readAsText(f);
   }
 }
 function renderLib(){
   var lib=loadLib().filter(function(f){return f.category===libTab;}),c=document.getElementById('library-container');
-  var labelMap={resume:'简历',portfolio:'作品集',project:'项目经历'};
-  if(!lib.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">暂无'+(labelMap[libTab]||'')+'</div><div class="d">点击上方虚线区域上传文件</div></div>';return;}
-  var tl={resume:'简历',portfolio:'作品集',project:'项目经历',other:'其他'},h='<div class="table-wrap"><table><thead><tr><th>文件名</th><th>类型</th><th>大小</th><th>操作</th></tr></thead><tbody>';
-  for(var i=0;i<lib.length;i++){var f=lib[i];h+='<tr><td style="font-weight:500;">'+f.name+'</td><td><span class="tag">'+(tl[f.type]||f.type)+'</span></td><td>'+f.size+'</td><td><button class="btn btn-ghost btn-sm" onclick="delLib(\''+f.id+'\')">删除</button></td></tr>';}
+  if(!lib.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('lib.empty')+'</div><div class="d">'+t('lib.empty.desc')+'</div></div>';return;}
+  var h='<div class="table-wrap"><table><thead><tr><th>'+t('lib.th.name')+'</th><th>'+t('lib.th.type')+'</th><th>'+t('lib.th.size')+'</th><th>'+t('lib.th.action')+'</th></tr></thead><tbody>';
+  for(var i=0;i<lib.length;i++){var f=lib[i];h+='<tr><td style="font-weight:500;">'+f.name+'</td><td><span class="tag">'+t('lib.'+(f.type||'other'))+'</span></td><td>'+f.size+'</td><td><button class="btn btn-ghost btn-sm" onclick="delLib(\''+f.id+'\')">'+t('lib.del')+'</button></td></tr>';}
   h+='</tbody></table></div>';c.innerHTML=h;
 }
 function delLib(id){var lib=loadLib();lib=lib.filter(function(f){return f.id!==id;});saveLib(lib);renderLib();}
 
 function refreshResumeSelect(){
-  var lib=loadLib().filter(function(f){return (f.category==='resume'||f.type==='resume');}),sel=document.getElementById('resume-select'),h='<option value="">从信息库选择</option>';
+  var lib=loadLib().filter(function(f){return (f.category==='resume'||f.type==='resume');}),sel=document.getElementById('resume-select'),h='<option value="">'+t('analysis.resume.select')+'</option>';
   for(var i=0;i<lib.length;i++)h+='<option value="'+lib[i].id+'">'+lib[i].name+'</option>';
   sel.innerHTML=h;
 }
@@ -326,34 +420,34 @@ function setBot(txt){document.getElementById('bot-text').textContent=txt;}
 
 async function runAnalysis(){
   var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
-  if(!jd){showToast('请先输入JD',true);return}if(!resume){showToast('请选择或输入简历',true);return}
-  setBot('分析中...');document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">正在运行全流程分析...</div><div class="d">预计1-3分钟</div></div>';
+  if(!jd){showToast(t('toast.needjd'),true);return}if(!resume){showToast(t('toast.needresume'),true);return}
+  setBot(t('bot.analyzing'));document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
   try{
     var resp=await fetch('http://localhost:7860/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume:resume,jd:jd})});
-    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>';saveReport(jd,d);setBot('分析完成')}else throw new Error();
-  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>离线模式。启动Pleadly后端后重试。</p></div>';saveReport(jd,null);setBot('离线模式')}
+    if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>';saveReport(jd,d);setBot(t('bot.done'))}else throw new Error();
+  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>'+t('analysis.offline')+'</p></div>';saveReport(jd,null);setBot(t('bot.offline'))}
 }
 async function runStep(step){
   var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
-  if(!jd){showToast('请先输入JD',true);return}if(!resume){showToast('请选择或输入简历',true);return}
-  setBot('运行:'+step);document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">正在分析...</div></div>';
+  if(!jd){showToast(t('toast.needjd'),true);return}if(!resume){showToast(t('toast.needresume'),true);return}
+  setBot(t('bot.running')+' '+step);document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.analyzing')+'</div></div>';
   try{
     var resp=await fetch('http://localhost:7860/api/step',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({step:step,resume:resume,jd:jd})});
     if(resp.ok){var d=await resp.json();document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(d.result||d.content||'')+'</div>'}else throw new Error();
-  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>后端未连接。请启动Pleadly后端后重试。</p></div>'}
-  setBot('就绪')
+  }catch(e){document.getElementById('analysis-output').innerHTML='<div class="md-output"><p>'+t('analysis.noBackend')+'</p></div>'}
+  setBot(t('bot.ready'))
 }
 function saveReport(jd,data){
   var reps=loadRep(),title=jd.split('\n')[0].slice(0,60),score=data?50+Math.floor(Math.random()*40):0;
-  reps.unshift({id:Date.now().toString(36),title:title,company:'未指定',date:new Date().toISOString().slice(0,10),score:score,data:data,jd:jd.slice(0,400)});
-  saveRep(reps);showToast('报告已存档',false);
+  reps.unshift({id:Date.now().toString(36),title:title,company:t('report.unspecified'),date:new Date().toISOString().slice(0,10),score:score,data:data,jd:jd.slice(0,400)});
+  saveRep(reps);showToast(t('toast.saved'),false);
 }
 function renderReports(){
   var reps=loadRep(),grid=document.getElementById('reports-container');
-  if(!reps.length){grid.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">暂无报告</div><div class="d">完成分析后自动存档</div></div>';return;}
+  if(!reps.length){grid.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('reports.empty')+'</div><div class="d">'+t('reports.empty.desc')+'</div></div>';return;}
   var h='';
   for(var i=0;i<reps.length;i++){
-    var r=reps[i],bc=r.score>=70?'var(--text)':r.score>=50?'var(--text2)':'var(--text3)',lvl=r.score>=70?'匹配':r.score>=50?'冲击':'放弃';
+    var r=reps[i],bc=r.score>=70?'var(--text)':r.score>=50?'var(--text2)':'var(--text3)',lvl=r.score>=70?t('report.match'):r.score>=50?t('report.stretch'):t('report.pass');
     h+='<div class="card" style="cursor:pointer;border-left:3px solid '+bc+';" onclick="openReport(\''+r.id+'\')">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:15px;">'+r.title+'</span><span style="font-size:22px;font-weight:800;">'+r.score+'</span></div>';
     h+='<div style="font-size:13px;color:var(--text3);margin-top:6px;">'+r.date+' / '+lvl+'</div>';
@@ -367,8 +461,7 @@ function openReport(id){
   if(r.data){var d=r.data;document.getElementById('analysis-output').innerHTML='<div class="md-output">'+(typeof d==='string'?d:(d.result||d.content||''))+'</div>';}
 }
 
-renderJobs();refreshResumeSelect();renderReports();renderLib();
-setBot('岗位搜索 '+JOBS.length+' 个 | 信息库 '+loadLib().length+' 个文档');
+applyLang();
 </script>
 </body>
 </html>
