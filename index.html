@@ -146,10 +146,9 @@ tr:hover td{background:var(--surface2);}
   <div class="topnav-logo">Pleadly</div>
   <div class="topnav-links">
     <button class="topnav-link" data-page="library" data-i18n="nav.library">信息库</button>
-    <button class="topnav-link" data-page="knowledge" data-i18n="nav.knowledge">知识库</button>
-    <button class="topnav-link" data-page="analysis" data-i18n="nav.analysis">分析页</button>
+    <button class="topnav-link" data-page="memory" data-i18n="nav.memory">个人记忆</button>
+    <button class="topnav-link active" data-page="analysis" data-i18n="nav.analysis">分析页</button>
     <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
-    <button class="topnav-link active" data-page="jobs" data-i18n="nav.jobs">岗位搜索</button>
   </div>
   <div class="topnav-right">
     <button class="lang-btn" onclick="openSettings()" title="Settings / 设置">⚙</button>
@@ -157,34 +156,6 @@ tr:hover td{background:var(--surface2);}
     <span class="topnav-badge">v2</span>
   </div>
 </nav>
-
-<!-- 岗位搜索 -->
-<div class="page active" id="page-jobs">
-  <div class="page-header">
-    <h2 data-i18n="jobs.title">岗位搜索助手</h2>
-    <p data-i18n="jobs.subtitle">基于你的学历+技能+经历筛选。点击卡片直达投递页面。</p>
-  </div>
-  <div class="filter-bar">
-    <select id="f-loc" onchange="renderJobs()">
-      <option value="all" data-i18n-opt="filter.loc">全部区域</option>
-      <option value="龙华" data-i18n-opt="filter.loc.longhua">龙华区</option>
-      <option value="坂田" data-i18n-opt="filter.loc.bantian">坂田/龙岗</option>
-      <option value="福田" data-i18n-opt="filter.loc.futian">福田区</option>
-      <option value="南山" data-i18n-opt="filter.loc.nanshan">南山区</option>
-      <option value="宝安" data-i18n-opt="filter.loc.baoan">宝安区</option>
-    </select>
-    <select id="f-pri" onchange="renderJobs()">
-      <option value="0" data-i18n-opt="filter.pri.all">全部匹配岗位</option>
-      <option value="5" data-i18n-opt="filter.pri.5">强烈推荐</option>
-      <option value="4" data-i18n-opt="filter.pri.4">推荐</option>
-      <option value="3" data-i18n-opt="filter.pri.3">可考虑</option>
-      <option value="-1" data-i18n-opt="filter.pri.-1">仅供参考(学历不符)</option>
-    </select>
-    <input type="text" id="f-search" data-i18n-ph="filter.search" placeholder="搜索公司名或岗位..." oninput="renderJobs()" style="width:220px;">
-    <span id="job-count" style="font-size:13px;color:var(--text3);"></span>
-  </div>
-  <div id="jobs-container"></div>
-</div>
 
 <!-- 信息库 -->
 <div class="page" id="page-library">
@@ -207,7 +178,7 @@ tr:hover td{background:var(--surface2);}
 </div>
 
 <!-- 分析页 -->
-<div class="page" id="page-analysis">
+<div class="page active" id="page-analysis">
   <div class="page-header"><h2 data-i18n="analysis.title">岗位分析</h2><p data-i18n="analysis.subtitle">粘贴JD+选择简历</p></div>
   <div class="analysis-grid">
     <div class="card" style="display:flex;flex-direction:column;gap:10px;">
@@ -230,23 +201,15 @@ tr:hover td{background:var(--surface2);}
   <div id="reports-container"><div class="empty"><div class="icon">/</div><div class="t">暂无报告</div></div></div>
 </div>
 
-<!-- 知识库 -->
-<div class="page" id="page-knowledge">
-  <div class="page-header"><h2 data-i18n="know.title">知识库</h2><p data-i18n="know.subtitle">面试题库 / 公司信息 / 薪资 / 简历模板 / 岗位要求 / 专业知识（本地静态检索）</p></div>
-  <div class="subtabs" style="margin-bottom:14px;">
-    <button class="subtab active" onclick="switchKnowCat(this,'all')" data-i18n="know.cat.all">全部</button>
-    <button class="subtab" onclick="switchKnowCat(this,'interviews')" data-i18n="know.cat.interviews">面试题库</button>
-    <button class="subtab" onclick="switchKnowCat(this,'companies')" data-i18n="know.cat.companies">公司信息</button>
-    <button class="subtab" onclick="switchKnowCat(this,'salaries')" data-i18n="know.cat.salaries">薪资数据</button>
-    <button class="subtab" onclick="switchKnowCat(this,'templates')" data-i18n="know.cat.templates">简历模板</button>
-    <button class="subtab" onclick="switchKnowCat(this,'jobs')" data-i18n="know.cat.jobs">岗位要求</button>
-    <button class="subtab" onclick="switchKnowCat(this,'knowledge')" data-i18n="know.cat.knowledge">专业知识</button>
-  </div>
+<!-- 个人记忆 -->
+<div class="page" id="page-memory">
+  <div class="page-header"><h2 data-i18n="mem.title">个人记忆</h2><p data-i18n="mem.subtitle">随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。</p></div>
   <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
-    <input type="text" id="know-search" data-i18n-ph="know.search.ph" placeholder="搜索关键词..." oninput="renderKnowledge()" style="width:300px;">
-    <span id="know-count" style="font-size:13px;color:var(--text3);"></span>
+    <input type="text" id="mem-search" data-i18n-ph="mem.search.ph" placeholder="搜索记忆..." oninput="renderMemory()" style="width:300px;">
+    <span id="mem-count" style="font-size:13px;color:var(--text3);"></span>
+    <button class="btn btn-ghost btn-sm" onclick="clearMem()" data-i18n="mem.clear" style="margin-left:auto;">清空</button>
   </div>
-  <div id="knowledge-container"><div class="empty"><div class="icon">/</div><div class="t">加载中...</div></div></div>
+  <div id="memory-container"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="mem.empty">还没有记忆</div><div class="d" data-i18n="mem.empty.desc">跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息</div></div></div>
 </div>
 
 <div class="modal" id="settings-modal">
@@ -321,21 +284,11 @@ tr:hover td{background:var(--surface2);}
 <div class="toast" id="toast"></div>
 <div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
-<script src="knowledge.js"></script>
 <script>
 var I18N={
 zh:{
  'app.title':'Pleadly — AI求职助手',
- 'nav.jobs':'岗位搜索','nav.library':'信息库','nav.analysis':'分析页','nav.reports':'报告仓库',
- 'jobs.title':'岗位搜索助手',
- 'jobs.subtitle':'基于你的学历+技能+经历筛选。点击卡片直达投递页面。',
- 'filter.loc':'全部区域','filter.loc.longhua':'龙华区','filter.loc.bantian':'坂田/龙岗','filter.loc.futian':'福田区','filter.loc.nanshan':'南山区','filter.loc.baoan':'宝安区',
- 'filter.pri.all':'全部匹配岗位','filter.pri.5':'强烈推荐','filter.pri.4':'推荐','filter.pri.3':'可考虑','filter.pri.-1':'仅供参考(学历不符)',
- 'filter.search':'搜索公司名或岗位...',
- 'jobs.count':'个岗位',
- 'empty.nomatch':'无匹配岗位','empty.nomatch.desc':'调整筛选条件再试',
- 'job.goto':'点击跳转至','job.jd':'JD:','job.match':'匹配:',
- 'pri.5':'强烈推荐','pri.4':'推荐','pri.3':'可考虑','pri.2':'勉强','pri.0':'学历不符仅供参考',
+ 'nav.memory':'个人记忆','nav.library':'信息库','nav.analysis':'分析页','nav.reports':'报告仓库',
  'library.title':'信息库','library.subtitle':'分类上传简历、作品集、项目经历 — AI 自动分块索引',
  'lib.resume':'简历','lib.portfolio':'作品集','lib.project':'项目经历','lib.other':'其他',
  'lib.upload':'点击上传文件','lib.upload.hint':'点击上传','lib.supported':'支持 docx / pdf / txt / md',
@@ -365,11 +318,10 @@ zh:{
  'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
  'needkey':'请先在设置里填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
  'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
- 'nav.knowledge':'知识库',
- 'know.title':'知识库','know.subtitle':'面试题库 / 公司信息 / 薪资 / 简历模板 / 岗位要求 / 专业知识（本地静态检索）',
- 'know.search.ph':'搜索关键词...',
- 'know.cat.all':'全部','know.cat.interviews':'面试题库','know.cat.companies':'公司信息','know.cat.salaries':'薪资数据','know.cat.templates':'简历模板','know.cat.jobs':'岗位要求','know.cat.knowledge':'专业知识',
- 'know.count':'条','know.empty':'无匹配结果','know.fail':'知识库加载失败：请通过本地服务器或线上部署打开',
+ 'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
+ 'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
+ 'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
+ 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南',
  'extra.5.title':'第5步 · 多JD优先级排序','extra.5.hint':'粘贴 2 个以上岗位，用「=====」或空行分隔每个岗位的 JD/公司/薪资信息。',
  'extra.9.title':'第9步 · Offer 谈判','extra.9.hint':'粘贴完整 Offer package：底薪 / 年终 / 期权 / 社保公积金基数与比例 / 试用期折扣 / 补贴 / 年假等。',
  'extra.10.title':'第10步 · 入职生存指南','extra.10.hint':'粘贴公司 + 岗位信息（公司类型、行业、你的岗位职责等）。',
@@ -380,16 +332,7 @@ zh:{
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
- 'nav.jobs':'Jobs','nav.library':'Library','nav.analysis':'Analysis','nav.reports':'Reports',
- 'jobs.title':'Job Search Assistant',
- 'jobs.subtitle':'Filtered by education, skills and experience. Click a card to open the application page. Job data is Shenzhen-focused.',
- 'filter.loc':'All areas','filter.loc.longhua':'Longhua','filter.loc.bantian':'Bantian / Longgang','filter.loc.futian':'Futian','filter.loc.nanshan':'Nanshan','filter.loc.baoan':"Bao'an",
- 'filter.pri.all':'All jobs','filter.pri.5':'Top match','filter.pri.4':'Recommended','filter.pri.3':'Consider','filter.pri.-1':'Reference (degree mismatch)',
- 'filter.search':'Search company or role...',
- 'jobs.count':'jobs',
- 'empty.nomatch':'No matching jobs','empty.nomatch.desc':'Adjust filters and try again',
- 'job.goto':'Open','job.jd':'JD:','job.match':'Match:',
- 'pri.5':'Top match','pri.4':'Recommended','pri.3':'Consider','pri.2':'Marginal','pri.0':'Degree mismatch (reference)',
+ 'nav.memory':'Memory','nav.library':'Library','nav.analysis':'Analysis','nav.reports':'Reports',
  'library.title':'Library','library.subtitle':'Upload resumes, portfolios and projects — auto-chunked & indexed by AI',
  'lib.resume':'Resume','lib.portfolio':'Portfolio','lib.project':'Projects','lib.other':'Other',
  'lib.upload':'Click to upload','lib.upload.hint':'Upload','lib.supported':'Supports docx / pdf / txt / md',
@@ -419,11 +362,10 @@ en:{
  'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
  'needkey':'Please enter your API key in Settings first','err.invalidkey':'Invalid API key or insufficient balance (401)',
  'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
- 'nav.knowledge':'Knowledge',
- 'know.title':'Knowledge Base','know.subtitle':'Interview Q&A / companies / salary / resume tips / job requirements / domain knowledge (local static search)',
- 'know.search.ph':'Search keywords...',
- 'know.cat.all':'All','know.cat.interviews':'Interview Q&A','know.cat.companies':'Companies','know.cat.salaries':'Salaries','know.cat.templates':'Resume Tips','know.cat.jobs':'Job Reqs','know.cat.knowledge':'Knowledge',
- 'know.count':'items','know.empty':'No matches','know.fail':'Knowledge base failed to load. Open via a local server or web deploy.',
+ 'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock feedback / offer negotiations / onboarding. Stored only on this device.',
+ 'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
+ 'mem.empty':'No memories yet','mem.empty.desc':'Run a full analysis or mock interview and your key info will be recorded here automatically',
+ 'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding',
  'extra.5.title':'Step 5 · Priority Ranking','extra.5.hint':'Paste 2+ roles, separated by "=====" or blank lines, each with its JD / company / salary.',
  'extra.9.title':'Step 9 · Offer Negotiation','extra.9.hint':'Paste the full offer package: base / bonus / equity / social-security base & ratio / probation discount / benefits / leave, etc.',
  'extra.10.title':'Step 10 · Onboarding Guide','extra.10.hint':'Paste company + role info (company type, industry, your responsibilities, etc.).',
@@ -433,10 +375,8 @@ en:{
  'mock.needjd':'Paste a JD and resume on the Analysis page first, then start the mock interview','mock.running':'Generating question...'
 }
 };
-var TYPE_EN={'AI产品经理':'AI Product Manager','AI开发':'AI Engineering','用户研究':'User Research','游戏AI':'Game AI'};
 var lang=localStorage.getItem('plang')||'zh';
 function t(k){return (I18N[lang]&&I18N[lang][k])||I18N.zh[k]||k;}
-function typeLabel(tp){return lang==='en'?(TYPE_EN[tp]||tp):tp;}
 function toggleLang(){setLang(lang==='en'?'zh':'en');}
 function setLang(l){lang=l;localStorage.setItem('plang',l);applyLang();}
 function applyLang(){
@@ -446,62 +386,8 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-ph'));});
   document.querySelectorAll('[data-i18n-opt]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n-opt'));});
   var lb=document.getElementById('lang-btn');if(lb)lb.textContent=lang==='en'?'中文':'EN';
-  renderJobs();refreshResumeSelect();renderReports();renderLib();renderKnowledge();
-  setBot(t('bot.ready')+' · '+t('jobs.count')+' '+JOBS.length+' | '+t('library.title')+' '+loadLib().length);
-}
-
-var JOBS = [
-  {company:"深圳市排排网投资管理股份有限公司",title:"AI产品经理",salary:"15K-30K/13薪",loc:"福田",commute:"30min",exp:"经验不限 学生可投",degree:"本科",pri:5,type:"AI产品经理",jd:"AI业务场景规划落地；大模型技术栈(RAG/Prompt/Dify/Coze)；内部AI变革推动",match:"经验不限+学生可投。RAG/Prompt/Dify=精确技能命中",url:"https://www.liepin.com/job/1980845779.shtml",urltxt:"猎聘职位页→投递"},
-  {company:"深圳市乐有家房产交易有限公司",title:"AI产品经理",salary:"11K-22K/14薪",loc:"福田",commute:"30min",exp:"硕士及以上",degree:"硕士",pri:0,type:"AI产品经理",jd:"主导Agent类产品逻辑梳理、功能规划与交互设计；智能助手/自动化Agent/多智能体协作",match:"Agent方向精确+可远程+14薪。但学历要求硕士，你不符合。仅供参考了解行业",url:"https://hr.leyoujia.com/hr_portal/w/post/2/15279.html",urltxt:"乐有家招聘官网→投递"},
-  {company:"开思时代科技(深圳)有限公司",title:"AI产品经理",salary:"12K-20K",loc:"龙岗",commute:"25min",exp:"2026校招",degree:"本科 专业不限",pri:5,type:"AI产品经理",jd:"AI产品需求分析与PRD撰写；关注大模型/Agent/RAG技术趋势",match:"专业不限=学历最宽松的校招AI产品岗",url:"http://casstime.zhiye.com/",urltxt:"开思时代校招官网→投递"},
-  {company:"云镝智慧科技有限公司",title:"Agent工程师",salary:"22K-40K",loc:"福田",commute:"35min",exp:"技能匹配",degree:"本科",pri:5,type:"AI开发",jd:"Python/Java；LangChain/LangGraph/Dify/Coze；RAG和Prompt Engineering",match:"Agent方向精确+薪资天花板。需补LangChain(4h)",url:"https://m.szlhrcw.com/job/363044194.html",urltxt:"岗位详情页→投递"},
-  {company:"讯兔科技(深圳)有限公司",title:"AI+产品(校招)",salary:"有竞争力",loc:"福田",commute:"35min",exp:"2026校招",degree:"本科",pri:4,type:"AI产品经理",jd:"Alpha派-金融AI Agent；金融场景AI产品设计；AI产品项目经验优先",match:"金融AI+校招+期权+六险一金。AI项目=核心优势",url:"https://www.zhipin.com/",urltxt:"BOSS直聘搜\"讯兔科技\"→投递"},
-  {company:"顺丰航空有限公司",title:"大模型开发工程师",salary:"25K-40K",loc:"宝安",commute:"55min",exp:"应届",degree:"本科",pri:4,type:"AI开发",jd:"Agent/知识库/RAG；LangChain/LangGraph；Dify/FastGPT",match:"Agent+RAG+LangChain+Dify=精确命中。顺丰品牌。通勤较远",url:"https://szbarc.com/hotjob/com2499230.shtml",urltxt:"宝安人才网→投递"},
-  {company:"金蝶国际软件集团有限公司",title:"产品设计管培生",salary:"校招标准",loc:"南山",commute:"45min",exp:"2026校招",degree:"本科",pri:4,type:"AI产品经理",jd:"企业SaaS产品设计；AI方向规划；另有AI算法/开发岗；第五批次校招",match:"SaaS龙头+校招+培养体系。AI能力在传统SaaS是差异化优势",url:"https://campus.51job.com/kingdee/",urltxt:"金蝶校招官网→投递"},
-  {company:"迅雷网络技术有限公司",title:"AI产品经理/助理",salary:"面议",loc:"南山",commute:"45min",exp:"2026届",degree:"本科 专业不限",pri:4,type:"AI产品经理",jd:"校园AI产品创造营；AI产品经理/助理/运营等方向可选",match:"专业不限+创造营培训+上市公司品牌",url:"https://campus.xunlei.com/",urltxt:"迅雷校招官网→投递"},
-  {company:"深圳睿网云联科技有限公司",title:"大模型应用开发",salary:"面议",loc:"南山/西丽",commute:"25min",exp:"应届",degree:"本科",pri:4,type:"AI开发",jd:"LangChain/LangGraph AI Agent；任务规划/工具调用/RAG；ChromaDB；DeepSeek",match:"Agent+RAG+ChromaDB+DeepSeek=全部命中。西丽通勤近",url:"https://suliao.job1001.com/company/cm1742190398215/",urltxt:"一览英才网→投递"},
-  {company:"中国联通深圳市分公司",title:"人工智能产品经理",salary:"8K-12K",loc:"福田",commute:"30min",exp:"2026校招",degree:"本科 相关专业",pri:4,type:"AI产品经理",jd:"AI与制造业融合；产品创新与迭代；对接场景需求",match:"国企最稳定+八险二金+培养体系。薪资偏低但福利无敌",url:"https://chinaunicom.zhaopin.com/",urltxt:"联通招聘官网→投递"},
-  {company:"望尘科技控股有限公司",title:"用户研究",salary:"10K-20K",loc:"深圳",commute:"待确认",exp:"2026春招",degree:"本科",pri:4,type:"用户研究",jd:"游戏用研:深度访谈/焦点小组/可用性测试/数据分析。需游戏理解",match:"用户研究+游戏行业=目标组合。搜打撤=游戏理解铁证",url:"https://www.galasports.com/",urltxt:"望尘科技官网→加入我们→校招"},
-  {company:"深圳市腾娱互动科技有限公司",title:"PUBG AI游戏策划",salary:"12K-20K",loc:"南山/科兴",commute:"45min",exp:"1-3年(项目可抵)",degree:"本科",pri:4,type:"游戏AI",jd:"游戏AI行为设计+迭代；协同AI开发团队；射击类游戏经历优先",match:"AI+游戏双兴趣交叉点。腾讯子公司门槛<总部",url:"https://app-tc.mokahr.com/campus-recruitment/tencent-ieg/6023/",urltxt:"腾娱互动校招官网→投递"},
-  {company:"传音控股股份有限公司",title:"AI游戏产品经理",salary:"校招标准",loc:"龙华/南山",commute:"25-50min",exp:"2026春招",degree:"本科",pri:4,type:"游戏AI",jd:"AI游戏方向产品策划和管理。游戏理解和热情",match:"大厂+AI游戏+校招",url:"https://transsion.zhiye.com/Campus",urltxt:"传音控股校招官网→投递"},
-  {company:"影石创新科技股份有限公司",title:"CMI管培/UX Research",salary:"12K-18K",loc:"南山",commute:"45min",exp:"2026校招",degree:"本科",pri:4,type:"用户研究",jd:"CMI:用户洞察/问卷/报告。UX:电商+社媒用户体验研究。英语工作语言",match:"全球品牌+用研+校招。搜打撤=用户心理证明。英语关键",url:"https://www.insta360.com/cn/jobs",urltxt:"Insta360招聘官网→投递"},
-  {company:"白日梦网络科技有限公司",title:"综合管培生(含用研)",salary:"12K+",loc:"南山",commute:"45min",exp:"2026秋招",degree:"本科",pri:3,type:"用户研究",jd:"轮岗后定岗(用研/策划/运营)。蛇蛇争霸/逃跑吧少年(3亿用户)",match:"3亿用户=真基础。用研方向匹配。需接受轮岗",url:"https://www.brmgame.com/",urltxt:"白日梦官网→加入我们"},
-  {company:"深圳市康冠科技股份有限公司",title:"AI开发算法工程师",salary:"14-21万/年",loc:"坂田",commute:"25min",exp:"2026校招",degree:"本科 相关专业",pri:3,type:"AI开发",jd:"智能显示龙头+AI+办公/教育/医疗。免费宿舍+落户补贴3万",match:"坂田近+薪资好+福利。偏算法。专业可能卡",url:"https://careerkte.zhiye.com/",urltxt:"康冠科技校招官网→投递"},
-  {company:"深圳前海智慧园区有限公司",title:"大模型开发工程师",salary:"15-20万/年",loc:"南山",commute:"45min",exp:"应届",degree:"本科",pri:3,type:"AI开发",jd:"Agent/RAG/Function Call/system prompts；LangChain+向量数据库",match:"Agent+RAG+system prompts=精确。偏开发岗",url:"https://www.qhzhpt.com/",urltxt:"前海智慧园区官网→加入我们"},
-  {company:"捷顺科技实业股份有限公司",title:"AI Agent开发",salary:"校招标准",loc:"深圳",commute:"待确认",exp:"2026校招",degree:"本科",pri:3,type:"AI开发",jd:"AI Agent开发。智慧停车/社区龙头。上市公司",match:"AI Agent方向+上市公司。JD待确认",url:"https://www.jieshun.cn/join/",urltxt:"捷顺科技官网→加入我们"},
-  {company:"万兴科技集团股份有限公司",title:"产品策划",salary:"校招标准",loc:"深圳/长沙",commute:"待确认",exp:"2026校招",degree:"本科",pri:3,type:"AI产品经理",jd:"AI产品方向策划。创意软件龙头:万兴喵影/万兴PDF",match:"创意软件+AI=匹配。偏C端工具",url:"https://www.wondershare.cn/careers.html",urltxt:"万兴科技官网→加入我们"},
-  {company:"联想集团有限公司",title:"产品经理-AI方向",salary:"校招标准",loc:"深圳",commute:"待确认",exp:"2026春招AI专项",degree:"本科",pri:3,type:"AI产品经理",jd:"AI方向产品规划。2026春季校招AI专项",match:"大厂+校招AI专项。值得冲",url:"https://talent.lenovo.com.cn/",urltxt:"联想招聘官网→投递"},
-  {company:"深圳市临熙智模人工智能有限公司",title:"AI/ML工程师",salary:"7K-9K/13薪",loc:"龙华",commute:"18min",exp:"应届可投",degree:"本科 相关专业",pri:2,type:"AI开发",jd:"图生3D方向。Python+PyTorch/TensorFlow+3D视觉。双休",match:"龙华近+双休。偏3D算法。薪资下限低于底线",url:"https://www.linxi-ai.com/",urltxt:"临熙智模官网→加入我们"}
-];
-
-function renderJobs(){
-  var loc=document.getElementById('f-loc').value;
-  var priVal=document.getElementById('f-pri').value;
-  var pri=(priVal==='-1')?-1:(parseInt(priVal)||0);
-  var q=(document.getElementById('f-search').value||'').toLowerCase();
-  var list=JOBS.slice();
-  if(loc!=='all')list=list.filter(function(j){return j.loc.indexOf(loc)!==-1;});
-  if(pri>0)list=list.filter(function(j){return j.pri>=pri;});
-  if(pri===0)list=list.filter(function(j){return j.pri>0;}); // default: hide pri=0 (not qualified)
-  if(pri===-1)list=list.filter(function(j){return j.pri===0;}); // show only reference items
-  if(q)list=list.filter(function(j){return j.company.toLowerCase().indexOf(q)!==-1||j.title.toLowerCase().indexOf(q)!==-1||j.jd.toLowerCase().indexOf(q)!==-1;});
-  document.getElementById('job-count').textContent=list.length+' / '+JOBS.length+' '+t('jobs.count');
-  var c=document.getElementById('jobs-container');
-  if(!list.length){c.innerHTML='<div class="empty"><div class="t">'+t('empty.nomatch')+'</div><div class="d">'+t('empty.nomatch.desc')+'</div></div>';return;}
-  var labels={5:t('pri.5'),4:t('pri.4'),3:t('pri.3'),2:t('pri.2'),0:t('pri.0')};
-  var cls={5:'pri-high',4:'pri-mid',3:'pri-low',2:'',0:''};
-  var h='';
-  for(var i=0;i<list.length;i++){
-    var j=list[i];
-    h+='<div class="card job-card '+(cls[j.pri]||'')+'" onclick="window.open(\''+j.url+'\',\'_blank\')" title="'+t('job.goto')+' '+j.urltxt+'">';
-    h+='<div class="job-title-row"><div><span class="job-title">'+j.title+'</span><span class="tag" style="margin-left:8px;">'+labels[j.pri]+'</span><span class="tag" style="margin-left:4px;">'+typeLabel(j.type)+'</span></div><span class="job-salary">'+j.salary+'</span></div>';
-    h+='<div class="job-meta"><span>\u{1F4CD} '+j.loc+' / '+j.commute+'</span><span>\u{1F393} '+j.degree+'</span><span>\u{1F4DD} '+j.exp+'</span></div>';
-    h+='<div class="job-detail"><dt>'+t('job.jd')+'</dt><dd>'+j.jd+'</dd></div>';
-    h+='<div class="job-reason"><strong>'+t('job.match')+'</strong> '+j.match+'</div>';
-    h+='<div class="job-link">↗ '+j.urltxt+'</div>';
-    h+='</div>';
-  }
-  c.innerHTML=h;
+  refreshResumeSelect();renderReports();renderLib();renderMemory();
+  setBot(t('bot.ready'));
 }
 
 function switchPage(name){
@@ -514,7 +400,7 @@ function switchPage(name){
   if(name==='analysis')refreshResumeSelect();
   if(name==='reports')renderReports();
   if(name==='library')renderLib();
-  if(name==='knowledge')renderKnowledge();
+  if(name==='memory')renderMemory();
 }
 document.querySelectorAll('.topnav-link').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
 
@@ -783,6 +669,7 @@ function saveReport(jd,data){
   var reps=loadRep(),title=jd.split('\n')[0].slice(0,60),score=data?50+Math.floor(Math.random()*40):0;
   reps.unshift({id:Date.now().toString(36),title:title,company:t('report.unspecified'),date:new Date().toISOString().slice(0,10),score:score,data:data,jd:jd.slice(0,400)});
   saveRep(reps);showToast(t('toast.saved'),false);
+  addMem('analysis',title+'\n'+((data&&data.content)||'').slice(0,800));
 }
 function renderReports(){
   var reps=loadRep(),grid=document.getElementById('reports-container');
@@ -803,23 +690,33 @@ function openReport(id){
   if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';}
 }
 
-/* ============ 知识库（静态检索） ============ */
-var knowCat='all';
-function switchKnowCat(el,id){knowCat=id;document.querySelectorAll('#page-knowledge .subtab').forEach(function(s){s.classList.remove('active');});el.classList.add('active');renderKnowledge();}
-function renderKnowledge(){
-  var c=document.getElementById('knowledge-container');
-  var K=(typeof window!=='undefined'&&window.KNOWLEDGE)||null;
-  if(!K){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('know.fail')+'</div></div>';return;}
-  var q=(document.getElementById('know-search').value||'').trim().toLowerCase();
-  var cats=knowCat==='all'?['interviews','companies','salaries','templates','jobs','knowledge']:[knowCat];
-  var items=[];
-  for(var ci=0;ci<cats.length;ci++){var arr=K[cats[ci]]||[];for(var i=0;i<arr.length;i++){if(!q||arr[i].toLowerCase().indexOf(q)!==-1)items.push({cat:cats[ci],text:arr[i]});}}
-  document.getElementById('know-count').textContent=items.length+' '+t('know.count');
-  if(!items.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('know.empty')+'</div></div>';return;}
+/* ============ 个人记忆库（本地，随使用积累，绝不上传） ============ */
+function loadMem(){try{return JSON.parse(localStorage.getItem('pmem_v2'))||[]}catch(e){return[]}}
+function saveMem(d){localStorage.setItem('pmem_v2',JSON.stringify(d))}
+function addMem(kind,text){
+  var m=loadMem();
+  m.unshift({id:Date.now().toString(36),date:new Date().toISOString().slice(0,10),kind:kind,text:(text||'').slice(0,2000)});
+  if(m.length>50)m=m.slice(0,50);
+  saveMem(m);
+}
+function renderMemory(){
+  var c=document.getElementById('memory-container');
+  var m=loadMem();
+  var q=(document.getElementById('mem-search').value||'').trim().toLowerCase();
+  if(q)m=m.filter(function(x){return (x.text||'').toLowerCase().indexOf(q)!==-1;});
+  document.getElementById('mem-count').textContent=m.length+' '+t('mem.count');
+  if(!m.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('mem.empty')+'</div><div class="d">'+t('mem.empty.desc')+'</div></div>';return;}
   var h='';
-  for(var j=0;j<items.length;j++){var it=items[j];h+='<div class="card know-card"><div class="tag">'+t('know.cat.'+it.cat)+'</div><div class="know-body">'+esc(it.text)+'</div></div>';}
+  for(var i=0;i<m.length;i++){
+    var it=m[i];
+    h+='<div class="card know-card">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span><span class="tag">'+t('mem.kind.'+it.kind)+'</span><span style="font-size:12px;color:var(--text3);margin-left:8px;">'+it.date+'</span></span><button class="btn btn-ghost btn-sm" onclick="delMem(\''+it.id+'\')">'+t('lib.del')+'</button></div>';
+    h+='<div class="know-body">'+esc(it.text)+'</div></div>';
+  }
   c.innerHTML=h;
 }
+function delMem(id){var m=loadMem();m=m.filter(function(x){return x.id!==id;});saveMem(m);renderMemory();}
+function clearMem(){saveMem([]);renderMemory();showToast(t('mem.cleared'),false);}
 
 /* ============ 独立工具：第5/9/10步（单次） + 第8步 Mock（多轮） ============ */
 var curExtra='5';
@@ -847,6 +744,7 @@ async function runExtra(){
     var res=await callLLM(sys,user);
     out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
     setBot(t('bot.done'));
+    addMem(({'5':'rank','9':'offer','10':'onboard'})[curExtra],input+'\n\n'+res.slice(0,800));
   }catch(e){
     out.innerHTML='<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';
     setBot(t('bot.offline'));
@@ -911,7 +809,7 @@ function mockEnd(){
   var pl=detectLang((mockMessages[0]&&mockMessages[0].content)||'');
   mockAdd('user',pl==='en'?'End the interview and summarize.':'结束面试并给出总结。');
   setBot(t('mock.running'));
-  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));});
+  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);addMem('mock',res.slice(0,2000));setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));});
 }
 
 applyLang();
