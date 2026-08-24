@@ -138,6 +138,16 @@ tr:hover td{background:var(--surface2);}
 .mock-ai{align-self:flex-start;background:var(--surface3);color:var(--text);border-bottom-left-radius:6px;}
 .mock-input{display:flex;gap:8px;}
 .mock-input input{flex:1;}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:4px;}
+.tool-card{cursor:pointer;padding:22px;transition:transform 0.2s cubic-bezier(0.4,0,0.2,1),box-shadow 0.2s;}
+.tool-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.tool-card:active{transform:scale(0.98);}
+.tool-icon{font-size:30px;margin-bottom:10px;}
+.tool-name{font-size:15px;font-weight:700;margin-bottom:6px;}
+.tool-desc{font-size:13px;color:var(--text2);line-height:1.55;}
+.lib-link{color:var(--accent);text-decoration:none;font-weight:500;cursor:pointer;}
+.lib-link:hover{text-decoration:underline;}
+.preview-body{font-size:13.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;background:var(--surface2);border-radius:12px;padding:16px 18px;max-height:60vh;overflow-y:auto;color:var(--text2);}
 
 ::-webkit-scrollbar{width:10px;height:10px;}
 ::-webkit-scrollbar-thumb{background:rgba(120,120,128,0.35);border-radius:5px;border:2px solid transparent;background-clip:content-box;}
@@ -155,6 +165,7 @@ tr:hover td{background:var(--surface2);}
     <button class="topnav-link" data-page="library" data-i18n="nav.library">信息库</button>
     <button class="topnav-link" data-page="memory" data-i18n="nav.memory">个人记忆</button>
     <button class="topnav-link active" data-page="analysis" data-i18n="nav.analysis">分析页</button>
+    <button class="topnav-link" data-page="tools" data-i18n="nav.tools">工具</button>
     <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
   </div>
   <div class="topnav-right">
@@ -190,16 +201,27 @@ tr:hover td{background:var(--surface2);}
   <div class="analysis-grid">
     <div class="card" style="display:flex;flex-direction:column;gap:10px;">
       <div><div class="card-header" data-i18n="analysis.jd">岗位 JD</div><textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
-      <div><div class="card-header" data-i18n="analysis.resume">简历</div><select id="resume-select" onchange="onResumeSelect()" style="margin-bottom:6px;"><option value="" data-i18n-opt="analysis.resume.select">从信息库选择</option></select><textarea id="resume-input" data-i18n-ph="analysis.resume.ph" placeholder="或直接粘贴简历内容 ..." style="min-height:120px;"></textarea></div>
+      <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;"></div>
       <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;" data-i18n="analysis.run">一键全流程分析</button>
       <button class="btn btn-secondary" onclick="openApply()" style="width:100%;justify-content:center;padding:11px;font-size:14px;" data-i18n="netapply.title">生成网申包</button>
     </div>
     <div class="card">
       <div class="step-nav">
-        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip clickable" data-i18n="step.5" onclick="openExtra('5')">5.多JD排序</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span><span class="step-chip clickable" data-i18n="step.8" onclick="openMock()">8.Mock面试</span><span class="step-chip clickable" data-i18n="step.9" onclick="openExtra('9')">9.Offer谈判</span><span class="step-chip clickable" data-i18n="step.10" onclick="openExtra('10')">10.入职指南</span>
+        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span>
       </div>
       <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
     </div>
+  </div>
+</div>
+
+<!-- 工具 -->
+<div class="page" id="page-tools">
+  <div class="page-header"><h2 data-i18n="tools.title">工具</h2><p data-i18n="tools.subtitle">独立工具，按需使用，不参与全流程分析</p></div>
+  <div class="tools-grid">
+    <div class="card tool-card" onclick="openExtra('5')"><div class="tool-icon">📊</div><div class="tool-name" data-i18n="step.5">5.多JD排序</div><div class="tool-desc" data-i18n="tools.5.desc">粘贴多个岗位，六维度加权排序 + 精力分配建议</div></div>
+    <div class="card tool-card" onclick="openMock()"><div class="tool-icon">🎤</div><div class="tool-name" data-i18n="step.8">8.Mock面试</div><div class="tool-desc" data-i18n="tools.8.desc">多轮模拟面试，可追问、即时点评、结束给总结</div></div>
+    <div class="card tool-card" onclick="openExtra('9')"><div class="tool-icon">💰</div><div class="tool-name" data-i18n="step.9">9.Offer谈判</div><div class="tool-desc" data-i18n="tools.9.desc">粘贴 offer package，输出逐项谈判策略 + 话术</div></div>
+    <div class="card tool-card" onclick="openExtra('10')"><div class="tool-icon">🚀</div><div class="tool-name" data-i18n="step.10">10.入职指南</div><div class="tool-desc" data-i18n="tools.10.desc">前 30 天生存指南</div></div>
   </div>
 </div>
 
@@ -269,6 +291,10 @@ tr:hover td{background:var(--surface2);}
   <div class="modal-box" style="max-width:520px;">
     <div class="modal-head"><h3 data-i18n="mock.title">Mock 面试</h3><button class="modal-close" onclick="closeMock()">×</button></div>
     <div style="margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
+      <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;width:100%;"></textarea>
+    </div>
+    <div style="margin-bottom:10px;">
       <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.phase">面试阶段</div>
       <select id="mock-phase">
         <option value="hr" data-i18n="mock.ph.hr">HR初筛</option>
@@ -289,6 +315,14 @@ tr:hover td{background:var(--surface2);}
   </div>
 </div>
 
+<div class="modal" id="preview-modal">
+  <div class="modal-box" style="max-width:720px;">
+    <div class="modal-head"><h3 id="preview-title" style="word-break:break-all;"></h3><button class="modal-close" onclick="closePreview()">×</button></div>
+    <div id="preview-meta" style="font-size:12px;color:var(--text3);margin-bottom:12px;"></div>
+    <div class="preview-body" id="preview-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
@@ -296,25 +330,25 @@ tr:hover td{background:var(--surface2);}
 var I18N={
 zh:{
  'app.title':'Pleadly — AI求职助手',
- 'nav.memory':'个人记忆','nav.library':'信息库','nav.analysis':'分析页','nav.reports':'报告仓库',
+ 'nav.memory':'个人记忆','nav.library':'信息库','nav.analysis':'分析页','nav.tools':'工具','nav.reports':'报告仓库',
  'library.title':'信息库','library.subtitle':'分类上传简历、作品集、项目经历 — AI 自动分块索引',
  'lib.resume':'简历','lib.portfolio':'作品集','lib.project':'项目经历','lib.other':'其他',
  'lib.upload':'点击上传文件','lib.upload.hint':'点击上传','lib.supported':'支持 docx / pdf / txt / md',
  'lib.empty':'暂无文档','lib.empty.desc':'点击上方虚线区域上传文件',
- 'lib.th.name':'文件名','lib.th.type':'类型','lib.th.size':'大小','lib.th.action':'操作','lib.del':'删除',
- 'analysis.title':'岗位分析','analysis.subtitle':'粘贴JD+选择简历',
+ 'lib.th.name':'文件名','lib.th.type':'类型','lib.th.size':'大小','lib.th.action':'操作','lib.del':'删除','lib.preview':'点击预览','lib.parse.fail':'已按纯文本读取（PDF/Word 解析库加载失败，可能离线）。建议联网后重新上传。','lib.parse.err':'解析失败',
+ 'analysis.title':'岗位分析','analysis.subtitle':'粘贴岗位JD，自动读取信息库作为你的背景',
  'analysis.jd':'岗位 JD','analysis.jd.ph':'在此粘贴岗位 JD ...',
  'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
  'analysis.run':'一键全流程分析',
  'step.1':'1.ATS','step.2':'2.评分','step.3':'3.JD拆解','step.4':'4.诊断','step.5':'5.多JD排序','step.6':'6.学习计划','step.7':'7.面试准备','step.8':'8.Mock面试','step.9':'9.Offer谈判','step.10':'10.入职指南',
- 'analysis.empty':'输入简历和 JD 后点击「一键全流程分析」','analysis.empty.desc':'完整 10 步分析需要 1-3 分钟',
+ 'analysis.empty':'粘贴岗位 JD 后点击「一键全流程分析」','analysis.empty.desc':'完整分析需要 1-3 分钟，自动读取信息库作为你的背景',
  'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
  'analysis.offline':'离线模式。启动Pleadly后端后重试。','analysis.noBackend':'后端未连接。请启动Pleadly后端后重试。',
  'reports.title':'报告仓库','reports.subtitle':'历史分析报告存档',
  'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档',
  'report.unspecified':'未指定','report.match':'匹配','report.stretch':'冲击','report.pass':'放弃',
  'bot.ready':'就绪','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
- 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请选择或输入简历','toast.saved':'报告已存档',
+ 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请先在信息库上传简历或经历','toast.saved':'报告已存档',
  'settings.title':'设置','settings.apiKey':'API Key','settings.apiKey.ph':'粘贴你的 API Key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'自定义 Custom',
  'settings.model':'模型 Model','settings.model.ph':'deepseek-chat',
@@ -336,30 +370,38 @@ zh:{
  'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
  'netapply.title':'网申包生成器','netapply.hint':'已自动填入你的简历（含岗位JD）。点击运行，生成可直接粘贴到网申表单的字段，缺失项标注「请补充」，绝不编造。','netapply.run':'生成网申包','netapply.copy':'一键复制','netapply.copied':'已复制到剪贴板',
  'mock.title':'第8步 · Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
+ 'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在分析页粘贴 JD 和简历，再开始模拟面试','mock.running':'正在生成问题...'
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...',
+ 'tools.title':'工具','tools.subtitle':'独立工具，按需使用，不参与全流程分析',
+ 'tools.5.desc':'粘贴多个岗位，六维度加权排序 + 精力分配建议',
+ 'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
+ 'tools.9.desc':'粘贴 offer package，输出逐项谈判策略 + 可直接复制的话术',
+ 'tools.10.desc':'前 30 天生存指南',
+ 'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
+ 'profile.empty':'信息库为空，请先到「信息库」上传简历或经历'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
- 'nav.memory':'Memory','nav.library':'Library','nav.analysis':'Analysis','nav.reports':'Reports',
+ 'nav.memory':'Memory','nav.library':'Library','nav.analysis':'Analysis','nav.tools':'Tools','nav.reports':'Reports',
  'library.title':'Library','library.subtitle':'Upload resumes, portfolios and projects — auto-chunked & indexed by AI',
  'lib.resume':'Resume','lib.portfolio':'Portfolio','lib.project':'Projects','lib.other':'Other',
  'lib.upload':'Click to upload','lib.upload.hint':'Upload','lib.supported':'Supports docx / pdf / txt / md',
  'lib.empty':'No documents','lib.empty.desc':'Click the dashed area above to upload',
- 'lib.th.name':'File','lib.th.type':'Type','lib.th.size':'Size','lib.th.action':'Actions','lib.del':'Delete',
- 'analysis.title':'Job Analysis','analysis.subtitle':'Paste a JD and pick a resume',
+ 'lib.th.name':'File','lib.th.type':'Type','lib.th.size':'Size','lib.th.action':'Actions','lib.del':'Delete','lib.preview':'Click to preview','lib.parse.fail':'Read as plain text (PDF/Word parser failed to load — you may be offline). Re-upload when online.','lib.parse.err':'Parse failed',
+ 'analysis.title':'Job Analysis','analysis.subtitle':'Paste a JD — your Library is read automatically',
  'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here...',
  'analysis.resume':'Resume','analysis.resume.select':'Select from Library','analysis.resume.ph':'Or paste your resume directly...',
  'analysis.run':'Run Full Analysis',
  'step.1':'1. ATS','step.2':'2. Score','step.3':'3. JD Breakdown','step.4':'4. Diagnosis','step.5':'5. Priority Rank','step.6':'6. Study Plan','step.7':'7. Interview Prep','step.8':'8. Mock Interview','step.9':'9. Offer Negotiation','step.10':'10. Onboarding',
- 'analysis.empty':'Enter a resume and JD, then click "Run Full Analysis"','analysis.empty.desc':'Full 10-step analysis takes 1-3 min',
+ 'analysis.empty':'Paste a JD, then click "Run Full Analysis"','analysis.empty.desc':'Takes 1-3 min — your Library is read automatically',
  'analysis.running':'Running full analysis...','analysis.running.desc':'Estimated 1-3 min','analysis.analyzing':'Analyzing...',
  'analysis.offline':'Offline mode. Start the Pleadly backend and retry.','analysis.noBackend':'Backend not connected. Start the Pleadly backend and retry.',
  'reports.title':'Reports','reports.subtitle':'Archive of past analysis reports',
  'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis',
  'report.unspecified':'Unspecified','report.match':'Match','report.stretch':'Stretch','report.pass':'Pass',
  'bot.ready':'Ready','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
- 'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Please select or enter a resume','toast.saved':'Report saved',
+ 'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Upload a resume or experiences to the Library first','toast.saved':'Report saved',
  'settings.title':'Settings','settings.apiKey':'API Key','settings.apiKey.ph':'Paste your API key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'Custom',
  'settings.model':'Model','settings.model.ph':'deepseek-chat',
@@ -381,8 +423,16 @@ en:{
  'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
  'netapply.title':'Application Package','netapply.hint':'Your resume (with JD) is pre-filled. Click Run to generate fields ready to paste into any application form. Missing items are flagged — nothing is invented.','netapply.run':'Generate package','netapply.copy':'Copy all','netapply.copied':'Copied to clipboard',
  'mock.title':'Step 8 · Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
+ 'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Paste a JD and resume on the Analysis page first, then start the mock interview','mock.running':'Generating question...'
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...',
+ 'tools.title':'Tools','tools.subtitle':'Standalone tools — use as needed, not part of the full analysis',
+ 'tools.5.desc':'Paste multiple roles; ranked by six weighted dimensions + effort allocation',
+ 'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
+ 'tools.9.desc':'Paste an offer package for item-by-item strategy + ready-to-send scripts',
+ 'tools.10.desc':'First-30-days survival guide',
+ 'profile.note':'Reading {N} document(s) from your Library as your background',
+ 'profile.empty':'Library is empty — upload a resume or experiences first'
 }
 };
 var lang=localStorage.getItem('plang')||'zh';
@@ -396,7 +446,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-ph'));});
   document.querySelectorAll('[data-i18n-opt]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n-opt'));});
   var lb=document.getElementById('lang-btn');if(lb)lb.textContent=lang==='en'?'中文':'EN';
-  refreshResumeSelect();renderReports();renderLib();renderMemory();
+  updateProfileNote();renderReports();renderLib();renderMemory();
   setBot(t('bot.ready'));
 }
 
@@ -407,7 +457,7 @@ function switchPage(name){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   var pg=document.getElementById('page-'+name);
   if(pg)pg.classList.add('active');
-  if(name==='analysis')refreshResumeSelect();
+  if(name==='analysis')updateProfileNote();
   if(name==='reports')renderReports();
   if(name==='library')renderLib();
   if(name==='memory')renderMemory();
@@ -587,60 +637,142 @@ function switchLibTab(el,cat){
   document.getElementById('lib-upload-hint').textContent=t('lib.upload.hint')+' '+t('lib.'+cat);
   renderLib();
 }
+var _libParsersReady=false,_libParsersLoading=null;
+function ensureLibParsers(){
+  if(_libParsersReady||(window.pdfjsLib&&window.mammoth)){_libParsersReady=true;return Promise.resolve();}
+  if(_libParsersLoading)return _libParsersLoading;
+  _libParsersLoading=new Promise(function(resolve,reject){
+    var jobs=[
+      new Promise(function(res,done){
+        if(window.mammoth)return res();
+        var s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js';
+        s.onload=res;s.onerror=done;document.head.appendChild(s);
+      }),
+      new Promise(function(res,done){
+        if(window.pdfjsLib)return res();
+        var s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+        s.onload=function(){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';res();};
+        s.onerror=done;document.head.appendChild(s);
+      })
+    ];
+    Promise.all(jobs).then(function(){_libParsersReady=true;resolve();},function(){_libParsersLoading=null;reject(new Error('parse-load-fail'));});
+  });
+  return _libParsersLoading;
+}
+function needSpace(a,b){return a&&b&&!/[。！？.!?，,；;：:、\n]$/.test(a)&&!/^[，,。.!?！？；;：:、\n]/.test(b);}
+function joinPdfItems(items){
+  var out=[],line='',lastY=-1;
+  function push(t){t=(t||'').trim();if(!t)return;if(out.length&&needSpace(out[out.length-1],t))out[out.length-1]+=' ';out.push(t);}
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    if(!it||!it.str)continue;
+    var y=it.transform?it.transform[5]:0;
+    if(line!==''&&(it.hasEOL||Math.abs(y-lastY)>2)){push(line);line='';}
+    line+=it.str;lastY=y;
+  }
+  push(line);
+  return out.join('\n');
+}
 function handleLibUpload(files){
   if(!files||!files.length)return;
-  for(var i=0;i<files.length;i++){
-    var f=files[i];
-    var reader=new FileReader();
-    reader.onload=(function(file){
-      return function(e){
-        var lib=loadLib();
-        var text=e.target.result;
-        var cat=libTab;
-        var isResume=(cat==='resume'||/resume|简历|cv/i.test(file.name));
-        var isPortfolio=(cat==='portfolio'||/portfolio|作品集|demo|原型/i.test(file.name));
-        var isProject=(cat==='project'||/project|项目/i.test(file.name));
-        if(cat==='resume')isResume=true;
-        if(cat==='portfolio')isPortfolio=true;
-        if(cat==='project')isProject=true;
-        if(!isResume&&!isPortfolio&&!isProject){
-          var kw=['教育背景','教育经历','学历','工作经历','实习经历','项目经历','技能','自我评价','求职意向'];
-          var hits=0;for(var k=0;k<kw.length;k++){if(text.indexOf(kw[k])!==-1)hits++;}
-          if(hits>=3)isResume=true;else isProject=true;
-        }
-        var type=isResume?'resume':isPortfolio?'portfolio':isProject?'project':'other';
-        lib.push({id:Date.now().toString(36)+'_'+i,name:file.name,type:type,category:cat,label:'',chars:text.length,chunks:Math.ceil(text.length/600),size:(file.size<1024?file.size+' B':file.size<1048576?(file.size/1024).toFixed(1)+' KB':(file.size/1048576).toFixed(1)+' MB'),added:new Date().toISOString().slice(0,10),content:text});
-        saveLib(lib);
-        renderLib();
-        refreshResumeSelect();
-        showToast(t('toast.added')+': '+file.name);
-      };
-    })(f);
-    reader.readAsText(f);
+  for(var i=0;i<files.length;i++){processLibFile(files[i],i);}
+}
+async function processLibFile(file,i){
+  var name=file.name||('file'+i);
+  var ext=(name.split('.').pop()||'').toLowerCase();
+  try{
+    var text;
+    if(ext==='pdf'){text=await extractPdf(file);}
+    else if(ext==='docx'){text=await extractDocx(file);}
+    else{text=await readText(file);}
+    addLibFile(name,text,file.size,i);
+  }catch(e){
+    if(e&&e.message==='parse-load-fail'){
+      try{var t=await readText(file);addLibFile(name,t,file.size,i);showToast(t('lib.parse.fail'),true);}catch(e2){showToast(t('lib.parse.err')+': '+name,true);}
+    }else{
+      showToast(t('lib.parse.err')+': '+name,true);
+    }
   }
+}
+function extractPdf(file){
+  return ensureLibParsers().then(function(){
+    return file.arrayBuffer().then(function(buf){
+      return window.pdfjsLib.getDocument({data:buf}).promise.then(function(pdf){
+        var pages=[],pn=Math.min(pdf.numPages,20),chain=Promise.resolve();
+        for(var p=1;p<=pn;p++){(function(pp){chain=chain.then(function(){return pdf.getPage(pp).then(function(page){return page.getTextContent().then(function(tc){pages[pp-1]=joinPdfItems(tc.items);});});});})(p);}
+        return chain.then(function(){return pages.filter(Boolean).join('\n\n');});
+      });
+    });
+  });
+}
+function extractDocx(file){
+  return ensureLibParsers().then(function(){
+    return file.arrayBuffer().then(function(buf){return window.mammoth.extractRawText({arrayBuffer:buf}).then(function(r){return r.value;});});
+  });
+}
+function readText(file){
+  return new Promise(function(res,rej){
+    var r=new FileReader();
+    r.onload=function(e){res(e.target.result);};
+    r.onerror=function(){rej(new Error('read-fail'));};
+    r.readAsText(file);
+  });
+}
+function addLibFile(name,text,size,i){
+  var lib=loadLib();
+  var cat=libTab;
+  var isResume=(cat==='resume'||/resume|简历|cv/i.test(name));
+  var isPortfolio=(cat==='portfolio'||/portfolio|作品集|demo|原型/i.test(name));
+  var isProject=(cat==='project'||/project|项目/i.test(name));
+  if(cat==='resume')isResume=true;
+  if(cat==='portfolio')isPortfolio=true;
+  if(cat==='project')isProject=true;
+  if(!isResume&&!isPortfolio&&!isProject){
+    var kw=['教育背景','教育经历','学历','工作经历','实习经历','项目经历','技能','自我评价','求职意向','Education','Experience','Skills'];
+    var hits=0;for(var k=0;k<kw.length;k++){if(text.indexOf(kw[k])!==-1)hits++;}
+    if(hits>=3)isResume=true;else isProject=true;
+  }
+  var type=isResume?'resume':isPortfolio?'portfolio':isProject?'project':'other';
+  lib.push({id:Date.now().toString(36)+'_'+i,name:name,type:type,category:cat,label:'',chars:text.length,chunks:Math.ceil(text.length/600),size:(size<1024?size+' B':size<1048576?(size/1024).toFixed(1)+' KB':(size/1048576).toFixed(1)+' MB'),added:new Date().toISOString().slice(0,10),content:text});
+  saveLib(lib);
+  renderLib();
+  updateProfileNote();
+  showToast(t('toast.added')+': '+name);
 }
 function renderLib(){
   var lib=loadLib().filter(function(f){return f.category===libTab;}),c=document.getElementById('library-container');
   if(!lib.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('lib.empty')+'</div><div class="d">'+t('lib.empty.desc')+'</div></div>';return;}
   var h='<div class="table-wrap"><table><thead><tr><th>'+t('lib.th.name')+'</th><th>'+t('lib.th.type')+'</th><th>'+t('lib.th.size')+'</th><th>'+t('lib.th.action')+'</th></tr></thead><tbody>';
-  for(var i=0;i<lib.length;i++){var f=lib[i];h+='<tr><td style="font-weight:500;">'+f.name+'</td><td><span class="tag">'+t('lib.'+(f.type||'other'))+'</span></td><td>'+f.size+'</td><td><button class="btn btn-ghost btn-sm" onclick="delLib(\''+f.id+'\')">'+t('lib.del')+'</button></td></tr>';}
+  for(var i=0;i<lib.length;i++){var f=lib[i];h+='<tr><td><a href="javascript:;" class="lib-link" onclick="openPreview(\''+f.id+'\')" title="'+t('lib.preview')+'">'+esc(f.name)+'</a></td><td><span class="tag">'+t('lib.'+(f.type||'other'))+'</span></td><td>'+f.size+'</td><td><button class="btn btn-ghost btn-sm" onclick="delLib(\''+f.id+'\')">'+t('lib.del')+'</button></td></tr>';}
   h+='</tbody></table></div>';c.innerHTML=h;
 }
-function delLib(id){var lib=loadLib();lib=lib.filter(function(f){return f.id!==id;});saveLib(lib);renderLib();}
+function delLib(id){var lib=loadLib();lib=lib.filter(function(f){return f.id!==id;});saveLib(lib);renderLib();updateProfileNote();}
+function openPreview(id){
+  var f=loadLib().find(function(x){return x.id===id;});if(!f)return;
+  document.getElementById('preview-title').textContent=f.name;
+  document.getElementById('preview-meta').textContent=t('lib.'+(f.type||'other'))+' · '+f.size+' · '+f.chars+' chars';
+  document.getElementById('preview-body').textContent=f.content||'';
+  document.getElementById('preview-modal').classList.add('show');
+}
+function closePreview(){document.getElementById('preview-modal').classList.remove('show');}
 
-function refreshResumeSelect(){
-  var lib=loadLib().filter(function(f){return (f.category==='resume'||f.type==='resume');}),sel=document.getElementById('resume-select'),h='<option value="">'+t('analysis.resume.select')+'</option>';
-  for(var i=0;i<lib.length;i++)h+='<option value="'+lib[i].id+'">'+lib[i].name+'</option>';
-  sel.innerHTML=h;
+function getProfileText(){
+  var lib=loadLib();
+  if(!lib.length)return '';
+  var parts=[];
+  for(var i=0;i<lib.length;i++){
+    var d=lib[i];
+    parts.push('['+t('lib.'+(d.type||'other'))+'] '+d.name+'\n'+(d.content||'').trim());
+  }
+  return parts.join('\n\n');
 }
-function onResumeSelect(){
-  var id=document.getElementById('resume-select').value;if(!id)return;
-  var f=loadLib().find(function(x){return x.id===id;});if(f)document.getElementById('resume-input').value=f.content;
-}
-function getResumeText(){
-  var r=document.getElementById('resume-input').value.trim();
-  if(!r){var id=document.getElementById('resume-select').value;if(id){var f=loadLib().find(function(x){return x.id===id;});if(f)r=f.content;}}
-  return r;
+function updateProfileNote(){
+  var el=document.getElementById('profile-note');
+  if(!el)return;
+  var n=loadLib().length;
+  el.textContent=n?t('profile.note').replace('{N}',n):t('profile.empty');
 }
 function showToast(m,err){var t=document.getElementById('toast');t.textContent=m;t.className='toast '+(err?'toast-err':'toast-ok');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function setBot(txt){document.getElementById('bot-text').textContent=txt;}
@@ -662,18 +794,18 @@ async function runPro(ctx,acc,jd){
   renderOut(acc,'');saveReport(jd,{content:acc});setBot(t('bot.done'));pendingCtx=null;
 }
 async function runAnalysis(){
-  var jd=document.getElementById('jd-input').value.trim(),resume=getResumeText();
+  var jd=document.getElementById('jd-input').value.trim(),profile=getProfileText();
   if(!jd){showToast(t('toast.needjd'),true);return;}
-  if(!resume){showToast(t('toast.needresume'),true);return;}
+  if(!profile){showToast(t('toast.needresume'),true);return;}
   if(!loadSettings().apiKey){showToast(t('needkey'),true);openSettings();return;}
   setBot(t('bot.analyzing'));
   document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
-  var ctx={jd:jd,resume:resume,jd_analysis:'',diag:''};
+  var ctx={jd:jd,resume:profile,jd_analysis:'',diag:''};
   var acc='';
   try{
     var a1=await execStep(STEPS[0],ctx);acc=appendAcc(acc,a1,STEPS[0].key);renderOut(acc,prog());
     var a2=await execStep(STEPS[1],ctx);acc=appendAcc(acc,a2,STEPS[1].key);
-    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:resume,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
+    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:profile,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
     await runPro(ctx,acc,jd);
   }catch(e){handleError(e);}
 }
@@ -787,13 +919,13 @@ async function runExtra(){
 
 var lastRaw='';
 function openApply(){
-  var resume=getResumeText();
-  if(!resume){showToast(t('toast.needresume'),true);return;}
+  var profile=getProfileText();
+  if(!profile){showToast(t('toast.needresume'),true);return;}
   var jd=document.getElementById('jd-input').value.trim();
   curExtra='netapply';
   document.getElementById('extra-title').textContent=t('netapply.title');
   document.getElementById('extra-hint').textContent=t('netapply.hint');
-  document.getElementById('extra-input').value=resume+'\n\n=====岗位JD=====\n'+jd;
+  document.getElementById('extra-input').value=profile+'\n\n=====岗位JD=====\n'+jd;
   document.getElementById('extra-output').innerHTML='';
   document.getElementById('extra-run').textContent=t('netapply.run');
   document.getElementById('extra-modal').classList.add('show');
@@ -815,13 +947,13 @@ function legacyCopy(txt,done){
 
 var mockMessages=[];
 function mockSystem(){
-  var jd=document.getElementById('jd-input').value.trim();
-  var resume=getResumeText();
-  if(!jd||!resume){showToast(t('mock.needjd'),true);return null;}
-  var pl=detectLang(jd);
+  var jd=document.getElementById('mock-jd').value.trim();
+  var profile=getProfileText();
+  if(!profile){showToast(t('mock.needjd'),true);return null;}
+  var pl=detectLang(jd||profile);
   var stage=document.getElementById('mock-phase').value;
   var stageLabel=(I18N[pl]&&I18N[pl]['mock.ph.'+stage])||stage;
-  var sys=(pl==='en'?MOCK_PROMPTS.en:MOCK_PROMPTS.zh).replace(/\{JD\}/g,jd).replace(/\{RESUME\}/g,resume)+memorySummary(pl);
+  var sys=(pl==='en'?MOCK_PROMPTS.en:MOCK_PROMPTS.zh).replace(/\{JD\}/g,jd||'(not provided — base questions on the resume)').replace(/\{RESUME\}/g,profile)+memorySummary(pl);
   var first=pl==='en'?('Start the mock interview. Stage: '+stageLabel+'.'):('开始模拟面试。阶段：'+stageLabel+'。');
   return [{role:'system',content:sys},{role:'user',content:first}];
 }
@@ -830,6 +962,7 @@ function openMock(){
   document.getElementById('mock-log').innerHTML='';
   document.getElementById('mock-input').value='';
   document.getElementById('mock-phase').value='hr';
+  document.getElementById('mock-jd').value=document.getElementById('jd-input').value.trim();
   document.getElementById('mock-modal').classList.add('show');
 }
 function closeMock(){document.getElementById('mock-modal').classList.remove('show');}
