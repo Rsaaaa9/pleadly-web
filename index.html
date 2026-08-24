@@ -127,6 +127,17 @@ tr:hover td{background:var(--surface2);}
 .paywall .license-row input{width:220px;}
 .know-card{padding:14px 16px;}
 .know-body{margin-top:8px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.step-chip.clickable{cursor:pointer;border:1px dashed var(--text3);}
+.step-chip.clickable:hover{color:var(--text);background:var(--muted-bg);border-color:var(--text);}
+.extra-body{display:flex;flex-direction:column;gap:12px;}
+.extra-body textarea{min-height:160px;}
+.extra-out{margin-top:4px;font-size:13px;max-height:60vh;overflow-y:auto;}
+.mock-log{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow-y:auto;margin-bottom:12px;}
+.mock-msg{max-width:85%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+.mock-user{align-self:flex-end;background:var(--text);color:#fff;border-bottom-right-radius:3px;}
+.mock-ai{align-self:flex-start;background:var(--surface2);color:var(--text);border-bottom-left-radius:3px;}
+.mock-input{display:flex;gap:8px;}
+.mock-input input{flex:1;}
 </style>
 </head>
 <body>
@@ -206,7 +217,7 @@ tr:hover td{background:var(--surface2);}
     </div>
     <div class="card">
       <div class="step-nav">
-        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip" data-i18n="step.5">5.多JD排序</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span><span class="step-chip" data-i18n="step.8">8.Mock面试</span><span class="step-chip" data-i18n="step.9">9.Offer谈判</span><span class="step-chip" data-i18n="step.10">10.入职指南</span>
+        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip clickable" data-i18n="step.5" onclick="openExtra('5')">5.多JD排序</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span><span class="step-chip clickable" data-i18n="step.8" onclick="openMock()">8.Mock面试</span><span class="step-chip clickable" data-i18n="step.9" onclick="openExtra('9')">9.Offer谈判</span><span class="step-chip clickable" data-i18n="step.10" onclick="openExtra('10')">10.入职指南</span>
       </div>
       <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
     </div>
@@ -269,6 +280,44 @@ tr:hover td{background:var(--surface2);}
   </div>
 </div>
 
+<!-- 独立工具：第5/9/10步（单次） -->
+<div class="modal" id="extra-modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="extra-title"></h3><button class="modal-close" onclick="closeExtra()">×</button></div>
+    <div class="extra-body">
+      <div style="font-size:12px;color:var(--text3);" id="extra-hint"></div>
+      <textarea id="extra-input" placeholder=""></textarea>
+      <button class="btn btn-primary" onclick="runExtra()" style="justify-content:center;" id="extra-run"></button>
+      <div class="extra-out md-output" id="extra-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 独立工具：第8步 Mock 面试（多轮） -->
+<div class="modal" id="mock-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-head"><h3 data-i18n="mock.title">Mock 面试</h3><button class="modal-close" onclick="closeMock()">×</button></div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.phase">面试阶段</div>
+      <select id="mock-phase">
+        <option value="hr" data-i18n="mock.ph.hr">HR初筛</option>
+        <option value="tech" data-i18n="mock.ph.tech">技术面</option>
+        <option value="behavior" data-i18n="mock.ph.behavior">行为面</option>
+        <option value="final" data-i18n="mock.ph.final">终面</option>
+      </select>
+    </div>
+    <div class="mock-log" id="mock-log"></div>
+    <div class="mock-input">
+      <input type="text" id="mock-input" data-i18n-ph="mock.ph" placeholder="输入你的回答..." onkeydown="if(event.key==='Enter')mockSend()">
+      <button class="btn btn-primary" id="mock-send" onclick="mockSend()" data-i18n="mock.send">发送</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn btn-secondary" onclick="mockStart()" data-i18n="mock.start">开始面试</button>
+      <button class="btn btn-ghost" onclick="mockEnd()" data-i18n="mock.end">结束并总结</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
@@ -320,7 +369,14 @@ zh:{
  'know.title':'知识库','know.subtitle':'面试题库 / 公司信息 / 薪资 / 简历模板 / 岗位要求 / 专业知识（本地静态检索）',
  'know.search.ph':'搜索关键词...',
  'know.cat.all':'全部','know.cat.interviews':'面试题库','know.cat.companies':'公司信息','know.cat.salaries':'薪资数据','know.cat.templates':'简历模板','know.cat.jobs':'岗位要求','know.cat.knowledge':'专业知识',
- 'know.count':'条','know.empty':'无匹配结果','know.fail':'知识库加载失败：请通过本地服务器或线上部署打开'
+ 'know.count':'条','know.empty':'无匹配结果','know.fail':'知识库加载失败：请通过本地服务器或线上部署打开',
+ 'extra.5.title':'第5步 · 多JD优先级排序','extra.5.hint':'粘贴 2 个以上岗位，用「=====」或空行分隔每个岗位的 JD/公司/薪资信息。',
+ 'extra.9.title':'第9步 · Offer 谈判','extra.9.hint':'粘贴完整 Offer package：底薪 / 年终 / 期权 / 社保公积金基数与比例 / 试用期折扣 / 补贴 / 年假等。',
+ 'extra.10.title':'第10步 · 入职生存指南','extra.10.hint':'粘贴公司 + 岗位信息（公司类型、行业、你的岗位职责等）。',
+ 'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
+ 'mock.title':'第8步 · Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
+ 'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
+ 'mock.needjd':'请先在分析页粘贴 JD 和简历，再开始模拟面试','mock.running':'正在生成问题...'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
@@ -367,7 +423,14 @@ en:{
  'know.title':'Knowledge Base','know.subtitle':'Interview Q&A / companies / salary / resume tips / job requirements / domain knowledge (local static search)',
  'know.search.ph':'Search keywords...',
  'know.cat.all':'All','know.cat.interviews':'Interview Q&A','know.cat.companies':'Companies','know.cat.salaries':'Salaries','know.cat.templates':'Resume Tips','know.cat.jobs':'Job Reqs','know.cat.knowledge':'Knowledge',
- 'know.count':'items','know.empty':'No matches','know.fail':'Knowledge base failed to load. Open via a local server or web deploy.'
+ 'know.count':'items','know.empty':'No matches','know.fail':'Knowledge base failed to load. Open via a local server or web deploy.',
+ 'extra.5.title':'Step 5 · Priority Ranking','extra.5.hint':'Paste 2+ roles, separated by "=====" or blank lines, each with its JD / company / salary.',
+ 'extra.9.title':'Step 9 · Offer Negotiation','extra.9.hint':'Paste the full offer package: base / bonus / equity / social-security base & ratio / probation discount / benefits / leave, etc.',
+ 'extra.10.title':'Step 10 · Onboarding Guide','extra.10.hint':'Paste company + role info (company type, industry, your responsibilities, etc.).',
+ 'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
+ 'mock.title':'Step 8 · Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
+ 'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
+ 'mock.needjd':'Paste a JD and resume on the Analysis page first, then start the mock interview','mock.running':'Generating question...'
 }
 };
 var TYPE_EN={'AI产品经理':'AI Product Manager','AI开发':'AI Engineering','用户研究':'User Research','游戏AI':'Game AI'};
@@ -528,15 +591,29 @@ var STEPS=[
 
 function fillPrompt(tpl,ctx){return tpl.replace(/\{RESUME\}/g,ctx.resume||'').replace(/\{JD\}/g,ctx.jd||'').replace(/\{JD_ANALYSIS\}/g,ctx.jd_analysis||'').replace(/\{DIAGNOSIS\}/g,ctx.diag||'');}
 
+/* ============ 独立交互工具 prompt（第5/9/10步单次 + 第8步多轮） ============ */
+var EXTRA_PROMPTS={
+  '5':{zh:'你是求职策略顾问。用户提供了多个岗位，请按六维度加权排序。\n\n## 多个岗位(=====分隔)\n{INPUT}\n\n## 排序维度\n- 匹配度 30% / 薪资水平 20% / 公司背书 15% / 面试进度 15% / 个人偏好 10% / 岗位成长性 10%\n\n## 输出\n1. 排序结果表(排名/岗位/理由)\n2. 精力分配建议(如 "70%投A,20%投B,10%投C")\n3. 每个岗位的冲刺/匹配/保底定位\n\n注意：你没有联网能力，薪资和公司信息仅基于JD推断，不确定处标「推测」。禁止编造。',
+      en:'You are a job-search strategist. The user provided multiple roles; rank them by six weighted dimensions.\n\n## Roles (separated by =====)\n{INPUT}\n\n## Dimensions\n- Fit 30% / Salary 20% / Company brand 15% / Interview progress 15% / Personal preference 10% / Growth potential 10%\n\n## Output\n1. Ranking table (rank / role / reason)\n2. Effort allocation (e.g. "70% on A, 20% on B, 10% on C")\n3. Reach / match / safety positioning for each role\n\nNote: no internet access; infer salary and company info from the JD and mark uncertainty as [inferred]. Never fabricate.'},
+  '9':{zh:'你是Offer谈判顾问。基于用户提供的Offer package，输出谈判策略。\n\n## Offer package\n{INPUT}\n\n## 输出\n1. 各谈判点灵活性(底薪/年终/期权/社保基数/试用期折扣/年假福利/签字费)\n2. 逐项谈判策略+话术\n3. 可直接复制发给HR的谈判消息模板\n\n注意：你没有联网能力，市场薪资对标仅基于已知信息推断，不确定处标「推测」。原则：教用户用业务价值换薪资，不是教强硬要价。禁止编造。',
+      en:'You are an offer negotiation advisor. Based on the offer package provided, produce a negotiation strategy.\n\n## Offer package\n{INPUT}\n\n## Output\n1. Flexibility of each negotiation point (base / bonus / equity / social-security base / probation discount / leave / signing bonus)\n2. Strategy + scripts for each\n3. A ready-to-send negotiation message for HR\n\nNote: no internet access; infer market benchmarks and mark uncertainty as [inferred]. Principle: trade business value for salary, not hardball. Never fabricate.'},
+  '10':{zh:'你是职场教练。基于用户提供的公司/岗位信息，输出入职前30天生存指南。\n\n## 公司/岗位信息\n{INPUT}\n\n## 输出\n1. 公司文化速写(大厂/创业/外企/国企/研究所; 决策风格; 沟通风格; 隐性规则)\n2. 第一周Checklist(先认识谁/先搞清什么/不要做什么)\n3. 第一个月关键动作(何时发言/如何建信任/试用期隐性标准)\n4. 退出信号识别(什么现象说明不适合)\n\n注意：你没有联网能力，公司信息仅基于用户提供内容推断，不确定处标「推测」。禁止编造。',
+      en:'You are a career coach. Based on the company/role info provided, produce a first-30-days survival guide.\n\n## Company / role info\n{INPUT}\n\n## Output\n1. Culture snapshot (big-tech / startup / MNC / SOE / research; decision style; communication style; unwritten rules)\n2. Week-one checklist (who to meet first / what to understand / what NOT to do)\n3. First-month key moves (when to speak / how to build trust / hidden probation criteria)\n4. Exit-signal detection (what shows this company is not for you)\n\nNote: no internet access; infer company info from what the user provided and mark uncertainty as [inferred]. Never fabricate.'}
+};
+var MOCK_PROMPTS={
+  zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
+  en:'You are an interviewer. Run a mock interview based on the JD and resume. Rules:\n1. Confirm the interview stage first\n2. Ask questions randomly, not in order\n3. After each answer, give brief feedback (e.g. "clear logic but missing data", "wrong example", "good angle")\n4. Then follow up or ask the next question\n5. When the user says "end", give a summary (3 things to improve + 3 things done well)\n\n## Job Description\n{JD}\n\n## Resume\n{RESUME}\n\nNever fabricate.'
+};
+
 /* ============ LLM 直连（OpenAI 兼容 /chat/completions） ============ */
-async function callLLM(system,user){
+async function callLLMChat(messages){
   var s=loadSettings();
   if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
   var base=s.baseUrl.replace(/\/$/,'');
   var resp=await fetch(base+'/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
-    body:JSON.stringify({model:s.model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:0.3,max_tokens:8192})
+    body:JSON.stringify({model:s.model,messages:messages,temperature:0.3,max_tokens:8192})
   });
   if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
   if(!resp.ok){throw new Error('API error '+resp.status);}
@@ -545,6 +622,7 @@ async function callLLM(system,user){
   if(!content)throw new Error('empty response');
   return content;
 }
+async function callLLM(system,user){return callLLMChat([{role:'system',content:system},{role:'user',content:user}]);}
 
 /* ============ Markdown → HTML 渲染 ============ */
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -741,6 +819,99 @@ function renderKnowledge(){
   var h='';
   for(var j=0;j<items.length;j++){var it=items[j];h+='<div class="card know-card"><div class="tag">'+t('know.cat.'+it.cat)+'</div><div class="know-body">'+esc(it.text)+'</div></div>';}
   c.innerHTML=h;
+}
+
+/* ============ 独立工具：第5/9/10步（单次） + 第8步 Mock（多轮） ============ */
+var curExtra='5';
+function openExtra(id){
+  curExtra=id;
+  document.getElementById('extra-title').textContent=t('extra.'+id+'.title');
+  document.getElementById('extra-hint').textContent=t('extra.'+id+'.hint');
+  document.getElementById('extra-input').value='';
+  document.getElementById('extra-output').innerHTML='';
+  document.getElementById('extra-run').textContent=t('extra.run');
+  document.getElementById('extra-modal').classList.add('show');
+}
+function closeExtra(){document.getElementById('extra-modal').classList.remove('show');}
+async function runExtra(){
+  var input=document.getElementById('extra-input').value.trim();
+  if(!input){showToast(t('toast.needjd'),true);return;}
+  if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);openSettings();return;}
+  var pl=detectLang(input);
+  var sys=pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT;
+  var user=EXTRA_PROMPTS[curExtra][pl].replace(/\{INPUT\}/g,input);
+  var out=document.getElementById('extra-output');
+  out.innerHTML=prog();
+  setBot(t('bot.running')+' '+t('step.'+curExtra));
+  try{
+    var res=await callLLM(sys,user);
+    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    setBot(t('bot.done'));
+  }catch(e){
+    out.innerHTML='<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';
+    setBot(t('bot.offline'));
+  }
+}
+
+var mockMessages=[];
+function mockSystem(){
+  var jd=document.getElementById('jd-input').value.trim();
+  var resume=getResumeText();
+  if(!jd||!resume){showToast(t('mock.needjd'),true);return null;}
+  var pl=detectLang(jd);
+  var stage=document.getElementById('mock-phase').value;
+  var stageLabel=(I18N[pl]&&I18N[pl]['mock.ph.'+stage])||stage;
+  var sys=(pl==='en'?MOCK_PROMPTS.en:MOCK_PROMPTS.zh).replace(/\{JD\}/g,jd).replace(/\{RESUME\}/g,resume);
+  var first=pl==='en'?('Start the mock interview. Stage: '+stageLabel+'.'):('开始模拟面试。阶段：'+stageLabel+'。');
+  return [{role:'system',content:sys},{role:'user',content:first}];
+}
+function openMock(){
+  mockMessages=[];
+  document.getElementById('mock-log').innerHTML='';
+  document.getElementById('mock-input').value='';
+  document.getElementById('mock-phase').value='hr';
+  document.getElementById('mock-modal').classList.add('show');
+}
+function closeMock(){document.getElementById('mock-modal').classList.remove('show');}
+function mockAdd(role,text){
+  mockMessages.push({role:role,content:text});
+  var log=document.getElementById('mock-log');
+  var d=document.createElement('div');
+  d.className='mock-msg mock-'+(role==='user'?'user':'ai');
+  d.textContent=text;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+async function mockStart(){
+  var base=mockSystem();if(!base)return;
+  mockMessages=base;
+  document.getElementById('mock-log').innerHTML='';
+  setBot(t('mock.running'));
+  try{
+    var res=await callLLMChat(mockMessages);
+    mockAdd('assistant',res);
+    setBot(t('bot.done'));
+  }catch(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));}
+}
+async function mockSend(){
+  var v=document.getElementById('mock-input').value.trim();
+  if(!v)return;
+  document.getElementById('mock-input').value='';
+  if(!mockMessages.length){await mockStart();return;}
+  mockAdd('user',v);
+  setBot(t('mock.running'));
+  try{
+    var res=await callLLMChat(mockMessages);
+    mockAdd('assistant',res);
+    setBot(t('bot.done'));
+  }catch(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));}
+}
+function mockEnd(){
+  if(!mockMessages.length){closeMock();return;}
+  var pl=detectLang((mockMessages[0]&&mockMessages[0].content)||'');
+  mockAdd('user',pl==='en'?'End the interview and summarize.':'结束面试并给出总结。');
+  setBot(t('mock.running'));
+  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));});
 }
 
 applyLang();
