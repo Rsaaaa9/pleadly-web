@@ -131,6 +131,7 @@ tr:hover td{background:var(--surface2);}
 .extra-body{display:flex;flex-direction:column;gap:14px;}
 .extra-body textarea{min-height:160px;}
 .extra-out{margin-top:4px;font-size:13.5px;max-height:60vh;overflow-y:auto;}
+.netapply-out{margin-top:4px;font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow-y:auto;background:var(--surface2);border-radius:12px;padding:14px 16px;}
 .mock-log{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow-y:auto;margin-bottom:14px;padding:4px;}
 .mock-msg{max-width:82%;padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
 .mock-user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:6px;}
@@ -191,6 +192,7 @@ tr:hover td{background:var(--surface2);}
       <div><div class="card-header" data-i18n="analysis.jd">岗位 JD</div><textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
       <div><div class="card-header" data-i18n="analysis.resume">简历</div><select id="resume-select" onchange="onResumeSelect()" style="margin-bottom:6px;"><option value="" data-i18n-opt="analysis.resume.select">从信息库选择</option></select><textarea id="resume-input" data-i18n-ph="analysis.resume.ph" placeholder="或直接粘贴简历内容 ..." style="min-height:120px;"></textarea></div>
       <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;" data-i18n="analysis.run">一键全流程分析</button>
+      <button class="btn btn-secondary" onclick="openApply()" style="width:100%;justify-content:center;padding:11px;font-size:14px;" data-i18n="netapply.title">生成网申包</button>
     </div>
     <div class="card">
       <div class="step-nav">
@@ -327,11 +329,12 @@ zh:{
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
  'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
- 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南',
+ 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.netapply':'网申包',
  'extra.5.title':'第5步 · 多JD优先级排序','extra.5.hint':'粘贴 2 个以上岗位，用「=====」或空行分隔每个岗位的 JD/公司/薪资信息。',
  'extra.9.title':'第9步 · Offer 谈判','extra.9.hint':'粘贴完整 Offer package：底薪 / 年终 / 期权 / 社保公积金基数与比例 / 试用期折扣 / 补贴 / 年假等。',
  'extra.10.title':'第10步 · 入职生存指南','extra.10.hint':'粘贴公司 + 岗位信息（公司类型、行业、你的岗位职责等）。',
  'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
+ 'netapply.title':'网申包生成器','netapply.hint':'已自动填入你的简历（含岗位JD）。点击运行，生成可直接粘贴到网申表单的字段，缺失项标注「请补充」，绝不编造。','netapply.run':'生成网申包','netapply.copy':'一键复制','netapply.copied':'已复制到剪贴板',
  'mock.title':'第8步 · Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
  'mock.needjd':'请先在分析页粘贴 JD 和简历，再开始模拟面试','mock.running':'正在生成问题...'
@@ -371,11 +374,12 @@ en:{
  'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock feedback / offer negotiations / onboarding. Stored only on this device.',
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
  'mem.empty':'No memories yet','mem.empty.desc':'Run a full analysis or mock interview and your key info will be recorded here automatically',
- 'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding',
+ 'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.netapply':'Application',
  'extra.5.title':'Step 5 · Priority Ranking','extra.5.hint':'Paste 2+ roles, separated by "=====" or blank lines, each with its JD / company / salary.',
  'extra.9.title':'Step 9 · Offer Negotiation','extra.9.hint':'Paste the full offer package: base / bonus / equity / social-security base & ratio / probation discount / benefits / leave, etc.',
  'extra.10.title':'Step 10 · Onboarding Guide','extra.10.hint':'Paste company + role info (company type, industry, your responsibilities, etc.).',
  'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
+ 'netapply.title':'Application Package','netapply.hint':'Your resume (with JD) is pre-filled. Click Run to generate fields ready to paste into any application form. Missing items are flagged — nothing is invented.','netapply.run':'Generate package','netapply.copy':'Copy all','netapply.copied':'Copied to clipboard',
  'mock.title':'Step 8 · Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
  'mock.needjd':'Paste a JD and resume on the Analysis page first, then start the mock interview','mock.running':'Generating question...'
@@ -490,7 +494,9 @@ var EXTRA_PROMPTS={
   '9':{zh:'你是Offer谈判顾问。基于用户提供的Offer package，输出谈判策略。\n\n## Offer package\n{INPUT}\n\n## 输出\n1. 各谈判点灵活性(底薪/年终/期权/社保基数/试用期折扣/年假福利/签字费)\n2. 逐项谈判策略+话术\n3. 可直接复制发给HR的谈判消息模板\n\n注意：你没有联网能力，市场薪资对标仅基于已知信息推断，不确定处标「推测」。原则：教用户用业务价值换薪资，不是教强硬要价。禁止编造。',
       en:'You are an offer negotiation advisor. Based on the offer package provided, produce a negotiation strategy.\n\n## Offer package\n{INPUT}\n\n## Output\n1. Flexibility of each negotiation point (base / bonus / equity / social-security base / probation discount / leave / signing bonus)\n2. Strategy + scripts for each\n3. A ready-to-send negotiation message for HR\n\nNote: no internet access; infer market benchmarks and mark uncertainty as [inferred]. Principle: trade business value for salary, not hardball. Never fabricate.'},
   '10':{zh:'你是职场教练。基于用户提供的公司/岗位信息，输出入职前30天生存指南。\n\n## 公司/岗位信息\n{INPUT}\n\n## 输出\n1. 公司文化速写(大厂/创业/外企/国企/研究所; 决策风格; 沟通风格; 隐性规则)\n2. 第一周Checklist(先认识谁/先搞清什么/不要做什么)\n3. 第一个月关键动作(何时发言/如何建信任/试用期隐性标准)\n4. 退出信号识别(什么现象说明不适合)\n\n注意：你没有联网能力，公司信息仅基于用户提供内容推断，不确定处标「推测」。禁止编造。',
-      en:'You are a career coach. Based on the company/role info provided, produce a first-30-days survival guide.\n\n## Company / role info\n{INPUT}\n\n## Output\n1. Culture snapshot (big-tech / startup / MNC / SOE / research; decision style; communication style; unwritten rules)\n2. Week-one checklist (who to meet first / what to understand / what NOT to do)\n3. First-month key moves (when to speak / how to build trust / hidden probation criteria)\n4. Exit-signal detection (what shows this company is not for you)\n\nNote: no internet access; infer company info from what the user provided and mark uncertainty as [inferred]. Never fabricate.'}
+      en:'You are a career coach. Based on the company/role info provided, produce a first-30-days survival guide.\n\n## Company / role info\n{INPUT}\n\n## Output\n1. Culture snapshot (big-tech / startup / MNC / SOE / research; decision style; communication style; unwritten rules)\n2. Week-one checklist (who to meet first / what to understand / what NOT to do)\n3. First-month key moves (when to speak / how to build trust / hidden probation criteria)\n4. Exit-signal detection (what shows this company is not for you)\n\nNote: no internet access; infer company info from what the user provided and mark uncertainty as [inferred]. Never fabricate.'},
+  'netapply':{zh:'你是网申表单助手。根据用户提供的简历（可能附带岗位JD），生成一份可直接粘贴到各大校招/社招网申系统的「网申包」。\n\n## 用户输入（简历 + 可能的岗位JD）\n{INPUT}\n\n## 输出格式（纯文本，不要用Markdown表格）\n按下列分区，每行一个字段，格式为「字段名：值」：\n\n【基本信息】姓名/性别/出生年月/籍贯/政治面貌/手机/邮箱/通讯地址\n【教育背景】学校/专业/学历/起止时间/主修课程/GPA或排名\n【实习经历】每条：公司/岗位/起止时间/职责描述(2-3条)\n【项目经历】每条：项目名/角色/起止时间/项目描述\n【奖项证书】奖项名称/等级/时间\n【技能语言】专业技能/语言能力(四六级等)/证书\n【自我评价】\n【求职意向】目标岗位/意向城市/期望薪资\n\n## 铁律（绝不编造）\n- 只从简历里提取真实存在的信息，一个字都不许编造\n- 简历里没有的字段，直接写「（简历未填，请补充）」，不要猜、不要补、不要编数字\n- 若提供了岗位JD，求职意向和自我评价可朝JD方向组织措辞，但仍只能基于简历已有事实\n- 输出纯文本，便于直接复制粘贴到网申表单',
+    en:'You are an online-application form assistant. Based on the resume provided (possibly with a job description), generate an "application package" ready to paste into any campus/social recruitment form.\n\n## User input (resume + possibly a JD)\n{INPUT}\n\n## Output format (plain text, no Markdown tables)\nGroup into sections, one field per line, format "Field: value":\n\n[Basic info] name/gender/birth/place of origin/political status/phone/email/address\n[Education] school/major/degree/dates/core courses/GPA or rank\n[Internships] each: company/role/dates/responsibilities (2-3 bullets)\n[Projects] each: name/role/dates/description\n[Awards & certificates] name/level/date\n[Skills & languages] professional skills/language (CET etc.)/certificates\n[Self-evaluation]\n[Job intention] target role/city/expected salary\n\n## Hard rules (never fabricate)\n- Extract only what actually exists in the resume; do not invent a single word\n- For any field not in the resume, write "(not in resume — please fill in)"; never guess, fill, or invent numbers\n- If a JD is provided, you may phrase the job intention and self-evaluation toward it, but only based on facts already in the resume\n- Output plain text, easy to copy-paste into an application form'}
 };
 var MOCK_PROMPTS={
   zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
@@ -762,16 +768,49 @@ async function runExtra(){
   var user=EXTRA_PROMPTS[curExtra][pl].replace(/\{INPUT\}/g,input);
   var out=document.getElementById('extra-output');
   out.innerHTML=prog();
-  setBot(t('bot.running')+' '+t('step.'+curExtra));
+  setBot(t('bot.running')+' '+(curExtra==='netapply'?t('netapply.title'):t('step.'+curExtra)));
   try{
     var res=await callLLM(sys,user);
-    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    lastRaw=res;
+    if(curExtra==='netapply'){
+      out.innerHTML='<div class="netapply-out">'+esc(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyLast()">'+t('netapply.copy')+'</button></div>';
+    }else{
+      out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    }
     setBot(t('bot.done'));
-    addMem(({'5':'rank','9':'offer','10':'onboard'})[curExtra],input+'\n\n'+res.slice(0,800));
+    addMem(({'5':'rank','9':'offer','10':'onboard','netapply':'netapply'})[curExtra],input+'\n\n'+res.slice(0,800));
   }catch(e){
     out.innerHTML='<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';
     setBot(t('bot.offline'));
   }
+}
+
+var lastRaw='';
+function openApply(){
+  var resume=getResumeText();
+  if(!resume){showToast(t('toast.needresume'),true);return;}
+  var jd=document.getElementById('jd-input').value.trim();
+  curExtra='netapply';
+  document.getElementById('extra-title').textContent=t('netapply.title');
+  document.getElementById('extra-hint').textContent=t('netapply.hint');
+  document.getElementById('extra-input').value=resume+'\n\n=====岗位JD=====\n'+jd;
+  document.getElementById('extra-output').innerHTML='';
+  document.getElementById('extra-run').textContent=t('netapply.run');
+  document.getElementById('extra-modal').classList.add('show');
+}
+function copyLast(){copyText(lastRaw);}
+function copyText(txt){
+  function done(){showToast(t('netapply.copied'),false);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done,function(){legacyCopy(txt,done);});
+  }else{legacyCopy(txt,done);}
+}
+function legacyCopy(txt,done){
+  var ta=document.createElement('textarea');
+  ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');done();}catch(e){showToast('copy failed',true);}
+  document.body.removeChild(ta);
 }
 
 var mockMessages=[];
