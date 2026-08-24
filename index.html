@@ -125,6 +125,8 @@ tr:hover td{background:var(--surface2);}
 .paywall .pay-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
 .paywall .license-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
 .paywall .license-row input{width:220px;}
+.know-card{padding:14px 16px;}
+.know-body{margin-top:8px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
 </style>
 </head>
 <body>
@@ -133,6 +135,7 @@ tr:hover td{background:var(--surface2);}
   <div class="topnav-logo">Pleadly</div>
   <div class="topnav-links">
     <button class="topnav-link" data-page="library" data-i18n="nav.library">信息库</button>
+    <button class="topnav-link" data-page="knowledge" data-i18n="nav.knowledge">知识库</button>
     <button class="topnav-link" data-page="analysis" data-i18n="nav.analysis">分析页</button>
     <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
     <button class="topnav-link active" data-page="jobs" data-i18n="nav.jobs">岗位搜索</button>
@@ -216,6 +219,25 @@ tr:hover td{background:var(--surface2);}
   <div id="reports-container"><div class="empty"><div class="icon">/</div><div class="t">暂无报告</div></div></div>
 </div>
 
+<!-- 知识库 -->
+<div class="page" id="page-knowledge">
+  <div class="page-header"><h2 data-i18n="know.title">知识库</h2><p data-i18n="know.subtitle">面试题库 / 公司信息 / 薪资 / 简历模板 / 岗位要求 / 专业知识（本地静态检索）</p></div>
+  <div class="subtabs" style="margin-bottom:14px;">
+    <button class="subtab active" onclick="switchKnowCat(this,'all')" data-i18n="know.cat.all">全部</button>
+    <button class="subtab" onclick="switchKnowCat(this,'interviews')" data-i18n="know.cat.interviews">面试题库</button>
+    <button class="subtab" onclick="switchKnowCat(this,'companies')" data-i18n="know.cat.companies">公司信息</button>
+    <button class="subtab" onclick="switchKnowCat(this,'salaries')" data-i18n="know.cat.salaries">薪资数据</button>
+    <button class="subtab" onclick="switchKnowCat(this,'templates')" data-i18n="know.cat.templates">简历模板</button>
+    <button class="subtab" onclick="switchKnowCat(this,'jobs')" data-i18n="know.cat.jobs">岗位要求</button>
+    <button class="subtab" onclick="switchKnowCat(this,'knowledge')" data-i18n="know.cat.knowledge">专业知识</button>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
+    <input type="text" id="know-search" data-i18n-ph="know.search.ph" placeholder="搜索关键词..." oninput="renderKnowledge()" style="width:300px;">
+    <span id="know-count" style="font-size:13px;color:var(--text3);"></span>
+  </div>
+  <div id="knowledge-container"><div class="empty"><div class="icon">/</div><div class="t">加载中...</div></div></div>
+</div>
+
 <div class="modal" id="settings-modal">
   <div class="modal-box">
     <div class="modal-head"><h3 data-i18n="settings.title">设置</h3><button class="modal-close" onclick="closeSettings()">×</button></div>
@@ -250,6 +272,7 @@ tr:hover td{background:var(--surface2);}
 <div class="toast" id="toast"></div>
 <div class="bottombar"><span class="bottombar-dot"></span><span id="bot-text" data-i18n="bot.ready">就绪</span><span style="margin-left:auto;">Pleadly v2</span></div>
 
+<script src="knowledge.js"></script>
 <script>
 var I18N={
 zh:{
@@ -292,7 +315,12 @@ zh:{
  'paywall.title':'前 2 步已免费生成 🔒','paywall.desc':'解锁全部分析：JD拆解 / 简历诊断改写 / 学习计划 / 面试准备',
  'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
  'needkey':'请先在设置里填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
- 'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。'
+ 'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
+ 'nav.knowledge':'知识库',
+ 'know.title':'知识库','know.subtitle':'面试题库 / 公司信息 / 薪资 / 简历模板 / 岗位要求 / 专业知识（本地静态检索）',
+ 'know.search.ph':'搜索关键词...',
+ 'know.cat.all':'全部','know.cat.interviews':'面试题库','know.cat.companies':'公司信息','know.cat.salaries':'薪资数据','know.cat.templates':'简历模板','know.cat.jobs':'岗位要求','know.cat.knowledge':'专业知识',
+ 'know.count':'条','know.empty':'无匹配结果','know.fail':'知识库加载失败：请通过本地服务器或线上部署打开'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
@@ -334,7 +362,12 @@ en:{
  'paywall.title':'First 2 steps generated free 🔒','paywall.desc':'Unlock the full analysis: JD breakdown / resume tailoring / study plan / interview prep',
  'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
  'needkey':'Please enter your API key in Settings first','err.invalidkey':'Invalid API key or insufficient balance (401)',
- 'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.'
+ 'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
+ 'nav.knowledge':'Knowledge',
+ 'know.title':'Knowledge Base','know.subtitle':'Interview Q&A / companies / salary / resume tips / job requirements / domain knowledge (local static search)',
+ 'know.search.ph':'Search keywords...',
+ 'know.cat.all':'All','know.cat.interviews':'Interview Q&A','know.cat.companies':'Companies','know.cat.salaries':'Salaries','know.cat.templates':'Resume Tips','know.cat.jobs':'Job Reqs','know.cat.knowledge':'Knowledge',
+ 'know.count':'items','know.empty':'No matches','know.fail':'Knowledge base failed to load. Open via a local server or web deploy.'
 }
 };
 var TYPE_EN={'AI产品经理':'AI Product Manager','AI开发':'AI Engineering','用户研究':'User Research','游戏AI':'Game AI'};
@@ -350,7 +383,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-ph'));});
   document.querySelectorAll('[data-i18n-opt]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n-opt'));});
   var lb=document.getElementById('lang-btn');if(lb)lb.textContent=lang==='en'?'中文':'EN';
-  renderJobs();refreshResumeSelect();renderReports();renderLib();
+  renderJobs();refreshResumeSelect();renderReports();renderLib();renderKnowledge();
   setBot(t('bot.ready')+' · '+t('jobs.count')+' '+JOBS.length+' | '+t('library.title')+' '+loadLib().length);
 }
 
@@ -418,6 +451,7 @@ function switchPage(name){
   if(name==='analysis')refreshResumeSelect();
   if(name==='reports')renderReports();
   if(name==='library')renderLib();
+  if(name==='knowledge')renderKnowledge();
 }
 document.querySelectorAll('.topnav-link').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
 
@@ -429,6 +463,7 @@ function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 /* ============ BYOK 设置 + 激活码 ============ */
 var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
 var BUY_URL='https://buy.example.com/pleadly-pro'; // TODO: 替换为你的 Gumroad/LemonSqueezy 商品链接
+var PAYWALL_ENABLED=false; // 付费墙开关：改为 true 即启用「免费1-2步 / 激活码解锁3,4,6,7」，现在默认全功能免费（接口已预留）
 var pendingCtx=null;
 
 function loadSettings(){
@@ -480,8 +515,7 @@ function saveSettings(){
 /* ============ 主系统提示词 + 6 步模板（搬自 core/engine.py） ============ */
 var SYSTEM_PROMPT='你是Pleadly的AI招聘经理。严格按以下要求输出分析结果。禁止编造信息。所有公司信息、行业数据如不确定，明确标注「推测」，不得凭空编造。分析结果用 Markdown 格式输出（表格用管道语法 | |）。输出语言与岗位JD一致：JD为英文则全程英文输出，JD为中文则全程中文输出。';
 var SYSTEM_PROMPT_EN='You are the Pleadly AI recruiting manager. Follow the requirements below strictly. Never fabricate information. If any company details or industry data are uncertain, mark them clearly as [inferred] rather than inventing them. Output in Markdown (pipe syntax | | for tables). Match the output language to the job description: English JD means the entire analysis is written in English; Chinese JD means in Chinese.';
-function getSystem(){return lang==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT;}
-function getPrompt(st){return lang==='en'?st.promptEn:st.prompt;}
+function detectLang(text){if(!text)return lang;var zh=0,en=0;for(var i=0;i<text.length;i++){var c=text.charCodeAt(i);if(c>=0x4E00&&c<=0x9FFF)zh++;else if((c>=65&&c<=90)||(c>=97&&c<=122))en++;}return zh>en?'zh':'en';}
 
 var STEPS=[
   {key:'step.1',free:true,prompt:'你是ATS简历筛选系统。请执行以下任务：\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 任务\n1. 从JD中提取所有高频关键词和必须出现的技能/经验术语\n2. 逐条检测简历中是否出现这些关键词\n3. 输出表格:\n\n| 关键词 | JD中出现位置 | 简历中是否命中 | 如未命中建议插入位置 |\n|------|------|:---:|------|\n\n如关键硬性要求缺失，标红警告。',promptEn:'You are an ATS (Applicant Tracking System) resume screener. Complete the following tasks:\n\n## Resume\n{RESUME}\n\n## Job Description\n{JD}\n\n## Tasks\n1. Extract all high-frequency keywords and required skill/experience terms from the JD\n2. Check line by line whether each keyword appears in the resume\n3. Output a table:\n\n| Keyword | Where in JD | In resume? | If missing, where to add |\n|------|------|:---:|------|\n\nFlag any missing hard requirement with a warning.'},
@@ -643,7 +677,7 @@ function handleError(e){
   renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
   setBot(t('bot.offline'));
 }
-async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));return await callLLM(getSystem(),fillPrompt(getPrompt(st),ctx));}
+async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));var pl=detectLang(ctx.jd);return await callLLM(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT,fillPrompt(pl==='en'?st.promptEn:st.prompt,ctx));}
 async function runPro(ctx,acc,jd){
   var a3=await execStep(STEPS[2],ctx);ctx.jd_analysis=a3;acc=appendAcc(acc,a3,STEPS[2].key);renderOut(acc,prog());
   var a4=await execStep(STEPS[3],ctx);ctx.diag=a4;acc=appendAcc(acc,a4,STEPS[3].key);renderOut(acc,prog());
@@ -663,7 +697,7 @@ async function runAnalysis(){
   try{
     var a1=await execStep(STEPS[0],ctx);acc=appendAcc(acc,a1,STEPS[0].key);renderOut(acc,prog());
     var a2=await execStep(STEPS[1],ctx);acc=appendAcc(acc,a2,STEPS[1].key);
-    if(!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:resume,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
+    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:resume,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
     await runPro(ctx,acc,jd);
   }catch(e){handleError(e);}
 }
@@ -689,6 +723,24 @@ function openReport(id){
   var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
   switchPage('analysis');document.getElementById('jd-input').value=r.jd;
   if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';}
+}
+
+/* ============ 知识库（静态检索） ============ */
+var knowCat='all';
+function switchKnowCat(el,id){knowCat=id;document.querySelectorAll('#page-knowledge .subtab').forEach(function(s){s.classList.remove('active');});el.classList.add('active');renderKnowledge();}
+function renderKnowledge(){
+  var c=document.getElementById('knowledge-container');
+  var K=(typeof window!=='undefined'&&window.KNOWLEDGE)||null;
+  if(!K){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('know.fail')+'</div></div>';return;}
+  var q=(document.getElementById('know-search').value||'').trim().toLowerCase();
+  var cats=knowCat==='all'?['interviews','companies','salaries','templates','jobs','knowledge']:[knowCat];
+  var items=[];
+  for(var ci=0;ci<cats.length;ci++){var arr=K[cats[ci]]||[];for(var i=0;i<arr.length;i++){if(!q||arr[i].toLowerCase().indexOf(q)!==-1)items.push({cat:cats[ci],text:arr[i]});}}
+  document.getElementById('know-count').textContent=items.length+' '+t('know.count');
+  if(!items.length){c.innerHTML='<div class="empty"><div class="icon">/</div><div class="t">'+t('know.empty')+'</div></div>';return;}
+  var h='';
+  for(var j=0;j<items.length;j++){var it=items[j];h+='<div class="card know-card"><div class="tag">'+t('know.cat.'+it.cat)+'</div><div class="know-body">'+esc(it.text)+'</div></div>';}
+  c.innerHTML=h;
 }
 
 applyLang();
