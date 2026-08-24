@@ -641,7 +641,7 @@ function handleError(e){
   renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
   setBot(t('bot.offline'));
 }
-async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));var pl=detectLang(ctx.jd);return await callLLM(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT,fillPrompt(pl==='en'?st.promptEn:st.prompt,ctx));}
+async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));var pl=detectLang(ctx.jd);var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);return await callLLM(sys,fillPrompt(pl==='en'?st.promptEn:st.prompt,ctx));}
 async function runPro(ctx,acc,jd){
   var a3=await execStep(STEPS[2],ctx);ctx.jd_analysis=a3;acc=appendAcc(acc,a3,STEPS[2].key);renderOut(acc,prog());
   var a4=await execStep(STEPS[3],ctx);ctx.diag=a4;acc=appendAcc(acc,a4,STEPS[3].key);renderOut(acc,prog());
@@ -717,6 +717,23 @@ function renderMemory(){
 }
 function delMem(id){var m=loadMem();m=m.filter(function(x){return x.id!==id;});saveMem(m);renderMemory();}
 function clearMem(){saveMem([]);renderMemory();showToast(t('mem.cleared'),false);}
+function memorySummary(pl){
+  var m=loadMem();
+  if(!m.length)return '';
+  var dict=I18N[pl]||I18N.zh;
+  var parts=[],seen=0;
+  for(var i=0;i<m.length&&seen<6;i++){
+    var first=(m[i].text||'').split('\n')[0].trim();
+    if(!first)continue;
+    parts.push('- '+(dict['mem.kind.'+m[i].kind]||m[i].kind)+': '+first.slice(0,80));
+    seen++;
+  }
+  if(!parts.length)return '';
+  var head=pl==='en'
+    ?'\n\n## Your history (from your local memory — use it to personalize)\n'
+    :'\n\n## 你的历史背景（来自本地记忆，用于个性化）\n';
+  return head+parts.join('\n');
+}
 
 /* ============ 独立工具：第5/9/10步（单次） + 第8步 Mock（多轮） ============ */
 var curExtra='5';
@@ -735,7 +752,7 @@ async function runExtra(){
   if(!input){showToast(t('toast.needjd'),true);return;}
   if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);openSettings();return;}
   var pl=detectLang(input);
-  var sys=pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT;
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
   var user=EXTRA_PROMPTS[curExtra][pl].replace(/\{INPUT\}/g,input);
   var out=document.getElementById('extra-output');
   out.innerHTML=prog();
@@ -759,7 +776,7 @@ function mockSystem(){
   var pl=detectLang(jd);
   var stage=document.getElementById('mock-phase').value;
   var stageLabel=(I18N[pl]&&I18N[pl]['mock.ph.'+stage])||stage;
-  var sys=(pl==='en'?MOCK_PROMPTS.en:MOCK_PROMPTS.zh).replace(/\{JD\}/g,jd).replace(/\{RESUME\}/g,resume);
+  var sys=(pl==='en'?MOCK_PROMPTS.en:MOCK_PROMPTS.zh).replace(/\{JD\}/g,jd).replace(/\{RESUME\}/g,resume)+memorySummary(pl);
   var first=pl==='en'?('Start the mock interview. Stage: '+stageLabel+'.'):('开始模拟面试。阶段：'+stageLabel+'。');
   return [{role:'system',content:sys},{role:'user',content:first}];
 }
