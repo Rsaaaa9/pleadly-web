@@ -94,6 +94,20 @@ tr:hover td{background:var(--surface2);}
 .bottombar{position:fixed;bottom:0;left:0;right:0;height:32px;background:rgba(249,249,249,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:1px solid var(--separator);display:flex;align-items:center;padding:0 16px;font-size:12px;color:var(--text3);gap:10px;z-index:100;}
 .bottombar-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(52,199,89,0.22);}
 
+.keybox{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px 5px 3px 10px;transition:border-color 0.2s,box-shadow 0.2s;}
+.keybox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
+.keybox .keydot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--text3);}
+.keybox .keydot.ok{background:var(--green);box-shadow:0 0 0 2px rgba(52,199,89,0.22);}
+.keybox input{width:150px;border:none;background:none;padding:4px 2px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:none;}
+.keybox input:focus{border:none;box-shadow:none;outline:none;}
+.keybox .key-save{border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:8px;cursor:pointer;font-family:inherit;flex:none;}
+.keybox .key-save:active{transform:scale(0.95);}
+
+.analysis-inputbar{position:fixed;bottom:32px;left:0;right:0;z-index:90;padding:10px 16px;background:rgba(249,249,249,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:1px solid var(--separator);}
+.analysis-inputbar-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;align-items:flex-end;}
+.analysis-inputbar textarea{flex:1;min-height:44px;max-height:130px;resize:none;border-radius:18px;padding:12px 16px;line-height:1.4;background:var(--surface);font-size:14px;}
+@media (prefers-reduced-transparency:reduce){.analysis-inputbar{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none;}}
+
 .md-output{line-height:1.7;font-size:14.5px;}
 .md-output h1{font-size:20px;font-weight:800;letter-spacing:-0.01em;margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--separator);}
 .md-output h2{font-size:17px;font-weight:700;letter-spacing:-0.01em;margin:18px 0 8px;}
@@ -169,6 +183,11 @@ tr:hover td{background:var(--surface2);}
     <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
   </div>
   <div class="topnav-right">
+    <div class="keybox" id="keybox" title="API Key">
+      <span class="keydot" id="keydot"></span>
+      <input type="password" id="topnav-key" data-i18n-ph="key.ph" placeholder="🔑 API Key" onkeydown="if(event.key==='Enter')quickSaveKey()">
+      <button class="key-save" onclick="quickSaveKey()" data-i18n="settings.save">保存</button>
+    </div>
     <button class="lang-btn" onclick="openSettings()" title="Settings / 设置">⚙</button>
     <button class="lang-btn" id="lang-btn" onclick="toggleLang()" title="Switch language / 切换语言">EN</button>
     <span class="topnav-badge">v2</span>
@@ -196,21 +215,23 @@ tr:hover td{background:var(--surface2);}
 </div>
 
 <!-- 分析页 -->
-<div class="page active" id="page-analysis">
+<div class="page active" id="page-analysis" style="padding-bottom:130px;">
   <div class="page-header"><h2 data-i18n="analysis.title">岗位分析</h2><p data-i18n="analysis.subtitle">粘贴JD+选择简历</p></div>
-  <div class="analysis-grid">
-    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
-      <div><div class="card-header" data-i18n="analysis.jd">岗位 JD</div><textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:200px;"></textarea></div>
-      <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;"></div>
-      <button class="btn btn-primary" onclick="runAnalysis()" style="width:100%;justify-content:center;padding:12px;font-size:15px;" data-i18n="analysis.run">一键全流程分析</button>
-      <button class="btn btn-secondary" onclick="openApply()" style="width:100%;justify-content:center;padding:11px;font-size:14px;" data-i18n="netapply.title">生成网申包</button>
+  <div class="card" style="min-height:420px;display:flex;flex-direction:column;">
+    <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;margin-bottom:16px;"></div>
+    <div class="step-nav">
+      <span class="step-chip" data-i18n="step.1">ATS</span><span class="step-chip" data-i18n="step.2">评分</span><span class="step-chip" data-i18n="step.3">JD拆解</span><span class="step-chip" data-i18n="step.4">诊断</span><span class="step-chip" data-i18n="step.6">学习计划</span><span class="step-chip" data-i18n="step.7">面试准备</span>
     </div>
-    <div class="card">
-      <div class="step-nav">
-        <span class="step-chip" data-i18n="step.1">1.ATS</span><span class="step-chip" data-i18n="step.2">2.评分</span><span class="step-chip" data-i18n="step.3">3.JD拆解</span><span class="step-chip" data-i18n="step.4">4.诊断</span><span class="step-chip" data-i18n="step.6">6.学习计划</span><span class="step-chip" data-i18n="step.7">7.面试准备</span>
-      </div>
-      <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
-    </div>
+    <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
+  </div>
+</div>
+
+<!-- 分析页固定输入栏（微信聊天底部输入框样式） -->
+<div class="analysis-inputbar" id="analysis-inputbar">
+  <div class="analysis-inputbar-inner">
+    <textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';"></textarea>
+    <button class="btn btn-ghost btn-sm" onclick="openApply()" style="flex:none;" data-i18n="netapply.title">生成网申包</button>
+    <button class="btn btn-primary" onclick="runAnalysis()" style="flex:none;" data-i18n="analysis.run">一键全流程分析</button>
   </div>
 </div>
 
@@ -370,10 +391,11 @@ zh:{
  'settings.license':'激活码 License','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
  'settings.save':'保存','settings.privacy':'🔒 你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。',
  'settings.pro':'Pro','settings.free':'免费版',
+ 'key.ph':'🔑 粘贴 API Key','key.saved':'API Key 已更新',
  'license.invalid':'激活码无效','license.valid':'Pro 已解锁 🎉',
  'paywall.title':'前 2 步已免费生成 🔒','paywall.desc':'解锁全部分析：JD拆解 / 简历诊断改写 / 学习计划 / 面试准备',
  'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
- 'needkey':'请先在设置里填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
+ 'needkey':'请先在上方输入框填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
  'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
@@ -382,7 +404,7 @@ zh:{
  'extra.5.title':'多JD优先级排序','extra.5.hint':'从报告库选取 2 则以上分析报告，按六维度排序并给出精力分配建议。',
  'extra.9.title':'Offer 谈判','extra.9.hint':'从报告库选取对应岗位的报告，再补充你的 Offer package，针对性生成谈判策略。',
  'extra.10.title':'入职生存指南','extra.10.hint':'从报告库选取对应岗位的报告，生成入职前 30 天生存指南。',
- 'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
+ 'extra.run':'运行','extra.needkey':'请先在上方输入框填入 API Key',
  'netapply.title':'网申包生成器','netapply.hint':'已自动填入你的简历（含岗位JD）。点击运行，生成可直接粘贴到网申表单的字段，缺失项标注「请补充」，绝不编造。','netapply.run':'生成网申包','netapply.copy':'一键复制','netapply.copied':'已复制到剪贴板',
  'extra.greet.title':'招呼语生成','extra.greet.hint':'自动读取你的信息库，再粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
  'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
@@ -426,10 +448,11 @@ en:{
  'settings.license':'License Key','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
  'settings.save':'Save','settings.privacy':'🔒 Your API key is stored only in your browser and sent directly to your chosen provider. It never touches Pleadly servers.',
  'settings.pro':'Pro','settings.free':'Free',
+ 'key.ph':'🔑 API Key','key.saved':'API Key updated',
  'license.invalid':'Invalid license key','license.valid':'Pro unlocked 🎉',
  'paywall.title':'First 2 steps generated free 🔒','paywall.desc':'Unlock the full analysis: JD breakdown / resume tailoring / study plan / interview prep',
  'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
- 'needkey':'Please enter your API key in Settings first','err.invalidkey':'Invalid API key or insufficient balance (401)',
+ 'needkey':'Please enter your API key in the box above','err.invalidkey':'Invalid API key or insufficient balance (401)',
  'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
  'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock feedback / offer negotiations / onboarding. Stored only on this device.',
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
@@ -438,7 +461,7 @@ en:{
  'extra.5.title':'Priority Ranking','extra.5.hint':'Pick 2+ analysis reports from your Reports library; rank them and get effort-allocation advice.',
  'extra.9.title':'Offer Negotiation','extra.9.hint':'Pick the matching report, then add your offer package for a targeted negotiation strategy.',
  'extra.10.title':'Onboarding Guide','extra.10.hint':'Pick the matching report to generate a first-30-days onboarding guide.',
- 'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
+ 'extra.run':'Run','extra.needkey':'Please enter your API key in the box above',
  'netapply.title':'Application Package','netapply.hint':'Your resume (with JD) is pre-filled. Click Run to generate fields ready to paste into any application form. Missing items are flagged — nothing is invented.','netapply.run':'Generate package','netapply.copy':'Copy all','netapply.copied':'Copied to clipboard',
  'extra.greet.title':'Greeting Generator','extra.greet.hint':'Your Library is read automatically; paste a JD to generate a greeting for HR, with match points + honest risk notes. Built only on your real experience — never fabricated.','greet.copy':'Copy greeting','copied':'Copied to clipboard',
  'tools.greet.desc':'Paste a JD → greeting + match points + risk notes',
@@ -478,6 +501,8 @@ function switchPage(name){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   var pg=document.getElementById('page-'+name);
   if(pg)pg.classList.add('active');
+  var ib=document.getElementById('analysis-inputbar');
+  if(ib)ib.style.display=(name==='analysis')?'block':'none';
   if(name==='analysis')updateProfileNote();
   if(name==='reports')renderReports();
   if(name==='library')renderLib();
@@ -538,9 +563,26 @@ function saveSettings(){
   s.license=document.getElementById('set-license').value.trim();
   if(s.license&&!checkKey(s.license)){showToast(t('license.invalid'),true);return;}
   saveSettingsToStore(s);
+  syncKeyBox();
   closeSettings();
   showToast(isPro()?t('license.valid'):t('toast.saved'),false);
 }
+function syncKeyBox(){
+  var el=document.getElementById('topnav-key');if(!el)return;
+  var k=loadSettings().apiKey;
+  el.value=k;
+  var dot=document.getElementById('keydot');
+  if(dot)dot.className='keydot'+(k?' ok':'');
+}
+function quickSaveKey(){
+  var el=document.getElementById('topnav-key');if(!el)return;
+  var k=el.value.trim();
+  if(!k){showToast(t('needkey'),true);el.focus();return;}
+  var s=loadSettings();s.apiKey=k;saveSettingsToStore(s);
+  syncKeyBox();
+  showToast(t('key.saved'),false);
+}
+function focusKey(){var kb=document.getElementById('topnav-key');if(kb){kb.focus();kb.select();}}
 
 /* ============ 主系统提示词 + 6 步模板（搬自 core/engine.py） ============ */
 var SYSTEM_PROMPT='你是Pleadly的AI招聘经理。严格按以下要求输出分析结果。禁止编造信息。所有公司信息、行业数据如不确定，明确标注「推测」，不得凭空编造。分析结果用 Markdown 格式输出（表格用管道语法 | |）。输出语言与岗位JD一致：JD为英文则全程英文输出，JD为中文则全程中文输出。';
@@ -843,6 +885,7 @@ function appendAcc(acc,content,key){return acc+((acc?'\n\n':'')+'### '+t(key)+'\
 function handleError(e){
   var m=e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors'));
   renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
+  if(e.needkey||e.invalidkey)focusKey();
   setBot(t('bot.offline'));
 }
 async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));var pl=detectLang(ctx.jd);var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);return await callLLM(sys,fillPrompt(pl==='en'?st.promptEn:st.prompt,ctx));}
@@ -857,7 +900,7 @@ async function runAnalysis(){
   var jd=document.getElementById('jd-input').value.trim(),profile=getProfileText();
   if(!jd){showToast(t('toast.needjd'),true);return;}
   if(!profile){showToast(t('toast.needresume'),true);return;}
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);openSettings();return;}
+  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   setBot(t('bot.analyzing'));
   document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
   var ctx={jd:jd,resume:profile,jd_analysis:'',diag:''};
@@ -1017,7 +1060,7 @@ async function runExtra(){
   var input=document.getElementById('extra-input').value.trim();
   if(!input){showToast(t('toast.needjd'),true);return;}
   if(curExtra==='greet'&&!getProfileText()){showToast(t('toast.needresume'),true);return;}
-  if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);openSettings();return;}
+  if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);focusKey();return;}
   var pl=detectLang(input);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+(curExtra==='greet'?'':memorySummary(pl));
   var user=(curExtra==='greet'?GREET_PROMPT.replace('{PROFILE}',getProfileText()):EXTRA_PROMPTS[curExtra][pl]).replace(/\{INPUT\}/g,input);
@@ -1145,6 +1188,7 @@ function mockEnd(){
 }
 
 applyLang();
+syncKeyBox();
 </script>
 </body>
 </html>
