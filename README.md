@@ -42,7 +42,7 @@ Pleadly（我求你了）是一个「AI 招聘经理」视角的全流程求职�
 
 ## License
 
-MIT © 2026 郑灿坤 (Rsaaaa9)
+MIT © 2026 Rsaaaa9
 
 ---
 
