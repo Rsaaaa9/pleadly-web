@@ -219,10 +219,10 @@ tr:hover td{background:var(--surface2);}
   <div class="page-header"><h2 data-i18n="tools.title">工具</h2><p data-i18n="tools.subtitle">独立工具，按需使用，不参与全流程分析</p></div>
   <div class="tools-grid">
     <div class="card tool-card" onclick="openExtra('greet')"><div class="tool-icon">✉️</div><div class="tool-name" data-i18n="extra.greet.title">招呼语生成</div><div class="tool-desc" data-i18n="tools.greet.desc">粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示</div></div>
-    <div class="card tool-card" onclick="openExtra('5')"><div class="tool-icon">📊</div><div class="tool-name" data-i18n="step.5">5.多JD排序</div><div class="tool-desc" data-i18n="tools.5.desc">粘贴多个岗位，六维度加权排序 + 精力分配建议</div></div>
+    <div class="card tool-card" onclick="openPicker('multi','5')"><div class="tool-icon">📊</div><div class="tool-name" data-i18n="step.5">5.多JD排序</div><div class="tool-desc" data-i18n="tools.5.desc">粘贴多个岗位，六维度加权排序 + 精力分配建议</div></div>
     <div class="card tool-card" onclick="openMock()"><div class="tool-icon">🎤</div><div class="tool-name" data-i18n="step.8">8.Mock面试</div><div class="tool-desc" data-i18n="tools.8.desc">多轮模拟面试，可追问、即时点评、结束给总结</div></div>
-    <div class="card tool-card" onclick="openExtra('9')"><div class="tool-icon">💰</div><div class="tool-name" data-i18n="step.9">9.Offer谈判</div><div class="tool-desc" data-i18n="tools.9.desc">粘贴 offer package，输出逐项谈判策略 + 话术</div></div>
-    <div class="card tool-card" onclick="openExtra('10')"><div class="tool-icon">🚀</div><div class="tool-name" data-i18n="step.10">10.入职指南</div><div class="tool-desc" data-i18n="tools.10.desc">前 30 天生存指南</div></div>
+    <div class="card tool-card" onclick="openPicker('single','9')"><div class="tool-icon">💰</div><div class="tool-name" data-i18n="step.9">9.Offer谈判</div><div class="tool-desc" data-i18n="tools.9.desc">粘贴 offer package，输出逐项谈判策略 + 话术</div></div>
+    <div class="card tool-card" onclick="openPicker('single','10')"><div class="tool-icon">🚀</div><div class="tool-name" data-i18n="step.10">10.入职指南</div><div class="tool-desc" data-i18n="tools.10.desc">前 30 天生存指南</div></div>
   </div>
 </div>
 
@@ -280,6 +280,7 @@ tr:hover td{background:var(--surface2);}
     <div class="modal-head"><h3 id="extra-title"></h3><button class="modal-close" onclick="closeExtra()">×</button></div>
     <div class="extra-body">
       <div style="font-size:12px;color:var(--text3);" id="extra-hint"></div>
+      <button class="btn btn-ghost btn-sm" id="extra-pick" onclick="pickFromCurrent()" style="display:none;margin-top:6px;" data-i18n="pick.fromrep">从报告库选取</button>
       <textarea id="extra-input" placeholder=""></textarea>
       <button class="btn btn-primary" onclick="runExtra()" style="justify-content:center;" id="extra-run"></button>
       <div class="extra-out md-output" id="extra-output"></div>
@@ -294,6 +295,7 @@ tr:hover td{background:var(--surface2);}
     <div style="margin-bottom:10px;">
       <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
       <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;width:100%;"></textarea>
+      <button class="btn btn-ghost btn-sm" onclick="openPicker('single','8')" style="margin-top:6px;" data-i18n="pick.fromrep">从报告库选取</button>
     </div>
     <div style="margin-bottom:10px;">
       <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.phase">面试阶段</div>
@@ -312,6 +314,18 @@ tr:hover td{background:var(--surface2);}
     <div style="display:flex;gap:8px;margin-top:10px;">
       <button class="btn btn-secondary" onclick="mockStart()" data-i18n="mock.start">开始面试</button>
       <button class="btn btn-ghost" onclick="mockEnd()" data-i18n="mock.end">结束并总结</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="report-picker">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-head"><h3 data-i18n="pick.title">从报告库选取</h3><button class="modal-close" onclick="closePicker()">×</button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;" id="pick-hint"></div>
+    <div id="picker-list" style="max-height:52vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-ghost" onclick="closePicker()" style="flex:1;justify-content:center;" data-i18n="pick.cancel">取消</button>
+      <button class="btn btn-primary" onclick="confirmPicker()" style="flex:1;justify-content:center;" data-i18n="pick.confirm">确认</button>
     </div>
   </div>
 </div>
@@ -341,7 +355,7 @@ zh:{
  'analysis.jd':'岗位 JD','analysis.jd.ph':'在此粘贴岗位 JD ...',
  'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
  'analysis.run':'一键全流程分析',
- 'step.1':'1.ATS','step.2':'2.评分','step.3':'3.JD拆解','step.4':'4.诊断','step.5':'5.多JD排序','step.6':'6.学习计划','step.7':'7.面试准备','step.8':'8.Mock面试','step.9':'9.Offer谈判','step.10':'10.入职指南',
+ 'step.1':'ATS','step.2':'评分','step.3':'JD拆解','step.4':'诊断','step.5':'多JD排序','step.6':'学习计划','step.7':'面试准备','step.8':'Mock面试','step.9':'Offer谈判','step.10':'入职指南',
  'analysis.empty':'粘贴岗位 JD 后点击「一键全流程分析」','analysis.empty.desc':'完整分析需要 1-3 分钟，自动读取信息库作为你的背景',
  'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
  'analysis.offline':'离线模式。启动Pleadly后端后重试。','analysis.noBackend':'后端未连接。请启动Pleadly后端后重试。',
@@ -365,22 +379,23 @@ zh:{
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
  'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
  'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.netapply':'网申包','mem.kind.greet':'招呼语',
- 'extra.5.title':'第5步 · 多JD优先级排序','extra.5.hint':'粘贴 2 个以上岗位，用「=====」或空行分隔每个岗位的 JD/公司/薪资信息。',
- 'extra.9.title':'第9步 · Offer 谈判','extra.9.hint':'粘贴完整 Offer package：底薪 / 年终 / 期权 / 社保公积金基数与比例 / 试用期折扣 / 补贴 / 年假等。',
- 'extra.10.title':'第10步 · 入职生存指南','extra.10.hint':'粘贴公司 + 岗位信息（公司类型、行业、你的岗位职责等）。',
+ 'extra.5.title':'多JD优先级排序','extra.5.hint':'从报告库选取 2 则以上分析报告，按六维度排序并给出精力分配建议。',
+ 'extra.9.title':'Offer 谈判','extra.9.hint':'从报告库选取对应岗位的报告，再补充你的 Offer package，针对性生成谈判策略。',
+ 'extra.10.title':'入职生存指南','extra.10.hint':'从报告库选取对应岗位的报告，生成入职前 30 天生存指南。',
  'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
  'netapply.title':'网申包生成器','netapply.hint':'已自动填入你的简历（含岗位JD）。点击运行，生成可直接粘贴到网申表单的字段，缺失项标注「请补充」，绝不编造。','netapply.run':'生成网申包','netapply.copy':'一键复制','netapply.copied':'已复制到剪贴板',
- 'extra.greet.title':'招呼语生成','extra.greet.hint':'粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
+ 'extra.greet.title':'招呼语生成','extra.greet.hint':'自动读取你的信息库，再粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
  'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
- 'mock.title':'第8步 · Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
+ 'pick.title':'从报告库选取','pick.hint.single':'选择 1 则分析报告','pick.hint.multi':'至少选择 2 则分析报告','pick.cancel':'取消','pick.confirm':'确认','pick.need1':'请先选择 1 则报告','pick.need2':'请至少选择 2 则报告','pick.noreport':'报告库为空，请先完成一次全流程分析','pick.filled':'已填入对应岗位 JD','pick.fromrep':'从报告库选取',
+ 'mock.title':'Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
  'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...',
  'tools.title':'工具','tools.subtitle':'独立工具，按需使用，不参与全流程分析',
- 'tools.5.desc':'粘贴多个岗位，六维度加权排序 + 精力分配建议',
+ 'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
- 'tools.9.desc':'粘贴 offer package，输出逐项谈判策略 + 可直接复制的话术',
- 'tools.10.desc':'前 30 天生存指南',
+ 'tools.9.desc':'选对应岗位报告 + 补 offer package，输出谈判策略 + 话术',
+ 'tools.10.desc':'选对应岗位报告，生成入职前 30 天生存指南',
  'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
  'profile.empty':'信息库为空，请先到「信息库」上传简历或经历'
 },
@@ -396,7 +411,7 @@ en:{
  'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here...',
  'analysis.resume':'Resume','analysis.resume.select':'Select from Library','analysis.resume.ph':'Or paste your resume directly...',
  'analysis.run':'Run Full Analysis',
- 'step.1':'1. ATS','step.2':'2. Score','step.3':'3. JD Breakdown','step.4':'4. Diagnosis','step.5':'5. Priority Rank','step.6':'6. Study Plan','step.7':'7. Interview Prep','step.8':'8. Mock Interview','step.9':'9. Offer Negotiation','step.10':'10. Onboarding',
+ 'step.1':'ATS','step.2':'Score','step.3':'JD Breakdown','step.4':'Diagnosis','step.5':'Priority Rank','step.6':'Study Plan','step.7':'Interview Prep','step.8':'Mock Interview','step.9':'Offer Negotiation','step.10':'Onboarding',
  'analysis.empty':'Paste a JD, then click "Run Full Analysis"','analysis.empty.desc':'Takes 1-3 min — your Library is read automatically',
  'analysis.running':'Running full analysis...','analysis.running.desc':'Estimated 1-3 min','analysis.analyzing':'Analyzing...',
  'analysis.offline':'Offline mode. Start the Pleadly backend and retry.','analysis.noBackend':'Backend not connected. Start the Pleadly backend and retry.',
@@ -420,22 +435,23 @@ en:{
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
  'mem.empty':'No memories yet','mem.empty.desc':'Run a full analysis or mock interview and your key info will be recorded here automatically',
  'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.netapply':'Application','mem.kind.greet':'Greeting',
- 'extra.5.title':'Step 5 · Priority Ranking','extra.5.hint':'Paste 2+ roles, separated by "=====" or blank lines, each with its JD / company / salary.',
- 'extra.9.title':'Step 9 · Offer Negotiation','extra.9.hint':'Paste the full offer package: base / bonus / equity / social-security base & ratio / probation discount / benefits / leave, etc.',
- 'extra.10.title':'Step 10 · Onboarding Guide','extra.10.hint':'Paste company + role info (company type, industry, your responsibilities, etc.).',
+ 'extra.5.title':'Priority Ranking','extra.5.hint':'Pick 2+ analysis reports from your Reports library; rank them and get effort-allocation advice.',
+ 'extra.9.title':'Offer Negotiation','extra.9.hint':'Pick the matching report, then add your offer package for a targeted negotiation strategy.',
+ 'extra.10.title':'Onboarding Guide','extra.10.hint':'Pick the matching report to generate a first-30-days onboarding guide.',
  'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
  'netapply.title':'Application Package','netapply.hint':'Your resume (with JD) is pre-filled. Click Run to generate fields ready to paste into any application form. Missing items are flagged — nothing is invented.','netapply.run':'Generate package','netapply.copy':'Copy all','netapply.copied':'Copied to clipboard',
- 'extra.greet.title':'Greeting Generator','extra.greet.hint':'Paste a JD to generate a greeting ready to send to HR, with match points + honest risk notes. Built only on your real experience — never fabricated.','greet.copy':'Copy greeting','copied':'Copied to clipboard',
+ 'extra.greet.title':'Greeting Generator','extra.greet.hint':'Your Library is read automatically; paste a JD to generate a greeting for HR, with match points + honest risk notes. Built only on your real experience — never fabricated.','greet.copy':'Copy greeting','copied':'Copied to clipboard',
  'tools.greet.desc':'Paste a JD → greeting + match points + risk notes',
- 'mock.title':'Step 8 · Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
+ 'pick.title':'Select from Reports','pick.hint.single':'Select 1 analysis report','pick.hint.multi':'Select at least 2 analysis reports','pick.cancel':'Cancel','pick.confirm':'Confirm','pick.need1':'Select one report first','pick.need2':'Select at least two reports','pick.noreport':'No reports yet — run a full analysis first','pick.filled':'Filled the matching JD','pick.fromrep':'Pick from Reports',
+ 'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
  'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...',
  'tools.title':'Tools','tools.subtitle':'Standalone tools — use as needed, not part of the full analysis',
- 'tools.5.desc':'Paste multiple roles; ranked by six weighted dimensions + effort allocation',
+ 'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
- 'tools.9.desc':'Paste an offer package for item-by-item strategy + ready-to-send scripts',
- 'tools.10.desc':'First-30-days survival guide',
+ 'tools.9.desc':'Pick a report + add your offer package → item-by-item strategy + scripts',
+ 'tools.10.desc':'Pick a report → first-30-days survival guide',
  'profile.note':'Reading {N} document(s) from your Library as your background',
  'profile.empty':'Library is empty — upload a resume or experiences first'
 }
@@ -544,8 +560,8 @@ function fillPrompt(tpl,ctx){return tpl.replace(/\{RESUME\}/g,ctx.resume||'').re
 
 /* ============ 独立交互工具 prompt（第5/9/10步单次 + 第8步多轮） ============ */
 var EXTRA_PROMPTS={
-  '5':{zh:'你是求职策略顾问。用户提供了多个岗位，请按六维度加权排序。\n\n## 多个岗位(=====分隔)\n{INPUT}\n\n## 排序维度\n- 匹配度 30% / 薪资水平 20% / 公司背书 15% / 面试进度 15% / 个人偏好 10% / 岗位成长性 10%\n\n## 输出\n1. 排序结果表(排名/岗位/理由)\n2. 精力分配建议(如 "70%投A,20%投B,10%投C")\n3. 每个岗位的冲刺/匹配/保底定位\n\n注意：你没有联网能力，薪资和公司信息仅基于JD推断，不确定处标「推测」。禁止编造。',
-      en:'You are a job-search strategist. The user provided multiple roles; rank them by six weighted dimensions.\n\n## Roles (separated by =====)\n{INPUT}\n\n## Dimensions\n- Fit 30% / Salary 20% / Company brand 15% / Interview progress 15% / Personal preference 10% / Growth potential 10%\n\n## Output\n1. Ranking table (rank / role / reason)\n2. Effort allocation (e.g. "70% on A, 20% on B, 10% on C")\n3. Reach / match / safety positioning for each role\n\nNote: no internet access; infer salary and company info from the JD and mark uncertainty as [inferred]. Never fabricate.'},
+  '5':{zh:'你是求职策略顾问。用户从报告库选取了多则岗位分析报告，请按六维度加权排序。\n\n## 多个岗位分析报告(=====分隔)\n{INPUT}\n\n## 排序维度\n- 匹配度 30% / 薪资水平 20% / 公司背书 15% / 面试进度 15% / 个人偏好 10% / 岗位成长性 10%\n\n## 输出\n1. 排序结果表(排名/岗位/理由)\n2. 精力分配建议(如 "70%投A,20%投B,10%投C")\n3. 每个岗位的冲刺/匹配/保底定位\n\n注意：你没有联网能力，薪资和公司信息仅基于JD推断，不确定处标「推测」。禁止编造。',
+      en:'You are a job-search strategist. The user picked several analysis reports from their library; rank them by six weighted dimensions.\n\n## Role reports (separated by =====)\n{INPUT}\n\n## Dimensions\n- Fit 30% / Salary 20% / Company brand 15% / Interview progress 15% / Personal preference 10% / Growth potential 10%\n\n## Output\n1. Ranking table (rank / role / reason)\n2. Effort allocation (e.g. "70% on A, 20% on B, 10% on C")\n3. Reach / match / safety positioning for each role\n\nNote: no internet access; infer salary and company info from the JD and mark uncertainty as [inferred]. Never fabricate.'},
   '9':{zh:'你是Offer谈判顾问。基于用户提供的Offer package，输出谈判策略。\n\n## Offer package\n{INPUT}\n\n## 输出\n1. 各谈判点灵活性(底薪/年终/期权/社保基数/试用期折扣/年假福利/签字费)\n2. 逐项谈判策略+话术\n3. 可直接复制发给HR的谈判消息模板\n\n注意：你没有联网能力，市场薪资对标仅基于已知信息推断，不确定处标「推测」。原则：教用户用业务价值换薪资，不是教强硬要价。禁止编造。',
       en:'You are an offer negotiation advisor. Based on the offer package provided, produce a negotiation strategy.\n\n## Offer package\n{INPUT}\n\n## Output\n1. Flexibility of each negotiation point (base / bonus / equity / social-security base / probation discount / leave / signing bonus)\n2. Strategy + scripts for each\n3. A ready-to-send negotiation message for HR\n\nNote: no internet access; infer market benchmarks and mark uncertainty as [inferred]. Principle: trade business value for salary, not hardball. Never fabricate.'},
   '10':{zh:'你是职场教练。基于用户提供的公司/岗位信息，输出入职前30天生存指南。\n\n## 公司/岗位信息\n{INPUT}\n\n## 输出\n1. 公司文化速写(大厂/创业/外企/国企/研究所; 决策风格; 沟通风格; 隐性规则)\n2. 第一周Checklist(先认识谁/先搞清什么/不要做什么)\n3. 第一个月关键动作(何时发言/如何建信任/试用期隐性标准)\n4. 退出信号识别(什么现象说明不适合)\n\n注意：你没有联网能力，公司信息仅基于用户提供内容推断，不确定处标「推测」。禁止编造。',
@@ -557,9 +573,12 @@ var MOCK_PROMPTS={
   zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
   en:'You are an interviewer. Run a mock interview based on the JD and resume. Rules:\n1. Confirm the interview stage first\n2. Ask questions randomly, not in order\n3. After each answer, give brief feedback (e.g. "clear logic but missing data", "wrong example", "good angle")\n4. Then follow up or ask the next question\n5. When the user says "end", give a summary (3 things to improve + 3 things done well)\n\n## Job Description\n{JD}\n\n## Resume\n{RESUME}\n\nNever fabricate.'
 };
-var GREET_PROMPT=`你是「郑灿坤」的求职招呼语生成助手。郑灿坤是一名2026届应届生，正在深圳找工作。你的任务：根据他提供的招聘JD，生成一段可直接复制到招聘软件（Boss直聘等）发给HR的招呼语，并附上匹配点说明和诚实风险提示。
+var GREET_PROMPT=`你是「郑灿坤」的求职招呼语生成助手。郑灿坤是一名2026届应届生，正在深圳找工作。你的任务：根据他提供的招聘JD和他的本地信息库（真实简历/经历），生成一段可直接复制到招聘软件（Boss直聘等）发给HR的招呼语，并附上匹配点说明和诚实风险提示。
 
-## 郑灿坤的真实画像（只能基于以下真实信息，严禁虚构任何经历、数字、证书、技能）
+## 你的真实画像（来自本地信息库，最权威、最新，优先于下方任何固定描述）
+{PROFILE}
+
+## 固定画像与个人红线（补充说明，只能基于真实信息，严禁虚构；信息库没提的内容以此为准，与信息库冲突时以信息库为准）
 - 基本信息：郑灿坤，男，2026届应届生，中南林业科技大学（双非一本）食品科学与工程本科，人在深圳；英语 CET-4（只有四级，没有六级）
 - 核心资产：AI产品（Pleadly + TypeSet 两款开源AI产品）、会编程写脚本/搭AI工作流/写优化Prompt、AI提效60%（低GI挂面调研工作流）、内容运营（抖音20w+点赞 / 7-8个视频破10万 / 近百人社群 / 小红书）、用户研究（金健乳业120次用户访谈 / 200+份反馈卡VOC / 蔗糖下调8% / 包装改旋盖）、产品能力（低GI挂面项目负责人 / Figma / PRD）、海外社区（Reddit / IndieHackers）、软技能（大学生艺术团办公部部长 / 11个分团 / 500-800人活动）
 - 短板（绝不虚构）：无CET-6、非985/211、无正式工作经验、无跨境电商店铺/亚马逊/Shopee实操、无直播/投流实操、无FB/IG/YouTube/TikTok实操、无酒类/移民教育/汽车行业经验、编程语言不确定（写「会编程写脚本」不写死「Python」）
@@ -922,23 +941,86 @@ function memorySummary(pl){
 
 /* ============ 独立工具：第5/9/10步（单次） + 第8步 Mock（多轮） ============ */
 var curExtra='5';
-function openExtra(id){
+function openExtra(id){openExtraPrefill(id,'');}
+function openExtraPrefill(id,value){
   curExtra=id;
   document.getElementById('extra-title').textContent=t('extra.'+id+'.title');
   document.getElementById('extra-hint').textContent=t('extra.'+id+'.hint');
-  document.getElementById('extra-input').value='';
+  document.getElementById('extra-input').value=value;
   document.getElementById('extra-output').innerHTML='';
   document.getElementById('extra-run').textContent=t('extra.run');
+  var pb=document.getElementById('extra-pick');
+  if(pb)pb.style.display=(id==='5'||id==='9'||id==='10')?'inline-flex':'none';
   document.getElementById('extra-modal').classList.add('show');
 }
 function closeExtra(){document.getElementById('extra-modal').classList.remove('show');}
+
+/* ============ 报告库选择器（工具从历史分析报告选取依据） ============ */
+var pickerMode='single',pickerTarget='';
+function pickFromCurrent(){openPicker(curExtra==='5'?'multi':'single',curExtra);}
+function openPicker(mode,target){
+  var reps=loadRep();
+  if(!reps.length){showToast(t('pick.noreport'),true);return;}
+  pickerMode=mode;pickerTarget=target;
+  document.getElementById('pick-hint').textContent=t(mode==='multi'?'pick.hint.multi':'pick.hint.single');
+  renderPicker();
+  document.getElementById('report-picker').classList.add('show');
+}
+function renderPicker(){
+  var reps=loadRep(),list=document.getElementById('picker-list'),h='';
+  var type=pickerMode==='multi'?'checkbox':'radio';
+  for(var i=0;i<reps.length;i++){
+    var r=reps[i];
+    h+='<label class="card picker-item" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:14px 16px;margin-bottom:0;">'
+      +'<input type="'+type+'" name="picker-sel" value="'+r.id+'" style="margin-top:3px;">'
+      +'<div style="min-width:0;"><div style="font-weight:600;font-size:14px;">'+esc(r.title)+'</div>'
+      +'<div style="font-size:12px;color:var(--text3);margin-top:3px;">'+esc(r.date)+' · '+r.score+'</div>'
+      +'<div style="font-size:12px;color:var(--text3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(r.jd||'')+'</div></div></label>';
+  }
+  list.innerHTML=h;
+}
+function closePicker(){document.getElementById('report-picker').classList.remove('show');}
+function reportById(id){return loadRep().find(function(x){return x.id===id;});}
+function reportText(r){
+  if(!r)return '';
+  var d=r.data||{},md=typeof d==='string'?d:(d.content||d.result||'');
+  return '['+r.title+']\n'+(r.jd||'').trim()+(md?('\n\n匹配分析摘要:\n'+md.slice(0,2500)):'');
+}
+function applyPicked(ids){
+  if(pickerTarget==='8'){
+    var r=reportById(ids[0]);
+    if(r){document.getElementById('mock-jd').value=r.jd||'';showToast(t('pick.filled'),false);}
+    return;
+  }
+  if(pickerTarget==='5'){
+    var parts=[];
+    for(var i=0;i<ids.length;i++)parts.push(reportText(reportById(ids[i])));
+    openExtraPrefill('5',parts.join('\n\n=====\n\n'));
+    return;
+  }
+  if(pickerTarget==='9'||pickerTarget==='10'){
+    var rr=reportById(ids[0]),val=reportText(rr);
+    if(pickerTarget==='9')val+='\n\n=====Offer package=====\n（在此粘贴你的 offer：底薪/年终/期权/社保基数与比例/试用期折扣/补贴/年假等）';
+    openExtraPrefill(pickerTarget,val);
+    return;
+  }
+}
+function confirmPicker(){
+  var checked=document.querySelectorAll('#picker-list input[name=picker-sel]:checked');
+  var ids=[];for(var i=0;i<checked.length;i++)ids.push(checked[i].value);
+  if(pickerMode==='multi'){if(ids.length<2){showToast(t('pick.need2'),true);return;}}
+  else{if(ids.length<1){showToast(t('pick.need1'),true);return;}}
+  closePicker();
+  applyPicked(ids);
+}
 async function runExtra(){
   var input=document.getElementById('extra-input').value.trim();
   if(!input){showToast(t('toast.needjd'),true);return;}
+  if(curExtra==='greet'&&!getProfileText()){showToast(t('toast.needresume'),true);return;}
   if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);openSettings();return;}
   var pl=detectLang(input);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+(curExtra==='greet'?'':memorySummary(pl));
-  var user=(curExtra==='greet'?GREET_PROMPT:EXTRA_PROMPTS[curExtra][pl]).replace(/\{INPUT\}/g,input);
+  var user=(curExtra==='greet'?GREET_PROMPT.replace('{PROFILE}',getProfileText()):EXTRA_PROMPTS[curExtra][pl]).replace(/\{INPUT\}/g,input);
   var out=document.getElementById('extra-output');
   out.innerHTML=prog();
   setBot(t('bot.running')+' '+(curExtra==='greet'?t('extra.greet.title'):curExtra==='netapply'?t('netapply.title'):t('step.'+curExtra)));
@@ -971,6 +1053,7 @@ function openApply(){
   document.getElementById('extra-input').value=profile+'\n\n=====岗位JD=====\n'+jd;
   document.getElementById('extra-output').innerHTML='';
   document.getElementById('extra-run').textContent=t('netapply.run');
+  document.getElementById('extra-pick').style.display='none';
   document.getElementById('extra-modal').classList.add('show');
 }
 function copyLast(){copyText(lastRaw);}
