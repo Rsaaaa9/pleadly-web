@@ -218,6 +218,7 @@ tr:hover td{background:var(--surface2);}
 <div class="page" id="page-tools">
   <div class="page-header"><h2 data-i18n="tools.title">工具</h2><p data-i18n="tools.subtitle">独立工具，按需使用，不参与全流程分析</p></div>
   <div class="tools-grid">
+    <div class="card tool-card" onclick="openExtra('greet')"><div class="tool-icon">✉️</div><div class="tool-name" data-i18n="extra.greet.title">招呼语生成</div><div class="tool-desc" data-i18n="tools.greet.desc">粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示</div></div>
     <div class="card tool-card" onclick="openExtra('5')"><div class="tool-icon">📊</div><div class="tool-name" data-i18n="step.5">5.多JD排序</div><div class="tool-desc" data-i18n="tools.5.desc">粘贴多个岗位，六维度加权排序 + 精力分配建议</div></div>
     <div class="card tool-card" onclick="openMock()"><div class="tool-icon">🎤</div><div class="tool-name" data-i18n="step.8">8.Mock面试</div><div class="tool-desc" data-i18n="tools.8.desc">多轮模拟面试，可追问、即时点评、结束给总结</div></div>
     <div class="card tool-card" onclick="openExtra('9')"><div class="tool-icon">💰</div><div class="tool-name" data-i18n="step.9">9.Offer谈判</div><div class="tool-desc" data-i18n="tools.9.desc">粘贴 offer package，输出逐项谈判策略 + 话术</div></div>
@@ -363,12 +364,14 @@ zh:{
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
  'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
- 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.netapply':'网申包',
+ 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.netapply':'网申包','mem.kind.greet':'招呼语',
  'extra.5.title':'第5步 · 多JD优先级排序','extra.5.hint':'粘贴 2 个以上岗位，用「=====」或空行分隔每个岗位的 JD/公司/薪资信息。',
  'extra.9.title':'第9步 · Offer 谈判','extra.9.hint':'粘贴完整 Offer package：底薪 / 年终 / 期权 / 社保公积金基数与比例 / 试用期折扣 / 补贴 / 年假等。',
  'extra.10.title':'第10步 · 入职生存指南','extra.10.hint':'粘贴公司 + 岗位信息（公司类型、行业、你的岗位职责等）。',
  'extra.run':'运行','extra.needkey':'请先在设置里填入 API Key',
  'netapply.title':'网申包生成器','netapply.hint':'已自动填入你的简历（含岗位JD）。点击运行，生成可直接粘贴到网申表单的字段，缺失项标注「请补充」，绝不编造。','netapply.run':'生成网申包','netapply.copy':'一键复制','netapply.copied':'已复制到剪贴板',
+ 'extra.greet.title':'招呼语生成','extra.greet.hint':'粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
+ 'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
  'mock.title':'第8步 · Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
@@ -416,12 +419,14 @@ en:{
  'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock feedback / offer negotiations / onboarding. Stored only on this device.',
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
  'mem.empty':'No memories yet','mem.empty.desc':'Run a full analysis or mock interview and your key info will be recorded here automatically',
- 'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.netapply':'Application',
+ 'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.netapply':'Application','mem.kind.greet':'Greeting',
  'extra.5.title':'Step 5 · Priority Ranking','extra.5.hint':'Paste 2+ roles, separated by "=====" or blank lines, each with its JD / company / salary.',
  'extra.9.title':'Step 9 · Offer Negotiation','extra.9.hint':'Paste the full offer package: base / bonus / equity / social-security base & ratio / probation discount / benefits / leave, etc.',
  'extra.10.title':'Step 10 · Onboarding Guide','extra.10.hint':'Paste company + role info (company type, industry, your responsibilities, etc.).',
  'extra.run':'Run','extra.needkey':'Please enter your API key in Settings first',
  'netapply.title':'Application Package','netapply.hint':'Your resume (with JD) is pre-filled. Click Run to generate fields ready to paste into any application form. Missing items are flagged — nothing is invented.','netapply.run':'Generate package','netapply.copy':'Copy all','netapply.copied':'Copied to clipboard',
+ 'extra.greet.title':'Greeting Generator','extra.greet.hint':'Paste a JD to generate a greeting ready to send to HR, with match points + honest risk notes. Built only on your real experience — never fabricated.','greet.copy':'Copy greeting','copied':'Copied to clipboard',
+ 'tools.greet.desc':'Paste a JD → greeting + match points + risk notes',
  'mock.title':'Step 8 · Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
@@ -552,6 +557,42 @@ var MOCK_PROMPTS={
   zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
   en:'You are an interviewer. Run a mock interview based on the JD and resume. Rules:\n1. Confirm the interview stage first\n2. Ask questions randomly, not in order\n3. After each answer, give brief feedback (e.g. "clear logic but missing data", "wrong example", "good angle")\n4. Then follow up or ask the next question\n5. When the user says "end", give a summary (3 things to improve + 3 things done well)\n\n## Job Description\n{JD}\n\n## Resume\n{RESUME}\n\nNever fabricate.'
 };
+var GREET_PROMPT=`你是「郑灿坤」的求职招呼语生成助手。郑灿坤是一名2026届应届生，正在深圳找工作。你的任务：根据他提供的招聘JD，生成一段可直接复制到招聘软件（Boss直聘等）发给HR的招呼语，并附上匹配点说明和诚实风险提示。
+
+## 郑灿坤的真实画像（只能基于以下真实信息，严禁虚构任何经历、数字、证书、技能）
+- 基本信息：郑灿坤，男，2026届应届生，中南林业科技大学（双非一本）食品科学与工程本科，人在深圳；英语 CET-4（只有四级，没有六级）
+- 核心资产：AI产品（Pleadly + TypeSet 两款开源AI产品）、会编程写脚本/搭AI工作流/写优化Prompt、AI提效60%（低GI挂面调研工作流）、内容运营（抖音20w+点赞 / 7-8个视频破10万 / 近百人社群 / 小红书）、用户研究（金健乳业120次用户访谈 / 200+份反馈卡VOC / 蔗糖下调8% / 包装改旋盖）、产品能力（低GI挂面项目负责人 / Figma / PRD）、海外社区（Reddit / IndieHackers）、软技能（大学生艺术团办公部部长 / 11个分团 / 500-800人活动）
+- 短板（绝不虚构）：无CET-6、非985/211、无正式工作经验、无跨境电商店铺/亚马逊/Shopee实操、无直播/投流实操、无FB/IG/YouTube/TikTok实操、无酒类/移民教育/汽车行业经验、编程语言不确定（写「会编程写脚本」不写死「Python」）
+- 投递方向：AI运营、用户/社群运营、新媒体/内容运营、跨境电商/海外社媒、运营助理/产品助理
+
+## 生成方法论（四步）
+第1步 解析JD：提取岗位名、薪资、经验要求、学历要求、核心职责、硬性任职资格、加分项。
+第2步 识别门槛：区分「硬门槛」（学历、英语等级、经验年限、专业等写死在任职资格里的）和「软门槛」（带「优先」「加分」字样的）。
+第3步 匹配：从核心资产里挑3-4个能承接JD关键词的真实经历，用真实经历映射JD关键词，不编造。
+第4步 生成招呼语：身份定位（我是2026届应届生）+ 3-4个匹配点（真实经历+量化数字）+ 固定结尾，90-120字。
+
+## 红线（绝不违反）
+- 绝不编造经历、数字、证书、技能、经验
+- 数字口径各归各位：20w+只修饰「点赞」，社群规模是「近百人」，两者不能绑成「20w+社群」
+- 用「可迁移能力」承接短板：写「电商运营思维」而非「电商运营经验」；写「英语读写良好」而非编等级；写「会编程写脚本」而非写死具体语言
+- 硬门槛（985/211、CET-6、1年以上经验）不主动在招呼语里自我暴露，但必须在风险提示里诚实告知
+- 不写没确认用过的具体工具名（OpenCLAW、Canva、PS、千川、剪映）
+
+## 固定偏好
+- 结尾一律「期待回复」，绝不用「方便聊聊吗」
+- 固定结尾「人在深圳、随时到岗，期待回复」
+- 无论岗位JD是中英文，招呼语一律用中文输出（目标是国内HR）
+
+## 输出格式（每次固定三部分）
+【招呼语】引用块，可直接复制发送
+【匹配点】表格：JD要什么 | 招呼语对应 | 命中程度
+【风险提示】诚实指出短板+处理方式
+
+## 招呼语示例
+您好，我是2026届应届生，独立从0到1开源过两款AI产品，熟练Prompt工程、用AI搭工作流提效60%，也有抖音20w+点赞的内容运营经验。对AI运营方向很感兴趣，人在深圳、随时到岗，期待回复。
+
+## 待生成招呼语的岗位JD
+{INPUT}`;
 
 /* ============ LLM 直连（OpenAI 兼容 /chat/completions） ============ */
 async function callLLMChat(messages){
@@ -896,21 +937,23 @@ async function runExtra(){
   if(!input){showToast(t('toast.needjd'),true);return;}
   if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);openSettings();return;}
   var pl=detectLang(input);
-  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
-  var user=EXTRA_PROMPTS[curExtra][pl].replace(/\{INPUT\}/g,input);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+(curExtra==='greet'?'':memorySummary(pl));
+  var user=(curExtra==='greet'?GREET_PROMPT:EXTRA_PROMPTS[curExtra][pl]).replace(/\{INPUT\}/g,input);
   var out=document.getElementById('extra-output');
   out.innerHTML=prog();
-  setBot(t('bot.running')+' '+(curExtra==='netapply'?t('netapply.title'):t('step.'+curExtra)));
+  setBot(t('bot.running')+' '+(curExtra==='greet'?t('extra.greet.title'):curExtra==='netapply'?t('netapply.title'):t('step.'+curExtra)));
   try{
     var res=await callLLM(sys,user);
     lastRaw=res;
     if(curExtra==='netapply'){
       out.innerHTML='<div class="netapply-out">'+esc(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyLast()">'+t('netapply.copy')+'</button></div>';
+    }else if(curExtra==='greet'){
+      out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyGreet()">'+t('greet.copy')+'</button></div>';
     }else{
       out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
     }
     setBot(t('bot.done'));
-    addMem(({'5':'rank','9':'offer','10':'onboard','netapply':'netapply'})[curExtra],input+'\n\n'+res.slice(0,800));
+    addMem(({'5':'rank','9':'offer','10':'onboard','netapply':'netapply','greet':'greet'})[curExtra],input+'\n\n'+res.slice(0,800));
   }catch(e){
     out.innerHTML='<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';
     setBot(t('bot.offline'));
@@ -931,8 +974,19 @@ function openApply(){
   document.getElementById('extra-modal').classList.add('show');
 }
 function copyLast(){copyText(lastRaw);}
+function extractGreet(raw){
+  var s=(raw||'').replace(/\r\n?/g,'\n');
+  var cut=s.indexOf('【匹配点】');
+  if(cut===-1)cut=s.indexOf('【风险提示】');
+  if(cut!==-1)s=s.slice(0,cut);
+  s=s.replace(/【招呼语】/g,'');
+  s=s.split('\n').map(function(l){return l.replace(/^\s*>\s?/,'');}).join('\n');
+  s=s.replace(/^```[a-zA-Z]*\s*/,'').replace(/\s*```$/,'');
+  return s.trim();
+}
+function copyGreet(){copyText(extractGreet(lastRaw));}
 function copyText(txt){
-  function done(){showToast(t('netapply.copied'),false);}
+  function done(){showToast(t('copied'),false);}
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(done,function(){legacyCopy(txt,done);});
   }else{legacyCopy(txt,done);}
