@@ -143,7 +143,7 @@ tr:hover td{background:var(--surface2);}
 .know-card{padding:16px 18px;}
 .know-body{margin-top:10px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text2);}
 .extra-body{display:flex;flex-direction:column;gap:14px;}
-.extra-body textarea{min-height:160px;}
+.extra-body textarea{min-height:200px;}
 .extra-out{margin-top:4px;font-size:13.5px;max-height:60vh;overflow-y:auto;}
 .netapply-out{margin-top:4px;font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow-y:auto;background:var(--surface2);border-radius:12px;padding:14px 16px;}
 .mock-log{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow-y:auto;margin-bottom:14px;padding:4px;}
@@ -297,7 +297,7 @@ tr:hover td{background:var(--surface2);}
 
 <!-- 独立工具：第5/9/10步（单次） -->
 <div class="modal" id="extra-modal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:720px;">
     <div class="modal-head"><h3 id="extra-title"></h3><button class="modal-close" onclick="closeExtra()">×</button></div>
     <div class="extra-body">
       <div style="font-size:12px;color:var(--text3);" id="extra-hint"></div>
@@ -630,7 +630,7 @@ var GREET_PROMPT=`你是求职招呼语生成助手。用户是一名求职者�
 ## 生成方法论（四步）
 第1步 解析JD：提取岗位名、薪资、经验要求、学历要求、核心职责、硬性任职资格、加分项。
 第2步 识别门槛：区分「硬门槛」（学历、英语等级、经验年限、专业等写死在任职资格里的）和「软门槛」（带「优先」「加分」字样的）。
-第3步 匹配：从用户信息库的真实资产里挑3-4个能承接JD关键词的真实经历，用真实经历映射JD关键词，不编造。
+第3步 匹配：从用户信息库的真实资产里挑 3-4 个最能承接 JD 关键词的真实经历，用真实经历映射 JD 关键词并放大输出，不编造；与岗位要求无关的经历、专业、证书一律不写。
 第4步 生成招呼语：身份定位 + 3-4个匹配点（真实经历+量化数字）+ 固定结尾，90-120字。
 
 ## 红线（绝不违反）
@@ -638,6 +638,8 @@ var GREET_PROMPT=`你是求职招呼语生成助手。用户是一名求职者�
 - 用「可迁移能力」承接短板，不虚报等级或年限
 - 硬门槛缺失时，不自我暴露，但在风险提示里诚实告知
 - 不写用户未确认使用过的具体工具名
+- 专业/学历与岗位不对口时，招呼语里不提专业名称，改强调可迁移能力与相关经历
+- 不罗列信息库的全部内容，只挑与 JD 最匹配的 3-4 个点放大输出，其余一律省略
 
 ## 固定偏好
 - 结尾一律「期待回复」，绝不用「方便聊聊吗」
