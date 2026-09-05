@@ -222,6 +222,10 @@ tr:hover td{background:var(--surface2);}
     <div class="step-nav">
       <span class="step-chip" data-i18n="step.1">ATS</span><span class="step-chip" data-i18n="step.2">评分</span><span class="step-chip" data-i18n="step.3">JD拆解</span><span class="step-chip" data-i18n="step.4">诊断</span><span class="step-chip" data-i18n="step.6">学习计划</span><span class="step-chip" data-i18n="step.7">面试准备</span>
     </div>
+    <div id="report-dl-bar" style="display:none;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="downloadWord()" data-i18n="dl.word">下载 Word</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadPdf()" data-i18n="dl.pdf">下载 PDF</button>
+    </div>
     <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
   </div>
 </div>
@@ -376,6 +380,7 @@ zh:{
  'analysis.jd':'岗位 JD','analysis.jd.ph':'在此粘贴岗位 JD ...',
  'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
  'analysis.run':'一键全流程分析',
+ 'dl.word':'下载 Word','dl.pdf':'下载 PDF','dl.empty':'还没有报告可下载','dl.word.done':'Word 报告已下载','dl.pdf.hint':'在打印窗口选择「另存为 PDF」即可保存',
  'step.1':'ATS','step.2':'评分','step.3':'JD拆解','step.4':'诊断','step.5':'多JD排序','step.6':'学习计划','step.7':'面试准备','step.8':'Mock面试','step.9':'Offer谈判','step.10':'入职指南',
  'analysis.empty':'粘贴岗位 JD 后点击「一键全流程分析」','analysis.empty.desc':'完整分析需要 1-3 分钟，自动读取信息库作为你的背景',
  'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
@@ -433,6 +438,7 @@ en:{
  'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here...',
  'analysis.resume':'Resume','analysis.resume.select':'Select from Library','analysis.resume.ph':'Or paste your resume directly...',
  'analysis.run':'Run Full Analysis',
+ 'dl.word':'Download Word','dl.pdf':'Download PDF','dl.empty':'No report to download yet','dl.word.done':'Word report downloaded','dl.pdf.hint':'Choose "Save as PDF" in the print dialog',
  'step.1':'ATS','step.2':'Score','step.3':'JD Breakdown','step.4':'Diagnosis','step.5':'Priority Rank','step.6':'Study Plan','step.7':'Interview Prep','step.8':'Mock Interview','step.9':'Offer Negotiation','step.10':'Onboarding',
  'analysis.empty':'Paste a JD, then click "Run Full Analysis"','analysis.empty.desc':'Takes 1-3 min — your Library is read automatically',
  'analysis.running':'Running full analysis...','analysis.running.desc':'Estimated 1-3 min','analysis.analyzing':'Analyzing...',
@@ -892,7 +898,7 @@ async function runPro(ctx,acc,jd){
   var a4=await execStep(STEPS[3],ctx);ctx.diag=a4;acc=appendAcc(acc,a4,STEPS[3].key);renderOut(acc,prog());
   var a5=await execStep(STEPS[4],ctx);acc=appendAcc(acc,a5,STEPS[4].key);renderOut(acc,prog());
   var a6=await execStep(STEPS[5],ctx);acc=appendAcc(acc,a6,STEPS[5].key);
-  renderOut(acc,'');saveReport(jd,{content:acc});setBot(t('bot.done'));pendingCtx=null;
+  renderOut(acc,'');saveReport(jd,{content:acc});setReport(acc,reportTitle(jd));setBot(t('bot.done'));pendingCtx=null;
 }
 async function runAnalysis(){
   var jd=document.getElementById('jd-input').value.trim(),profile=getProfileText();
@@ -901,12 +907,13 @@ async function runAnalysis(){
   if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   setBot(t('bot.analyzing'));
   document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
+  var _dlbar=document.getElementById('report-dl-bar');if(_dlbar)_dlbar.style.display='none';
   var ctx={jd:jd,resume:profile,jd_analysis:'',diag:''};
   var acc='';
   try{
     var a1=await execStep(STEPS[0],ctx);acc=appendAcc(acc,a1,STEPS[0].key);renderOut(acc,prog());
     var a2=await execStep(STEPS[1],ctx);acc=appendAcc(acc,a2,STEPS[1].key);
-    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());pendingCtx={jd:jd,resume:profile,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
+    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());setReport(acc,reportTitle(jd));pendingCtx={jd:jd,resume:profile,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
     await runPro(ctx,acc,jd);
   }catch(e){handleError(e);}
 }
@@ -932,7 +939,69 @@ function renderReports(){
 function openReport(id){
   var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
   switchPage('analysis');document.getElementById('jd-input').value=r.jd;
-  if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';}
+  if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';setReport(md,r.title||'');}
+}
+
+/* ============ 报告下载（Word / PDF） ============ */
+var _curReport={md:'',title:''};
+function reportTitle(jd){var s=(jd||'').split('\n')[0].trim().replace(/\s+/g,' ');return s.slice(0,60)||t('analysis.title');}
+function setReport(md,title){
+  _curReport.md=md||'';
+  _curReport.title=title||reportTitle((document.getElementById('jd-input')||{}).value)||'Pleadly';
+  var bar=document.getElementById('report-dl-bar');if(bar)bar.style.display='flex';
+}
+function _dlFilename(ext){
+  var n=(_curReport.title||'Pleadly-报告').replace(/[\\/:*?"<>|\n\r]/g,'_').trim();
+  return (n||'Pleadly-报告')+'.'+ext;
+}
+function _downloadBlob(content,mime,filename){
+  var blob=new Blob([content],{type:mime});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},200);
+}
+var _WORD_CSS='body{font-family:\'Microsoft YaHei\',\'PingFang SC\',sans-serif;font-size:11pt;line-height:1.6;color:#1c1c1e;}'+
+'h1{font-size:20pt;font-weight:bold;border-bottom:1px solid #ccc;padding-bottom:4pt;margin:18pt 0 8pt;}'+
+'h2{font-size:16pt;font-weight:bold;margin:14pt 0 6pt;}'+
+'h3{font-size:13pt;font-weight:bold;margin:10pt 0 4pt;}'+
+'h4,h5,h6{font-size:12pt;font-weight:bold;margin:8pt 0 4pt;}'+
+'p{margin:4pt 0;}'+
+'ul,ol{margin:6pt 0 6pt 20pt;}li{margin:2pt 0;}'+
+'blockquote{border-left:3pt solid #007aff;padding:4pt 10pt;margin:8pt 0;color:#3c3c43;background:#f2f2f7;}'+
+'code{font-family:Consolas,monospace;background:#f2f2f7;padding:1pt 4pt;}'+
+'pre{background:#f2f2f7;padding:8pt;white-space:pre-wrap;word-wrap:break-word;}pre code{background:none;padding:0;}'+
+'table{border-collapse:collapse;width:100%;margin:8pt 0;}'+
+'th,td{border:1px solid #ccc;padding:4pt 8pt;font-size:10.5pt;text-align:left;vertical-align:top;}th{background:#f2f2f7;font-weight:bold;}'+
+'.table-wrap{overflow:visible;}';
+var _PDF_CSS='*{box-sizing:border-box;}@page{size:A4;margin:18mm 16mm;}'+
+'body{font-family:-apple-system,\'Microsoft YaHei\',\'PingFang SC\',sans-serif;color:#1c1c1e;font-size:13px;line-height:1.7;margin:0;}'+
+'.report-title{font-size:22px;font-weight:800;border-bottom:2px solid #1c1c1e;padding-bottom:8px;margin:0 0 16px;}'+
+'h1{font-size:19px;font-weight:700;border-bottom:1px solid #e0e0e0;padding-bottom:6px;margin:20px 0 10px;}'+
+'h2{font-size:16px;font-weight:700;margin:16px 0 8px;}'+
+'h3{font-size:14px;font-weight:600;margin:12px 0 6px;}'+
+'h4,h5,h6{font-size:13px;font-weight:600;margin:10px 0 5px;}'+
+'p{margin:6px 0;}ul,ol{margin:6px 0;padding-left:22px;}li{margin:3px 0;}'+
+'blockquote{border-left:3px solid #007aff;padding:6px 12px;margin:10px 0;background:#f2f2f7;}'+
+'code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f2f2f7;padding:1px 5px;border-radius:4px;}'+
+'pre{background:#f2f2f7;padding:10px 14px;border-radius:8px;margin:10px 0;white-space:pre-wrap;word-wrap:break-word;}pre code{background:none;padding:0;}'+
+'table{border-collapse:collapse;width:100%;margin:10px 0;}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;vertical-align:top;font-size:12px;}th{background:#f2f2f7;font-weight:700;}tr{page-break-inside:avoid;}';
+function downloadWord(){
+  if(!_curReport.md){showToast(t('dl.empty'),true);return;}
+  var html='<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>'+esc(_curReport.title)+'</title><style>'+_WORD_CSS+'</style></head><body><h1>'+esc(_curReport.title)+'</h1>'+mdToHtml(_curReport.md)+'</body></html>';
+  _downloadBlob('﻿'+html,'application/msword',_dlFilename('doc'));
+  showToast(t('dl.word.done'),false);
+}
+function downloadPdf(){
+  if(!_curReport.md){showToast(t('dl.empty'),true);return;}
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(_curReport.title)+'</title><style>'+_PDF_CSS+'</style></head><body><h1 class="report-title">'+esc(_curReport.title)+'</h1>'+mdToHtml(_curReport.md)+'</body></html>';
+  var ifr=document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+  document.body.appendChild(ifr);
+  var win=ifr.contentWindow;var doc=win.document;
+  doc.open();doc.write(html);doc.close();
+  setTimeout(function(){try{win.focus();win.print();}catch(e){}setTimeout(function(){if(ifr.parentNode)ifr.parentNode.removeChild(ifr);},1500);},350);
+  showToast(t('dl.pdf.hint'),false);
 }
 
 /* ============ 个人记忆库（本地，随使用积累，绝不上传） ============ */
