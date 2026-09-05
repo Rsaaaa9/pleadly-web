@@ -107,6 +107,20 @@ tr:hover td{background:var(--surface2);}
 .analysis-inputbar-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;align-items:flex-end;}
 .analysis-inputbar textarea{flex:1;min-height:44px;max-height:130px;resize:none;border-radius:18px;padding:12px 16px;line-height:1.4;background:var(--surface);font-size:14px;}
 @media (prefers-reduced-transparency:reduce){.analysis-inputbar{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none;}}
+/* 分析页三框布局：招呼语横条 + 报告/简历对称两栏（框内滚动） */
+.greet-strip{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:16px;}
+.greet-strip .gs-title{font-size:12px;font-weight:700;color:var(--text3);flex:none;letter-spacing:0.01em;padding-top:2px;}
+.greet-strip .gs-body{flex:1;min-width:0;font-size:14px;line-height:1.6;color:var(--text);max-height:140px;overflow-y:auto;white-space:pre-wrap;}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;}
+@media(max-width:900px){.report-grid{grid-template-columns:1fr;}}
+.report-col{display:flex;flex-direction:column;min-width:0;}
+.report-col-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.report-col-title{font-size:13px;font-weight:600;color:var(--text3);letter-spacing:0.01em;}
+.report-col-body{overflow-y:auto;min-height:320px;max-height:calc(100vh - 300px);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:16px 18px;}
+.resume-toolbar{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.resume-toolbar select{flex:none;padding:6px 30px 6px 10px;font-size:13px;border-radius:10px;background:var(--surface2);border:1px solid var(--separator);color:var(--text);cursor:pointer;font-family:inherit;}
+.resume-editor{width:100%;min-height:320px;max-height:calc(100vh - 300px);resize:vertical;box-sizing:border-box;font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:14px 16px;outline:none;}
+.resume-editor:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
 
 .md-output{line-height:1.7;font-size:14.5px;}
 .md-output h1{font-size:20px;font-weight:800;letter-spacing:-0.01em;margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--separator);}
@@ -217,16 +231,40 @@ tr:hover td{background:var(--surface2);}
 <!-- 分析页 -->
 <div class="page active" id="page-analysis" style="padding-bottom:130px;">
   <div class="page-header"><h2 data-i18n="analysis.title">岗位分析</h2><p data-i18n="analysis.subtitle">粘贴JD+选择简历</p></div>
-  <div class="card" style="min-height:420px;display:flex;flex-direction:column;">
-    <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;margin-bottom:16px;"></div>
-    <div class="step-nav">
-      <span class="step-chip" data-i18n="step.1">ATS</span><span class="step-chip" data-i18n="step.2">评分</span><span class="step-chip" data-i18n="step.3">JD拆解</span><span class="step-chip" data-i18n="step.4">诊断</span><span class="step-chip" data-i18n="step.6">学习计划</span><span class="step-chip" data-i18n="step.7">面试准备</span>
+  <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;margin-bottom:16px;"></div>
+  <div class="step-nav">
+    <span class="step-chip" data-i18n="step.1">ATS</span><span class="step-chip" data-i18n="step.2">评分</span><span class="step-chip" data-i18n="step.3">JD拆解</span><span class="step-chip" data-i18n="step.4">诊断</span><span class="step-chip" data-i18n="step.6">学习计划</span><span class="step-chip" data-i18n="step.7">面试准备</span>
+  </div>
+  <div class="greet-strip" id="greet-strip" style="display:none;">
+    <span class="gs-title" data-i18n="greetstrip.title">招呼语</span>
+    <div class="gs-body" id="greet-strip-body"></div>
+    <button class="btn btn-ghost btn-sm" onclick="copyGreet()" style="flex:none;" data-i18n="greet.copy">复制招呼语</button>
+  </div>
+  <div class="report-grid">
+    <div class="report-col">
+      <div class="report-col-head"><span class="report-col-title" data-i18n="reportbox.title">分析报告</span></div>
+      <div class="report-col-body">
+        <div id="report-dl-bar" style="display:none;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="downloadWord()" data-i18n="dl.word">下载 Word</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadPdf()" data-i18n="dl.pdf">下载 PDF</button>
+        </div>
+        <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
+      </div>
     </div>
-    <div id="report-dl-bar" style="display:none;justify-content:flex-end;gap:8px;margin-bottom:12px;">
-      <button class="btn btn-ghost btn-sm" onclick="downloadWord()" data-i18n="dl.word">下载 Word</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadPdf()" data-i18n="dl.pdf">下载 PDF</button>
+    <div class="report-col">
+      <div class="report-col-head">
+        <span class="report-col-title" data-i18n="resume.title">简历（可编辑）</span>
+        <div class="resume-toolbar">
+          <select id="resume-tpl">
+            <option value="classic" data-i18n-opt="tpl.classic">classic 单栏</option>
+            <option value="modern" data-i18n-opt="tpl.modern">modern 侧栏</option>
+            <option value="even" data-i18n-opt="tpl.even">even 双栏</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="downloadResumePdf()" data-i18n="resume.export">导出 PDF</button>
+        </div>
+      </div>
+      <textarea class="resume-editor" id="resume-editor" spellcheck="false" data-i18n-ph="resume.ph" placeholder="粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）" oninput="_resumeDirty=true;"></textarea>
     </div>
-    <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
   </div>
 </div>
 
@@ -424,7 +462,12 @@ zh:{
  'tools.9.desc':'选对应岗位报告 + 补 offer package，输出谈判策略 + 话术',
  'tools.10.desc':'选对应岗位报告，生成入职前 30 天生存指南',
  'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
- 'profile.empty':'信息库为空，请先到「信息库」上传简历或经历'
+ 'profile.empty':'信息库为空，请先到「信息库」上传简历或经历',
+ 'reportbox.title':'分析报告','resume.title':'简历（可编辑）','resume.export':'导出 PDF',
+ 'resume.ph':'粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）',
+ 'resume.empty':'简历为空，先填写或运行分析生成','resume.generated':'已生成定向简历，可在右侧编辑或导出',
+ 'tpl.classic':'classic 单栏','tpl.modern':'modern 侧栏','tpl.even':'even 双栏',
+ 'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
@@ -482,7 +525,12 @@ en:{
  'tools.9.desc':'Pick a report + add your offer package → item-by-item strategy + scripts',
  'tools.10.desc':'Pick a report → first-30-days survival guide',
  'profile.note':'Reading {N} document(s) from your Library as your background',
- 'profile.empty':'Library is empty — upload a resume or experiences first'
+ 'profile.empty':'Library is empty — upload a resume or experiences first',
+ 'reportbox.title':'Analysis Report','resume.title':'Resume (editable)','resume.export':'Export PDF',
+ 'resume.ph':'Paste or edit your resume (Markdown: # Name / ## sections / ### entries)',
+ 'resume.empty':'Resume is empty — fill it in or run an analysis first','resume.generated':'Tailored resume generated — edit or export on the right',
+ 'tpl.classic':'classic (single)','tpl.modern':'modern (sidebar)','tpl.even':'even (grid)',
+ 'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed'
 }
 };
 var lang=localStorage.getItem('plang')||'zh';
@@ -509,7 +557,7 @@ function switchPage(name){
   if(pg)pg.classList.add('active');
   var ib=document.getElementById('analysis-inputbar');
   if(ib)ib.style.display=(name==='analysis')?'block':'none';
-  if(name==='analysis')updateProfileNote();
+  if(name==='analysis'){updateProfileNote();initResumeEditor();}
   if(name==='reports')renderReports();
   if(name==='library')renderLib();
   if(name==='memory')renderMemory();
@@ -599,7 +647,7 @@ var STEPS=[
   {key:'step.1',free:true,prompt:'你是ATS简历筛选系统。请执行以下任务：\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 任务\n1. 从JD中提取所有高频关键词和必须出现的技能/经验术语\n2. 逐条检测简历中是否出现这些关键词\n3. 输出表格:\n\n| 关键词 | JD中出现位置 | 简历中是否命中 | 如未命中建议插入位置 |\n|------|------|:---:|------|\n\n如关键硬性要求缺失，标红警告。',promptEn:'You are an ATS (Applicant Tracking System) resume screener. Complete the following tasks:\n\n## Resume\n{RESUME}\n\n## Job Description\n{JD}\n\n## Tasks\n1. Extract all high-frequency keywords and required skill/experience terms from the JD\n2. Check line by line whether each keyword appears in the resume\n3. Output a table:\n\n| Keyword | Where in JD | In resume? | If missing, where to add |\n|------|------|:---:|------|\n\nFlag any missing hard requirement with a warning.'},
   {key:'step.2',free:true,prompt:'你是招聘评估专家。为候选人进行岗位匹配度评分。\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 评分维度(6维加权)\n- 硬性门槛(学历/专业/年限/证书): 30分\n- 技能栈匹配: 25分\n- 行业经验匹配: 15分\n- 项目/作品匹配: 15分\n- 加分项命中: 10分\n- 隐性匹配(学习能力/自驱力): 5分\n\n## 输出格式\n总分: XX/100 → 🟢高度匹配/🟡较匹配/🟠可冲/🔴不匹配/⚫放弃\n\n每个维度写出评分依据和扣分点。',promptEn:'You are a recruiting assessment expert. Score how well the candidate fits this role.\n\n## Resume\n{RESUME}\n\n## Job Description\n{JD}\n\n## Scoring dimensions (6 weighted)\n- Hard requirements (education/major/years/certifications): 30 pts\n- Skill stack match: 25 pts\n- Industry experience match: 15 pts\n- Project/portfolio match: 15 pts\n- Bonus points hit: 10 pts\n- Hidden fit (learning ability/self-drive): 5 pts\n\n## Output format\nTotal: XX/100 → 🟢Strong match / 🟡Good match / 🟠Reach / 🔴Poor match / ⚫Skip\n\nFor each dimension, state the scoring basis and point deductions.'},
   {key:'step.3',free:false,prompt:'你是行业分析师。全面拆解以下岗位JD。注意：你没有联网能力，公司背景仅基于JD本身推断，不确定处标注「推测」。\n\n## JD\n{JD}\n\n## 输出结构\n1. 公司背景(2-3句话讲清商业模式，不确定处标推测)\n2. 岗位业务分析(入职后实际在做什么)\n3. 硬性要求(🔴必须/🟡优选/🟢加分)\n4. 隐形需求(JD没写但面试官在意的)\n5. 面试追问方向(6-8题，标注真正在测什么)',promptEn:'You are an industry analyst. Break down the following job description in depth. Note: you have no internet access, so infer the company background from the JD alone and mark anything uncertain as [inferred].\n\n## Job Description\n{JD}\n\n## Output structure\n1. Company background (2-3 sentences on the business model; mark uncertain parts as inferred)\n2. Role business analysis (what you actually do after joining)\n3. Hard requirements (🔴must / 🟡preferred / 🟢nice-to-have)\n4. Hidden requirements (not written in the JD but what the interviewer cares about)\n5. Follow-up interview directions (6-8 questions, noting what each really tests)'},
-  {key:'step.4',free:false,prompt:'你是简历诊断师。逐行对照JD诊断简历，并给出可溯源、可直接复制的定向改写。\n\n## JD分析(前面已完成)\n{JD_ANALYSIS}\n\n## 简历\n{RESUME}\n\n## 输出前四部分\n1. 匹配点(简历原文→JD哪条→强度⭐⭐⭐/⭐⭐/⭐)\n2. 冗余点(简历原文→为什么冗余→删除/压缩/改写)\n3. 缺失点(JD要求→现状→严重度🔴/🟡/🟢)\n4. 风险点(原文→负面信号→风险等级→修复方案)\n\n## 第五部分：定向改写（三栏溯源表）\n用STAR+量化改写每条需要优化的经历，输出三栏表格，让每处修改都能溯源：\n\n| 原文 | AI改写 | 修改依据 |\n|---|---|---|\n\n要求：\n- 每行只改一条经历/一个要点，与原文逐条对应，不跳行\n- 修改依据要具体(如「补量化结果」「删主观形容词」「重组句式对齐JD关键词」「合并两段重复经历」)，并注明是重组已有信息还是新增措辞\n- 只改写真实具备的经历，绝不编造数字、成就和经历；无依据处保留原文并注明「建议补充XX信息」\n\n最后把全部改写合并输出一份「改写后完整简历」（用代码块包裹，方便直接复制）。',promptEn:'You are a resume diagnostician. Diagnose the resume line by line against the JD, and produce a traceable, copy-ready rewrite.\n\n## JD analysis (done earlier)\n{JD_ANALYSIS}\n\n## Resume\n{RESUME}\n\n## Output four sections\n1. Matches (resume text → which JD requirement → strength ⭐⭐⭐/⭐⭐/⭐)\n2. Redundancy (resume text → why redundant → delete/condense/rewrite)\n3. Gaps (JD requirement → current state → severity 🔴/🟡/🟢)\n4. Risks (text → negative signal → risk level → fix)\n\n## Section 5: Targeted rewrite (three-column traceability table)\nRewrite every experience that needs improvement using STAR + quantification, as a three-column table so each change is traceable:\n\n| Original | AI rewrite | Why changed |\n|---|---|---|\n\nRules:\n- One experience/point per row; map each row to its source, don\'t skip\n- The "why" must be specific (e.g. "added quantifiable result", "removed subjective adjective", "restructured to align with JD keywords", "merged two redundant entries"), and note whether it rearranges existing info or adds new wording\n- Only rewrite experiences you actually have; never fabricate numbers, achievements, or experience. Where there\'s no basis, keep the original and note "suggest adding X info"\n\nAfter the table, merge all rewrites into one "Full rewritten resume" (wrapped in a code block for easy copying).'},
+  {key:'step.4',free:false,prompt:'你是简历诊断师。逐行对照JD诊断简历，并给出可溯源、可直接复制的定向改写。\n\n## JD分析(前面已完成)\n{JD_ANALYSIS}\n\n## 简历\n{RESUME}\n\n## 输出前四部分\n1. 匹配点(简历原文→JD哪条→强度⭐⭐⭐/⭐⭐/⭐)\n2. 冗余点(简历原文→为什么冗余→删除/压缩/改写)\n3. 缺失点(JD要求→现状→严重度🔴/🟡/🟢)\n4. 风险点(原文→负面信号→风险等级→修复方案)\n\n## 第五部分：定向改写（三栏溯源表）\n用STAR+量化改写每条需要优化的经历，输出三栏表格，让每处修改都能溯源：\n\n| 原文 | AI改写 | 修改依据 |\n|---|---|---|\n\n要求：\n- 每行只改一条经历/一个要点，与原文逐条对应，不跳行\n- 修改依据要具体(如「补量化结果」「删主观形容词」「重组句式对齐JD关键词」「合并两段重复经历」)，并注明是重组已有信息还是新增措辞\n- 只改写真实具备的经历，绝不编造数字、成就和经历；无依据处保留原文并注明「建议补充XX信息」\n\n最后把全部改写合并输出一份「改写后完整简历」（用代码块包裹，方便直接复制）。\n\n「改写后完整简历」代码块内部必须严格使用以下 Markdown 结构（便于直接导入简历模板导出 PDF）：\n# 姓名\n联系方式（电话 | 邮箱 | 城市，可分多行）\n## 教育背景\n### 学校 | 专业 | 起止时间\n- 要点\n## 实习经历\n### 公司 | 岗位 | 起止时间\n- 要点\n## 项目经历\n### 项目名 | 角色 | 起止时间\n- 要点\n## 校园经历（可选）\n### 组织 | 角色 | 起止时间\n- 要点\n## 专业技能\n- 技能点\n## 荣誉奖项（可选）\n- 奖项名称 | 等级 | 时间\n## 自我评价\n- 简短自述',promptEn:'You are a resume diagnostician. Diagnose the resume line by line against the JD, and produce a traceable, copy-ready rewrite.\n\n## JD analysis (done earlier)\n{JD_ANALYSIS}\n\n## Resume\n{RESUME}\n\n## Output four sections\n1. Matches (resume text → which JD requirement → strength ⭐⭐⭐/⭐⭐/⭐)\n2. Redundancy (resume text → why redundant → delete/condense/rewrite)\n3. Gaps (JD requirement → current state → severity 🔴/🟡/🟢)\n4. Risks (text → negative signal → risk level → fix)\n\n## Section 5: Targeted rewrite (three-column traceability table)\nRewrite every experience that needs improvement using STAR + quantification, as a three-column table so each change is traceable:\n\n| Original | AI rewrite | Why changed |\n|---|---|---|\n\nRules:\n- One experience/point per row; map each row to its source, don\'t skip\n- The "why" must be specific (e.g. "added quantifiable result", "removed subjective adjective", "restructured to align with JD keywords", "merged two redundant entries"), and note whether it rearranges existing info or adds new wording\n- Only rewrite experiences you actually have; never fabricate numbers, achievements, or experience. Where there\'s no basis, keep the original and note "suggest adding X info"\n\nAfter the table, merge all rewrites into one "Full rewritten resume" (wrapped in a code block for easy copying).\n\nThe "Full rewritten resume" code block must strictly follow this Markdown structure (so it can be imported into a resume template and exported to PDF):\n# Name\ncontact info (phone | email | city, one or more lines)\n## Education\n### School | Major | dates\n- point\n## Experience\n### Company | Role | dates\n- point\n## Projects\n### Project | Role | dates\n- point\n## Campus (optional)\n### Organization | Role | dates\n- point\n## Skills\n- skill\n## Awards (optional)\n- award | level | date\n## Summary\n- short self-description'},
   {key:'step.6',free:false,prompt:'你是学习规划师。基于简历诊断中的缺失点，输出学习计划。\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出: 每条学习任务包含\n- 要补的缺口(对应JD哪条)\n- 学习内容 + 学习资源(优先免费)\n- 预计周期 + 重要程度(🔴必须/🟡建议/🟢可选)\n- 可验证产出(学到什么程度算学完了)\n\n按 严重度+紧急度+学习周期 综合排序。',promptEn:'You are a learning planner. Based on the gaps from the resume diagnosis, produce a study plan.\n\n## Diagnosis\n{DIAGNOSIS}\n\n## Output: each learning task must include\n- The gap to close (which JD requirement)\n- Learning content + resources (free ones first)\n- Estimated duration + priority (🔴must / 🟡recommended / 🟢optional)\n- Verifiable output (what counts as done)\n\nSort by severity + urgency + duration.'},
   {key:'step.7',free:false,prompt:'你是面试教练。基于JD和候选人背景，准备全流程面试题库。注意：你没有联网能力，面试题基于JD和简历推断，不确定处标注「推测」。\n\n## JD分析\n{JD_ANALYSIS}\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出6阶段\nA. HR电话初筛(9题逐字话术)\nB. 笔试/测评(预测题型+答题框架)\nC. 技术面(分级题库 ⭐→⭐⭐→⭐⭐⭐)\nD. 行为面(5个STAR故事，每个≤90秒)\nE. 总监/终面(5-8个高层次问题)\nF. 情景模拟(3-5角色扮演脚本)',promptEn:'You are an interview coach. Based on the JD and the candidate background, prepare a full-process interview question bank. Note: you have no internet access, so infer questions from the JD and resume and mark uncertainty as [inferred].\n\n## JD analysis\n{JD_ANALYSIS}\n\n## Diagnosis\n{DIAGNOSIS}\n\n## Output 6 stages\nA. HR phone screen (9 questions with word-for-word scripts)\nB. Written test / assessment (predicted question types + answering frameworks)\nC. Technical interview (tiered questions ⭐→⭐⭐→⭐⭐⭐)\nD. Behavioral interview (5 STAR stories, each ≤90 seconds)\nE. Director / final round (5-8 high-level questions)\nF. Situational simulation (3-5 role-play scripts)'}
 ];
@@ -896,15 +944,32 @@ async function execStep(st,ctx){setBot(t('bot.running')+' '+t(st.key));var pl=de
 async function runPro(ctx,acc,jd){
   var a3=await execStep(STEPS[2],ctx);ctx.jd_analysis=a3;acc=appendAcc(acc,a3,STEPS[2].key);renderOut(acc,prog());
   var a4=await execStep(STEPS[3],ctx);ctx.diag=a4;acc=appendAcc(acc,a4,STEPS[3].key);renderOut(acc,prog());
+  var rw=extractResumeBlock(a4);if(rw){setResumeText(rw);showToast(t('resume.generated'),false);}
   var a5=await execStep(STEPS[4],ctx);acc=appendAcc(acc,a5,STEPS[4].key);renderOut(acc,prog());
   var a6=await execStep(STEPS[5],ctx);acc=appendAcc(acc,a6,STEPS[5].key);
   renderOut(acc,'');saveReport(jd,{content:acc});setReport(acc,reportTitle(jd));setBot(t('bot.done'));pendingCtx=null;
+}
+function _startGreet(jd,profile){
+  var strip=document.getElementById('greet-strip');
+  var body=document.getElementById('greet-strip-body');
+  if(strip)strip.style.display='flex';
+  if(body)body.innerHTML='<span style="color:var(--text3);font-size:13px;">'+esc(t('greetstrip.waiting'))+'</span>';
+  var pl=detectLang(jd||profile);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT);
+  var user=GREET_PROMPT.replace('{PROFILE}',profile).replace('{INPUT}',jd);
+  callLLM(sys,user).then(function(res){
+    lastRaw=res;
+    if(body)body.textContent=extractGreet(res);
+  }).catch(function(e){
+    if(body)body.innerHTML='<span style="color:var(--text3);font-size:13px;">'+esc(t('greetstrip.error'))+(e&&e.message?': '+esc(e.message):'')+'</span>';
+  });
 }
 async function runAnalysis(){
   var jd=document.getElementById('jd-input').value.trim(),profile=getProfileText();
   if(!jd){showToast(t('toast.needjd'),true);return;}
   if(!profile){showToast(t('toast.needresume'),true);return;}
   if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  _startGreet(jd,profile);
   setBot(t('bot.analyzing'));
   document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
   var _dlbar=document.getElementById('report-dl-bar');if(_dlbar)_dlbar.style.display='none';
@@ -999,6 +1064,222 @@ function downloadPdf(){
   ifr.setAttribute('aria-hidden','true');ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
   document.body.appendChild(ifr);
   var win=ifr.contentWindow;var doc=win.document;
+  doc.open();doc.write(html);doc.close();
+  setTimeout(function(){try{win.focus();win.print();}catch(e){}setTimeout(function(){if(ifr.parentNode)ifr.parentNode.removeChild(ifr);},1500);},350);
+  showToast(t('dl.pdf.hint'),false);
+}
+
+/* ============ 简历框：Markdown 解析 + 多模板 PDF 导出 ============ */
+var _resumeDirty=false;
+function _L(zh,en){return lang==='en'?en:zh;}
+function _resumeSkeleton(){
+  return _L(
+    '# 姓名\n电话 | 邮箱 | 城市\n\n## 教育背景\n### 学校 | 专业 | 2022 - 2026\n- GPA / 主修课程\n\n## 实习经历\n### 公司 | 岗位 | 2024.06 - 2024.09\n- 做了什么（STAR + 量化结果）\n\n## 项目经历\n### 项目名 | 角色 | 时间\n- 项目描述\n\n## 专业技能\n- 技能A、技能B\n',
+    '# Your Name\nphone | email | location\n\n## Education\n### School | Major | 2022 - 2026\n- GPA / core courses\n\n## Experience\n### Company | Role | 2024.06 - 2024.09\n- What you did (STAR + quantified result)\n\n## Projects\n### Project | Role | date\n- description\n\n## Skills\n- Skill A, Skill B\n'
+  );
+}
+function initResumeEditor(){
+  var ta=document.getElementById('resume-editor');
+  if(!ta||_resumeDirty)return;
+  var p=getProfileText();
+  ta.value=p?p:_resumeSkeleton();
+}
+function setResumeText(txt){
+  var ta=document.getElementById('resume-editor');
+  if(ta)ta.value=txt||'';
+  _resumeDirty=true;
+}
+function extractResumeBlock(raw){
+  if(!raw)return '';
+  var s=(raw||'').replace(/\r\n?/g,'\n');
+  var blocks=[],re=/```[^\n]*\n([\s\S]*?)```/g,m;
+  while((m=re.exec(s))!==null)blocks.push(m[1]);
+  if(!blocks.length)return '';
+  var cand=blocks[blocks.length-1];
+  for(var b=blocks.length-1;b>=0;b--){
+    var blk=blocks[b].trim();
+    if(blk.indexOf('# ')!==-1||blk.indexOf('## ')!==-1){cand=blk;break;}
+  }
+  return cand.trim();
+}
+function parseResume(md){
+  md=(md||'').replace(/\r\n?/g,'\n');
+  var res={name:'',contact:[],summary:'',sections:[]};
+  var lines=md.split('\n'),i=0;
+  while(i<lines.length&&!lines[i].trim())i++;
+  if(i>=lines.length)return res;
+  var first=lines[i],nm=first.match(/^#+\s*(.*)/);
+  res.name=(nm?nm[1]:first).trim();i++;
+  while(i<lines.length){
+    var t=lines[i];
+    if(/^##\s+/.test(t))break;
+    if(t.trim())res.contact.push(t.trim());
+    i++;
+  }
+  var cur=null,last=null;
+  for(;i<lines.length;i++){
+    var ln=lines[i],sm=ln.match(/^##\s+(.*)/);
+    if(sm){cur={title:sm[1].trim(),entries:[],lines:[]};last=null;res.sections.push(cur);continue;}
+    if(!cur)continue;
+    var em=ln.match(/^###\s+(.*)/);
+    if(em){
+      var head=em[1].trim(),seg=head.split(/\s*\|\s*|\s+[—–]\s+|\s+-\s+/);
+      last={title:seg[0].trim(),meta:seg.slice(1).join(' | ').trim(),bullets:[]};
+      cur.entries.push(last);continue;
+    }
+    var bm=ln.match(/^\s*[-*+]\s+(.*)/);
+    var txt=(bm?bm[1]:ln).trim();
+    if(!txt)continue;
+    if(last)last.bullets.push(txt);else cur.lines.push(txt);
+  }
+  for(var s=0;s<res.sections.length;s++){
+    var sec=res.sections[s];
+    if(_isSummarySec(sec.title)){res.summary=sec.lines.join(' ').trim();break;}
+  }
+  return res;
+}
+function _isSummarySec(t){return /自我评价|个人简介|个人优势|Summary|Objective|Profile/.test(t);}
+function _splitSections(res){
+  var side=[],main=[];
+  for(var i=0;i<res.sections.length;i++){
+    var t=res.sections[i].title||'';
+    if(/技能|Skills|荣誉|奖项|Awards|教育|Education|语言|Language|自我评价|个人简介|个人优势|Summary|Objective|Profile/.test(t))side.push(res.sections[i]);
+    else main.push(res.sections[i]);
+  }
+  return {side:side,main:main};
+}
+function _resEntriesHtml(s){
+  var h='';
+  for(var j=0;j<s.entries.length;j++){
+    var e=s.entries[j];
+    h+='<div class="entry"><div class="et"><span class="et-t">'+esc(e.title)+'</span>'+(e.meta?'<span class="et-m">'+esc(e.meta)+'</span>':'')+'</div>';
+    if(e.bullets.length){h+='<ul>';for(var b=0;b<e.bullets.length;b++)h+='<li>'+esc(e.bullets[b])+'</li>';h+='</ul>';}
+    h+='</div>';
+  }
+  if(s.lines.length)h+='<div class="lines">'+s.lines.map(esc).join('<br>')+'</div>';
+  return h;
+}
+function _mainBlock(s){return '<div class="mblock"><h2>'+esc(s.title)+'</h2>'+_resEntriesHtml(s)+'</div>';}
+function _sideBlock(s){
+  var h='<div class="sblock"><h3>'+esc(s.title)+'</h3>';
+  if(s.entries.length){
+    for(var j=0;j<s.entries.length;j++){
+      var e=s.entries[j];
+      h+='<div class="sent"><div class="st">'+esc(e.title)+'</div>'+(e.meta?'<div class="sm">'+esc(e.meta)+'</div>':'');
+      if(e.bullets.length){h+='<ul>';for(var b=0;b<e.bullets.length;b++)h+='<li>'+esc(e.bullets[b])+'</li>';h+='</ul>';}
+      h+='</div>';
+    }
+  }else if(s.lines.length){
+    h+='<div class="slines">'+s.lines.map(esc).join('<br>')+'</div>';
+  }
+  return h+'</div>';
+}
+var _RESUME_PRINT='@page{size:A4;margin:14mm 16mm;}'+
+'*{box-sizing:border-box;}'+
+'body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#1c1c1e;margin:0;}'+
+'@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}';
+function resumeTplClassic(res){
+  var h='<div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<i></i>')+'</div>';
+  if(res.summary)h+='<div class="summary">'+esc(res.summary)+'</div>';
+  for(var i=0;i<res.sections.length;i++){
+    if(_isSummarySec(res.sections[i].title))continue;
+    h+='<div class="sec"><h2>'+esc(res.sections[i].title)+'</h2>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    '.name{font-size:30px;font-weight:800;letter-spacing:0.01em;margin:0 0 4px;}'+
+    '.contact{font-size:11.5px;color:#444;margin-bottom:8px;}'+
+    '.contact i{font-style:normal;margin:0 7px;}.contact i:before{content:"·";color:#999;}'+
+    '.summary{font-size:12px;color:#333;line-height:1.6;margin:6px 0 4px;}'+
+    '.sec{margin-top:14px;}'+
+    '.sec h2{font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1.5px solid #1c1c1e;padding-bottom:3px;margin:0 0 7px;}'+
+    '.entry{margin-bottom:9px;}'+
+    '.entry .et{font-size:13px;}'+
+    '.entry .et-t{font-weight:700;}'+
+    '.entry .et-m{font-size:11.5px;color:#555;margin-left:6px;}'+
+    '.entry ul{margin:4px 0 0;padding-left:18px;}.entry li{font-size:11.5px;line-height:1.55;color:#333;margin:1.5px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#333;}';
+  return {css:css,body:h};
+}
+function resumeTplModern(res){
+  var sp=_splitSections(res);
+  var side='';
+  if(res.contact.length)side+='<div class="sblock"><h3>'+_L('联系方式','Contact')+'</h3><div class="slines">'+res.contact.map(esc).join('<br>')+'</div></div>';
+  for(var k=0;k<sp.side.length;k++)side+=_sideBlock(sp.side[k]);
+  var main='';
+  if(res.summary)main+='<div class="mblock"><h2>'+_L('个人简介','Summary')+'</h2><p class="sum">'+esc(res.summary)+'</p></div>';
+  for(var m=0;m<sp.main.length;m++)main+=_mainBlock(sp.main[m]);
+  var css=_RESUME_PRINT+
+    '.wrap{display:flex;}'+
+    '.side{width:30%;background:#f4f6f8;padding:18px 16px;}'+
+    '.main{width:70%;padding:18px 20px;}'+
+    '.name{font-size:26px;font-weight:800;margin:0 0 10px;}'+
+    '.sblock{margin-bottom:16px;}'+
+    '.sblock h3{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#333;border-bottom:1px solid #ccc;padding-bottom:3px;margin:0 0 6px;}'+
+    '.slines{font-size:11px;line-height:1.7;color:#333;}'+
+    '.sent{margin-bottom:8px;}'+
+    '.sent .st{font-size:12px;font-weight:700;}'+
+    '.sent .sm{font-size:10.5px;color:#666;margin-top:1px;}'+
+    '.sent ul{margin:3px 0 0;padding-left:15px;}.sent li{font-size:10.5px;line-height:1.5;color:#444;}'+
+    '.mblock{margin-bottom:14px;}'+
+    '.mblock h2{font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;border-bottom:1.5px solid #1c1c1e;padding-bottom:3px;margin:0 0 8px;}'+
+    '.sum{font-size:12px;line-height:1.6;color:#333;margin:0;}'+
+    '.entry{margin-bottom:10px;}'+
+    '.entry .et{font-size:13px;}'+
+    '.entry .et-t{font-weight:700;}'+
+    '.entry .et-m{font-size:11.5px;color:#666;margin-left:6px;}'+
+    '.entry ul{margin:4px 0 0;padding-left:18px;}.entry li{font-size:11.5px;line-height:1.55;color:#333;margin:1.5px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#333;}';
+  return {css:css,body:'<div class="wrap"><div class="side"><div class="name">'+esc(res.name||'')+'</div>'+side+'</div><div class="main">'+main+'</div></div>'};
+}
+function resumeTplEven(res){
+  var sp=_splitSections(res);
+  var side='';
+  for(var k=0;k<sp.side.length;k++)side+=_sideBlock(sp.side[k]);
+  var main='';
+  if(res.summary)main+='<div class="mblock"><h2>'+_L('个人简介','Summary')+'</h2><p class="sum">'+esc(res.summary)+'</p></div>';
+  for(var m=0;m<sp.main.length;m++)main+=_mainBlock(sp.main[m]);
+  var head='<div class="head"><div class="name">'+esc(res.name||'')+'</div>'+(res.contact.length?'<div class="contact">'+res.contact.map(esc).join('<i></i>')+'</div>':'')+'</div>';
+  var css=_RESUME_PRINT+
+    '.head{border-bottom:2px solid #1c1c1e;padding-bottom:10px;margin-bottom:14px;}'+
+    '.name{font-size:24px;font-weight:800;letter-spacing:0.02em;margin:0 0 4px;}'+
+    '.contact{font-size:11px;color:#444;}'+
+    '.contact i{font-style:normal;margin:0 7px;}.contact i:before{content:"·";color:#999;}'+
+    '.grid{display:flex;}'+
+    '.col-l{width:32%;padding-right:16px;border-right:1px solid #e0e0e0;}'+
+    '.col-r{width:68%;padding-left:16px;}'+
+    '.sblock{margin-bottom:16px;}'+
+    '.sblock h3{font-size:11px;font-weight:700;letter-spacing:0.06em;color:#333;margin:0 0 6px;}'+
+    '.slines{font-size:11px;line-height:1.7;color:#333;}'+
+    '.sent{margin-bottom:8px;}'+
+    '.sent .st{font-size:12px;font-weight:700;}'+
+    '.sent .sm{font-size:10.5px;color:#666;margin-top:1px;}'+
+    '.sent ul{margin:3px 0 0;padding-left:15px;}.sent li{font-size:10.5px;line-height:1.5;color:#444;}'+
+    '.mblock{margin-bottom:14px;}'+
+    '.mblock h2{font-size:13px;font-weight:700;letter-spacing:0.04em;border-bottom:1px solid #e0e0e0;padding-bottom:3px;margin:0 0 8px;}'+
+    '.sum{font-size:12px;line-height:1.6;color:#333;margin:0;}'+
+    '.entry{margin-bottom:10px;}'+
+    '.entry .et{font-size:13px;}'+
+    '.entry .et-t{font-weight:700;}'+
+    '.entry .et-m{font-size:11.5px;color:#666;margin-left:6px;}'+
+    '.entry ul{margin:4px 0 0;padding-left:18px;}.entry li{font-size:11.5px;line-height:1.55;color:#333;margin:1.5px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#333;}';
+  return {css:css,body:head+'<div class="grid"><div class="col-l">'+side+'</div><div class="col-r">'+main+'</div></div>'};
+}
+function _resumeDoc(res,tplName){
+  var t=(tplName==='modern')?resumeTplModern(res):(tplName==='even')?resumeTplEven(res):resumeTplClassic(res);
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(res.name||'Resume')+'</title><style>'+t.css+'</style></head><body>'+t.body+'</body></html>';
+}
+function downloadResumePdf(){
+  var ta=document.getElementById('resume-editor');
+  var res=parseResume(ta?ta.value:'');
+  if(!res.name&&!res.sections.length){showToast(t('resume.empty'),true);return;}
+  var tplEl=document.getElementById('resume-tpl');
+  var html=_resumeDoc(res,tplEl?tplEl.value:'classic');
+  var ifr=document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+  document.body.appendChild(ifr);
+  var win=ifr.contentWindow,doc=win.document;
   doc.open();doc.write(html);doc.close();
   setTimeout(function(){try{win.focus();win.print();}catch(e){}setTimeout(function(){if(ifr.parentNode)ifr.parentNode.removeChild(ifr);},1500);},350);
   showToast(t('dl.pdf.hint'),false);
@@ -1255,6 +1536,7 @@ function mockEnd(){
 }
 
 applyLang();
+initResumeEditor();
 syncKeyBox();
 </script>
 </body>
