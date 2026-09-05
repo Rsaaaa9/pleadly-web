@@ -42,7 +42,9 @@ Pleadly（我求你了）是一个「AI 招聘经理」视角的全流程求职�
 
 ## License
 
-MIT © 2026 Rsaaaa9
+[PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/) © 2026 Rsaaaa9
+
+源码公开仅供**个人学习、研究与非商业使用**，**禁止商用**：未经作者书面许可，不得用于任何商业目的（包括但不限于售卖、付费分发、SaaS 化运营或商用嵌入）。
 
 ---
 
