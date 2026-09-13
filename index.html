@@ -345,17 +345,19 @@ tr:hover td{background:var(--surface2);}
 <div class="modal" id="settings-modal">
   <div class="modal-box">
     <div class="modal-head"><h3 data-i18n="settings.title">设置</h3><button class="modal-close" onclick="closeSettings()">×</button></div>
-    <div class="pts-box">
-      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="pts.balance">积分余额</span>
-      <span class="pts-num" id="set-balance">0</span>
-    </div>
-    <div class="settings-field">
-      <label data-i18n="pts.redeem">兑换码</label>
-      <div class="pts-redeem">
-        <input type="text" id="set-redeem" data-i18n-ph="pts.redeem.ph" placeholder="PLD-XXXX-XXXX-XXXX" onkeydown="if(event.key==='Enter')redeem()">
-        <button class="btn btn-primary btn-sm" onclick="redeem()" data-i18n="pts.redeembtn">兑换</button>
+    <div id="pts-panel">
+      <div class="pts-box">
+        <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="pts.balance">积分余额</span>
+        <span class="pts-num" id="set-balance">0</span>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:6px;" data-i18n="pts.redeem.hint">兑换码可向作者获取，一次性使用，兑换后积分累加。</div>
+      <div class="settings-field">
+        <label data-i18n="pts.redeem">兑换码</label>
+        <div class="pts-redeem">
+          <input type="text" id="set-redeem" data-i18n-ph="pts.redeem.ph" placeholder="PLD-XXXX-XXXX-XXXX" onkeydown="if(event.key==='Enter')redeem()">
+          <button class="btn btn-primary btn-sm" onclick="redeem()" data-i18n="pts.redeembtn">兑换</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;" data-i18n="pts.redeem.hint">兑换码可向作者获取，一次性使用，兑换后积分累加。</div>
+      </div>
     </div>
     <div class="settings-field">
       <label data-i18n="settings.apiKey">API Key</label>
@@ -583,6 +585,7 @@ function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 /* ============ BYOK 设置 + 积分制 ============ */
 var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
 var FREE_STARTER=20; // 新用户首次赠送积分
+var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 API Key（桌面同步脚本会自动置为 true）
 var pendingCtx=null;
 
 function loadSettings(){
@@ -595,8 +598,14 @@ function loadPts(){try{var p=JSON.parse(localStorage.getItem('ppts_v1'))||{};if(
 function savePts(p){localStorage.setItem('ppts_v1',JSON.stringify(p));}
 function getBalance(){return loadPts().bal;}
 function setBalance(n){var p=loadPts();p.bal=n;savePts(p);}
-function updatePointsUI(){var b=document.getElementById('pts-balance');if(b)b.textContent=getBalance();var s=document.getElementById('set-balance');if(s)s.textContent=getBalance();}
-function spendPoints(cost){var p=loadPts();if(p.bal<cost)return false;p.bal-=cost;savePts(p);updatePointsUI();return true;}
+function updatePointsUI(){
+  var btn=document.getElementById('pts-btn');
+  if(FREE_MODE){if(btn)btn.style.display='none';return;}
+  if(btn)btn.style.display='';
+  var b=document.getElementById('pts-balance');if(b)b.textContent=getBalance();
+  var s=document.getElementById('set-balance');if(s)s.textContent=getBalance();
+}
+function spendPoints(cost){if(FREE_MODE)return true;var p=loadPts();if(p.bal<cost)return false;p.bal-=cost;savePts(p);updatePointsUI();return true;}
 // 兑换码哈希白名单：key = sha256(码的大写形式)，value = 积分面额。用 tools/gen-license.js 重新生成你自己的码。
 var CODE_POINTS={
 '9e04803d8296b8c83e1e48e142191dc8d61cf50ce82b7ba9fdb3254ff86ff457':50,
@@ -621,7 +630,7 @@ function redeem(){
   document.getElementById('set-redeem').value='';
   showToast(t('pts.redeemed').replace('{N}',r.pts),false);
 }
-function requirePoints(cost){if(getBalance()<cost){showToast(t('pts.insufficient'),true);openSettings();return false;}return true;}
+function requirePoints(cost){if(FREE_MODE)return true;if(getBalance()<cost){showToast(t('pts.insufficient'),true);openSettings();return false;}return true;}
 
 // SHA-256（纯 JS，仅 ASCII；与 tools/gen-license.js 的 Node crypto 结果一致）
 function sha256(ascii){
@@ -661,6 +670,7 @@ function openSettings(){
   if(presets.indexOf(s.baseUrl)!==-1){sel.value=s.baseUrl;custom.style.display='none';custom.value='';}
   else{sel.value='__custom__';custom.style.display='block';custom.value=s.baseUrl;}
   updatePointsUI();
+  var pp=document.getElementById('pts-panel');if(pp)pp.style.display=FREE_MODE?'none':'';
   document.getElementById('settings-modal').classList.add('show');
 }
 function closeSettings(){document.getElementById('settings-modal').classList.remove('show');}
@@ -1731,7 +1741,7 @@ function renderSidebar(){
     for(i=0;i<FEATURES.length;i++){
       f=FEATURES[i];if(f.group!==GROUPS[gi].key)continue;
       title=(lang==='en'?f.title.en:f.title.zh);
-      h+='<button class="side-item" data-page="'+f.key+'"><span class="si-ic">'+f.ic+'</span>'+title+'<span class="si-cost">'+f.cost+'</span></button>';
+      h+='<button class="side-item" data-page="'+f.key+'"><span class="si-ic">'+f.ic+'</span>'+title+(FREE_MODE?'':'<span class="si-cost">'+f.cost+'</span>')+'</button>';
     }
   }
   h+='<div class="side-group">'+t('side.data')+'</div>';
@@ -1745,7 +1755,7 @@ function renderFeaturePage(key){
   var f=featureByKey(key);if(!f)return;
   curFeature=key;
   var title=(lang==='en'?f.title.en:f.title.zh);
-  var h='<div class="page-header"><h2>'+title+'</h2><span class="cost-badge">'+f.cost+' '+t('pts.unit')+'</span></div>';
+  var h='<div class="page-header"><h2>'+title+'</h2>'+(FREE_MODE?'':'<span class="cost-badge">'+f.cost+' '+t('pts.unit')+'</span>')+'</div>';
   if(f.input==='none'){
     h+='<div class="card" style="background:var(--accent-tint);"><div style="font-size:13px;color:var(--text2);">'+t('feat.autoread')+'</div></div>';
   }else{
@@ -1757,7 +1767,7 @@ function renderFeaturePage(key){
     if(f.pick)h+='<button class="btn btn-ghost btn-sm" onclick="pickForCurrent()" style="margin-top:8px;">'+t('pick.fromrep')+'</button>';
     h+='</div>';
   }
-  h+='<button class="btn btn-primary" onclick="runFeature()" style="width:100%;justify-content:center;">'+t('feat.run')+'（-'+f.cost+' '+t('pts.unit')+'）</button>';
+  h+='<button class="btn btn-primary" onclick="runFeature()" style="width:100%;justify-content:center;">'+t('feat.run')+(FREE_MODE?'':'（-'+f.cost+' '+t('pts.unit')+'）')+'</button>';
   h+='<div class="card md-output" id="feat-output" style="margin-top:14px;min-height:120px;"><div class="empty"><div class="d">'+t('feat.empty')+'</div></div></div>';
   document.getElementById('page-feature').innerHTML=h;
 }
@@ -1791,6 +1801,7 @@ updatePointsUI();
 applyLang();
 initResumeEditor();
 syncKeyBox();
+if(FREE_MODE){document.querySelectorAll('.cost-badge').forEach(function(e){e.style.display='none';});}
 </script>
 </body>
 </html>
