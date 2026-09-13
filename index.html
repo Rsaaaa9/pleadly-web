@@ -119,8 +119,6 @@ tr:hover td{background:var(--surface2);}
 .report-col-body{overflow-y:auto;min-height:320px;max-height:calc(100vh - 300px);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:16px 18px;}
 .resume-toolbar{display:flex;align-items:center;gap:8px;margin-left:auto;}
 .resume-toolbar select{flex:none;padding:6px 30px 6px 10px;font-size:13px;border-radius:10px;background:var(--surface2);border:1px solid var(--separator);color:var(--text);cursor:pointer;font-family:inherit;}
-.resume-editor{width:100%;min-height:320px;max-height:calc(100vh - 300px);resize:vertical;box-sizing:border-box;font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:14px 16px;outline:none;}
-.resume-editor:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
 
 .md-output{line-height:1.7;font-size:14.5px;}
 .md-output h1{font-size:20px;font-weight:800;letter-spacing:-0.01em;margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--separator);}
@@ -307,8 +305,8 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
     <button class="btn btn-primary" onclick="runResumeBuild()" style="margin-top:10px;" data-i18n="resume.build">生成简历</button>
   </div>
   <div class="card">
-    <div class="card-header" data-i18n="resume.title">简历（可编辑）</div>
-    <textarea class="resume-editor" id="resume-editor" spellcheck="false" data-i18n-ph="resume.ph" placeholder="粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）" oninput="_resumeDirty=true;"></textarea>
+    <div class="card-header" data-i18n="resume.title">简历预览</div>
+    <div id="resume-preview" class="md-output" style="min-height:140px;"><div class="empty"><div class="d" data-i18n="resume.preview.empty">生成简历后在此预览，可一键导出 PDF</div></div></div>
     <button class="btn btn-primary" onclick="downloadResumePdf()" style="margin-top:10px;" data-i18n="resume.export">导出 PDF</button>
   </div>
 </div>
@@ -484,9 +482,9 @@ zh:{
  'tools.10.desc':'选对应岗位报告，生成入职前 30 天生存指南',
  'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
  'profile.empty':'信息库为空，请先到「信息库」上传简历或经历',
- 'reportbox.title':'分析报告','resume.title':'简历（可编辑）','resume.export':'导出 PDF','resume.build':'制作简历',
- 'resume.ph':'粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）',
- 'resume.empty':'简历为空，先填写或运行分析生成','resume.generated':'已生成定向简历，可在右侧编辑或导出',
+ 'reportbox.title':'分析报告','resume.title':'简历预览','resume.export':'导出 PDF','resume.build':'制作简历',
+ 'resume.preview.empty':'生成简历后在此预览，可一键导出 PDF',
+ 'resume.empty':'简历为空，先运行分析生成','resume.generated':'已生成定向简历，可在下方预览并导出',
  'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败',
  'pts.unit':'积分','pts.balance':'积分余额','pts.redeem':'兑换码','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'兑换','pts.redeem.hint':'兑换码可向作者获取，一次性使用，兑换后积分累加。',
  'pts.insufficient':'积分不足，请先兑换积分','pts.redeemed':'兑换成功，+{N} 积分','pts.invalid':'兑换码无效','pts.used':'兑换码已被使用',
@@ -553,9 +551,9 @@ en:{
  'tools.10.desc':'Pick a report → first-30-days survival guide',
  'profile.note':'Reading {N} document(s) from your Library as your background',
  'profile.empty':'Library is empty — upload a resume or experiences first',
- 'reportbox.title':'Analysis Report','resume.title':'Resume (editable)','resume.export':'Export PDF','resume.build':'Generate Resume',
- 'resume.ph':'Paste or edit your resume (Markdown: # Name / ## sections / ### entries)',
- 'resume.empty':'Resume is empty — fill it in or run an analysis first','resume.generated':'Tailored resume generated — edit or export on the right',
+ 'reportbox.title':'Analysis Report','resume.title':'Resume preview','resume.export':'Export PDF','resume.build':'Generate Resume',
+ 'resume.preview.empty':'Generated resume previews here — export to PDF in one click',
+ 'resume.empty':'Resume is empty — run an analysis first','resume.generated':'Tailored resume generated — preview and export below',
  'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed',
  'pts.unit':'pts','pts.balance':'Point Balance','pts.redeem':'Redeem Code','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'Redeem','pts.redeem.hint':'Get a redeem code from the author. Single-use; points are added on redemption.',
  'pts.insufficient':'Not enough points — redeem more first','pts.redeemed':'Redeemed, +{N} pts','pts.invalid':'Invalid redeem code','pts.used':'Code already used',
@@ -1290,25 +1288,18 @@ function downloadPdf(){
   showToast(t('dl.pdf.hint'),false);
 }
 
-/* ============ 简历框：Markdown 解析 + 多模板 PDF 导出 ============ */
-var _resumeDirty=false;
-function _L(zh,en){return lang==='en'?en:zh;}
-function _resumeSkeleton(){
-  return _L(
-    '# 姓名\n电话 | 邮箱 | 城市 | 求职意向\n\n## 教育背景\n### 学校 | 专业 | 学历 | 2022 - 2026\n- 相关专业课程\n\n## 自我评价\n- **能力点**：一句具体证据\n\n## 实习经历\n### 公司 | 岗位 | 2024.06 - 2024.09\n- **小标题**：为什么做→怎么做→结果\n\n## 项目经历\n### 项目名 | 角色 | 时间\n- **项目概述**：一句话\n- **项目过程**：怎么做\n- **项目成果**：结果/价值\n\n## 校园经历\n### 组织 | 角色 | 时间\n- 锻炼了岗位需要的哪项能力\n',
-    '# Your Name\nphone | email | city | job intention\n\n## Education\n### School | Major | Degree | 2022 - 2026\n- relevant core courses\n\n## Summary\n- **Strength**: one specific piece of evidence\n\n## Experience\n### Company | Role | 2024.06 - 2024.09\n- **Sub-heading**: why → how → result\n\n## Projects\n### Project | Role | date\n- **Overview**: one line\n- **Process**: how it was done\n- **Outcome**: result / value\n\n## Campus\n### Organization | Role | date\n- which skill the role needs that this developed\n'
-  );
+/* ============ 简历预览：Markdown 解析 + PDF 导出 ============ */
+var _resumeMd='';
+function renderResumePreview(){
+  var pv=document.getElementById('resume-preview');
+  if(!pv)return;
+  if(!_resumeMd){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
+  pv.innerHTML=mdToHtml(_resumeMd);
 }
-function initResumeEditor(){
-  var ta=document.getElementById('resume-editor');
-  if(!ta||_resumeDirty)return;
-  var p=getProfileText();
-  ta.value=p?p:_resumeSkeleton();
-}
+function initResumeEditor(){renderResumePreview();}
 function setResumeText(txt){
-  var ta=document.getElementById('resume-editor');
-  if(ta)ta.value=txt||'';
-  _resumeDirty=true;
+  _resumeMd=txt||'';
+  renderResumePreview();
 }
 function extractResumeBlock(raw){
   if(!raw)return '';
@@ -1403,8 +1394,7 @@ function _resumeDoc(res){
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(res.name||'Resume')+'</title><style>'+t.css+'</style></head><body>'+t.body+'</body></html>';
 }
 function downloadResumePdf(){
-  var ta=document.getElementById('resume-editor');
-  var res=parseResume(ta?ta.value:'');
+  var res=parseResume(_resumeMd);
   if(!res.name&&!res.sections.length){showToast(t('resume.empty'),true);return;}
   var html=_resumeDoc(res);
   var ifr=document.createElement('iframe');
