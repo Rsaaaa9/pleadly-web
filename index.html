@@ -183,20 +183,41 @@ tr:hover td{background:var(--surface2);}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 @media (prefers-reduced-transparency:reduce){.topnav,.bottombar{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none;}}
+
+/* ===== 侧边栏 + 功能页 + 积分 ===== */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:232px;flex:none;background:var(--surface);border-right:1px solid var(--separator);position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;padding:14px 12px 48px;}
+.side-nav{display:flex;flex-direction:column;gap:2px;}
+.side-group{font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;margin:16px 10px 6px;}
+.side-group:first-child{margin-top:4px;}
+.side-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--text2);cursor:pointer;text-decoration:none;transition:all .15s;-webkit-tap-highlight-color:transparent;border:none;background:none;text-align:left;font-family:inherit;}
+.side-item:hover{background:var(--muted-bg);color:var(--text);}
+.side-item.active{background:var(--accent-tint);color:var(--accent);}
+.si-ic{width:18px;text-align:center;flex:none;font-size:14px;}
+.si-cost{margin-left:auto;font-size:11px;font-weight:700;color:var(--text3);background:var(--surface2);padding:1px 7px;border-radius:20px;}
+.side-item.active .si-cost{background:var(--accent);color:#fff;}
+.content{flex:1;min-width:0;padding-bottom:60px;}
+.pts-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:12px;font-size:13px;font-weight:700;background:var(--surface);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.pts-btn:hover{background:var(--surface2);}
+.cost-badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:700;background:var(--accent);color:#fff;margin-top:8px;}
+.pts-box{background:var(--accent-tint);border:1px solid var(--separator);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pts-box .pts-num{font-size:20px;font-weight:800;color:var(--accent);}
+.pts-redeem{display:flex;gap:8px;flex:1;min-width:200px;}
+.pts-redeem input{flex:1;}
+@media(max-width:860px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--separator);padding:10px 12px;}
+  .side-nav{flex-direction:row;flex-wrap:wrap;gap:6px;}
+  .side-group{display:none;}
+}
 </style>
 </head>
 <body>
 
 <nav class="topnav">
   <div class="topnav-logo">Pleadly</div>
-  <div class="topnav-links">
-    <button class="topnav-link" data-page="library" data-i18n="nav.library">信息库</button>
-    <button class="topnav-link" data-page="memory" data-i18n="nav.memory">个人记忆</button>
-    <button class="topnav-link active" data-page="analysis" data-i18n="nav.analysis">分析页</button>
-    <button class="topnav-link" data-page="tools" data-i18n="nav.tools">工具</button>
-    <button class="topnav-link" data-page="reports" data-i18n="nav.reports">报告仓库</button>
-  </div>
   <div class="topnav-right">
+    <button class="pts-btn" id="pts-btn" onclick="openSettings()" title="积分 / 设置">💰 <span id="pts-balance">0</span> <span data-i18n="pts.unit">积分</span></button>
     <div class="keybox" id="keybox" title="API Key">
       <span class="keydot" id="keydot"></span>
       <input type="password" id="topnav-key" data-i18n-ph="key.ph" placeholder="🔑 API Key" onkeydown="if(event.key==='Enter')quickSaveKey()">
@@ -207,6 +228,12 @@ tr:hover td{background:var(--surface2);}
     <span class="topnav-badge">v2</span>
   </div>
 </nav>
+
+<div class="layout">
+<aside class="sidebar">
+  <nav class="side-nav" id="side-nav"></nav>
+</aside>
+<main class="content">
 
 <!-- 信息库 -->
 <div class="page" id="page-library">
@@ -228,60 +255,70 @@ tr:hover td{background:var(--surface2);}
   <div id="library-container"><div class="empty"><div class="icon">/</div><div class="t">暂无文档</div></div></div>
 </div>
 
-<!-- 分析页 -->
-<div class="page active" id="page-analysis" style="padding-bottom:130px;">
-  <div class="page-header"><h2 data-i18n="analysis.title">岗位分析</h2><p data-i18n="analysis.subtitle">粘贴JD+选择简历</p></div>
+<!-- 一键全流程 -->
+<div class="page active" id="page-full">
+  <div class="page-header"><h2 data-i18n="analysis.title">一键全流程分析</h2><p data-i18n="analysis.subtitle">完整 10 步流程一次跑通：ATS → 评分 → JD拆解 → 诊断 → 学习计划 → 面试准备</p><span class="cost-badge">10 <span data-i18n="pts.unit">积分</span></span></div>
   <div id="profile-note" style="font-size:12px;color:var(--text3);line-height:1.55;padding:10px 12px;background:var(--accent-tint);border-radius:10px;margin-bottom:16px;"></div>
-  <div class="step-nav">
-    <span class="step-chip" data-i18n="step.1">ATS</span><span class="step-chip" data-i18n="step.2">评分</span><span class="step-chip" data-i18n="step.3">JD拆解</span><span class="step-chip" data-i18n="step.4">诊断</span><span class="step-chip" data-i18n="step.6">学习计划</span><span class="step-chip" data-i18n="step.7">面试准备</span>
-  </div>
   <div class="greet-strip" id="greet-strip" style="display:none;">
     <span class="gs-title" data-i18n="greetstrip.title">招呼语</span>
     <div class="gs-body" id="greet-strip-body"></div>
     <button class="btn btn-ghost btn-sm" onclick="copyGreet()" style="flex:none;" data-i18n="greet.copy">复制招呼语</button>
   </div>
-  <div class="report-grid">
-    <div class="report-col">
-      <div class="report-col-head"><span class="report-col-title" data-i18n="reportbox.title">分析报告</span></div>
-      <div class="report-col-body">
-        <div id="report-dl-bar" style="display:none;justify-content:flex-end;gap:8px;margin-bottom:12px;">
-          <button class="btn btn-ghost btn-sm" onclick="downloadWord()" data-i18n="dl.word">下载 Word</button>
-          <button class="btn btn-ghost btn-sm" onclick="downloadPdf()" data-i18n="dl.pdf">下载 PDF</button>
-        </div>
-        <div id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">输入简历和 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整 10 步分析需要 1-3 分钟</div></div></div>
-      </div>
+  <div class="card">
+    <div class="card-header" data-i18n="analysis.jd">岗位 JD</div>
+    <textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:150px;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="openApply()" data-i18n="netapply.title">生成网申包</button>
+      <button class="btn btn-primary" onclick="runAnalysis()" data-i18n="analysis.run">一键全流程分析</button>
     </div>
-    <div class="report-col">
-      <div class="report-col-head">
-        <span class="report-col-title" data-i18n="resume.title">简历（可编辑）</span>
-        <div class="resume-toolbar">
-          <button class="btn btn-ghost btn-sm" onclick="runResumeBuild()" data-i18n="resume.build">制作简历</button>
-          <button class="btn btn-primary btn-sm" onclick="downloadResumePdf()" data-i18n="resume.export">导出 PDF</button>
-        </div>
-      </div>
-      <textarea class="resume-editor" id="resume-editor" spellcheck="false" data-i18n-ph="resume.ph" placeholder="粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）" oninput="_resumeDirty=true;"></textarea>
-    </div>
+  </div>
+  <div id="report-dl-bar" style="display:none;justify-content:flex-end;gap:8px;margin:12px 0;">
+    <button class="btn btn-ghost btn-sm" onclick="downloadWord()" data-i18n="dl.word">下载 Word</button>
+    <button class="btn btn-ghost btn-sm" onclick="downloadPdf()" data-i18n="dl.pdf">下载 PDF</button>
+  </div>
+  <div class="card md-output" id="analysis-output"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="analysis.empty">粘贴岗位 JD 后点击「一键全流程分析」</div><div class="d" data-i18n="analysis.empty.desc">完整分析需要 1-3 分钟，自动读取信息库</div></div></div>
+</div>
+
+<!-- 通用功能页（由 JS 动态渲染） -->
+<div class="page" id="page-feature"></div>
+
+<!-- 制作简历 / 定位重写 -->
+<div class="page" id="page-build">
+  <div class="page-header"><h2 data-i18n="resume.build">制作简历 / 定位重写</h2><p>粘贴完整 JD，或只填一个岗位方向（如「用户研究员」）即可定向生成简历</p><span class="cost-badge">3 <span data-i18n="pts.unit">积分</span></span></div>
+  <div class="card">
+    <div class="card-header">目标岗位 JD 或方向</div>
+    <textarea id="build-jd" placeholder="粘贴完整岗位 JD，或只填目标岗位方向（如：用户研究员）..." style="min-height:110px;"></textarea>
+    <button class="btn btn-primary" onclick="runResumeBuild()" style="margin-top:10px;" data-i18n="resume.build">生成简历</button>
+  </div>
+  <div class="card">
+    <div class="card-header" data-i18n="resume.title">简历（可编辑）</div>
+    <textarea class="resume-editor" id="resume-editor" spellcheck="false" data-i18n-ph="resume.ph" placeholder="粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）" oninput="_resumeDirty=true;"></textarea>
+    <button class="btn btn-primary" onclick="downloadResumePdf()" style="margin-top:10px;" data-i18n="resume.export">导出 PDF</button>
   </div>
 </div>
 
-<!-- 分析页固定输入栏（微信聊天底部输入框样式） -->
-<div class="analysis-inputbar" id="analysis-inputbar">
-  <div class="analysis-inputbar-inner">
-    <textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';"></textarea>
-    <button class="btn btn-ghost btn-sm" onclick="openApply()" style="flex:none;" data-i18n="netapply.title">生成网申包</button>
-    <button class="btn btn-primary" onclick="runAnalysis()" style="flex:none;" data-i18n="analysis.run">一键全流程分析</button>
-  </div>
-</div>
-
-<!-- 工具 -->
-<div class="page" id="page-tools">
-  <div class="page-header"><h2 data-i18n="tools.title">工具</h2><p data-i18n="tools.subtitle">独立工具，按需使用，不参与全流程分析</p></div>
-  <div class="tools-grid">
-    <div class="card tool-card" onclick="openExtra('greet')"><div class="tool-icon">✉️</div><div class="tool-name" data-i18n="extra.greet.title">招呼语生成</div><div class="tool-desc" data-i18n="tools.greet.desc">粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示</div></div>
-    <div class="card tool-card" onclick="openPicker('multi','5')"><div class="tool-icon">📊</div><div class="tool-name" data-i18n="step.5">5.多JD排序</div><div class="tool-desc" data-i18n="tools.5.desc">粘贴多个岗位，六维度加权排序 + 精力分配建议</div></div>
-    <div class="card tool-card" onclick="openMock()"><div class="tool-icon">🎤</div><div class="tool-name" data-i18n="step.8">8.Mock面试</div><div class="tool-desc" data-i18n="tools.8.desc">多轮模拟面试，可追问、即时点评、结束给总结</div></div>
-    <div class="card tool-card" onclick="openPicker('single','9')"><div class="tool-icon">💰</div><div class="tool-name" data-i18n="step.9">9.Offer谈判</div><div class="tool-desc" data-i18n="tools.9.desc">粘贴 offer package，输出逐项谈判策略 + 话术</div></div>
-    <div class="card tool-card" onclick="openPicker('single','10')"><div class="tool-icon">🚀</div><div class="tool-name" data-i18n="step.10">10.入职指南</div><div class="tool-desc" data-i18n="tools.10.desc">前 30 天生存指南</div></div>
+<!-- Mock 面试 -->
+<div class="page" id="page-mock">
+  <div class="page-header"><h2 data-i18n="mock.title">Mock 面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge">3 <span data-i18n="pts.unit">积分</span></span></div>
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
+    <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.phase">面试阶段</span>
+      <select id="mock-phase" style="width:auto;min-height:0;">
+        <option value="hr" data-i18n="mock.ph.hr">HR初筛</option>
+        <option value="tech" data-i18n="mock.ph.tech">技术面</option>
+        <option value="behavior" data-i18n="mock.ph.behavior">行为面</option>
+        <option value="final" data-i18n="mock.ph.final">终面</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="mockStart()" data-i18n="mock.start">开始面试</button>
+      <button class="btn btn-ghost btn-sm" onclick="mockEnd()" data-i18n="mock.end">结束并总结</button>
+    </div>
+    <div class="mock-log" id="mock-log"></div>
+    <div class="mock-input">
+      <input type="text" id="mock-input" data-i18n-ph="mock.ph" placeholder="输入你的回答..." onkeydown="if(event.key==='Enter')mockSend()">
+      <button class="btn btn-primary" id="mock-send" onclick="mockSend()" data-i18n="mock.send">发送</button>
+    </div>
   </div>
 </div>
 
@@ -302,9 +339,24 @@ tr:hover td{background:var(--surface2);}
   <div id="memory-container"><div class="empty"><div class="icon">/</div><div class="t" data-i18n="mem.empty">还没有记忆</div><div class="d" data-i18n="mem.empty.desc">跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息</div></div></div>
 </div>
 
+</main>
+</div>
+
 <div class="modal" id="settings-modal">
   <div class="modal-box">
     <div class="modal-head"><h3 data-i18n="settings.title">设置</h3><button class="modal-close" onclick="closeSettings()">×</button></div>
+    <div class="pts-box">
+      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="pts.balance">积分余额</span>
+      <span class="pts-num" id="set-balance">0</span>
+    </div>
+    <div class="settings-field">
+      <label data-i18n="pts.redeem">兑换码</label>
+      <div class="pts-redeem">
+        <input type="text" id="set-redeem" data-i18n-ph="pts.redeem.ph" placeholder="PLD-XXXX-XXXX-XXXX" onkeydown="if(event.key==='Enter')redeem()">
+        <button class="btn btn-primary btn-sm" onclick="redeem()" data-i18n="pts.redeembtn">兑换</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;" data-i18n="pts.redeem.hint">兑换码可向作者获取，一次性使用，兑换后积分累加。</div>
+    </div>
     <div class="settings-field">
       <label data-i18n="settings.apiKey">API Key</label>
       <input type="password" id="set-apikey" data-i18n-ph="settings.apiKey.ph" placeholder="sk-...">
@@ -324,56 +376,8 @@ tr:hover td{background:var(--surface2);}
       <label data-i18n="settings.model">Model</label>
       <input type="text" id="set-model" data-i18n-ph="settings.model.ph" placeholder="deepseek-chat">
     </div>
-    <div class="settings-field">
-      <label><span data-i18n="settings.license">License</span><span id="pro-state"></span></label>
-      <input type="text" id="set-license" data-i18n-ph="settings.license.ph" placeholder="PLD-XXXXXXXX-XXXXXXXX">
-    </div>
     <button class="btn btn-primary" onclick="saveSettings()" style="width:100%;justify-content:center;" data-i18n="settings.save">保存</button>
     <div class="settings-note" data-i18n="settings.privacy">🔒 你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。</div>
-  </div>
-</div>
-
-<!-- 独立工具：第5/9/10步（单次） -->
-<div class="modal" id="extra-modal">
-  <div class="modal-box" style="max-width:720px;">
-    <div class="modal-head"><h3 id="extra-title"></h3><button class="modal-close" onclick="closeExtra()">×</button></div>
-    <div class="extra-body">
-      <div style="font-size:12px;color:var(--text3);" id="extra-hint"></div>
-      <button class="btn btn-ghost btn-sm" id="extra-pick" onclick="pickFromCurrent()" style="display:none;margin-top:6px;" data-i18n="pick.fromrep">从报告库选取</button>
-      <textarea id="extra-input" placeholder=""></textarea>
-      <button class="btn btn-primary" onclick="runExtra()" style="justify-content:center;" id="extra-run"></button>
-      <div class="extra-out md-output" id="extra-output"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 独立工具：第8步 Mock 面试（多轮） -->
-<div class="modal" id="mock-modal">
-  <div class="modal-box" style="max-width:520px;">
-    <div class="modal-head"><h3 data-i18n="mock.title">Mock 面试</h3><button class="modal-close" onclick="closeMock()">×</button></div>
-    <div style="margin-bottom:10px;">
-      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
-      <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;width:100%;"></textarea>
-      <button class="btn btn-ghost btn-sm" onclick="openPicker('single','8')" style="margin-top:6px;" data-i18n="pick.fromrep">从报告库选取</button>
-    </div>
-    <div style="margin-bottom:10px;">
-      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.phase">面试阶段</div>
-      <select id="mock-phase">
-        <option value="hr" data-i18n="mock.ph.hr">HR初筛</option>
-        <option value="tech" data-i18n="mock.ph.tech">技术面</option>
-        <option value="behavior" data-i18n="mock.ph.behavior">行为面</option>
-        <option value="final" data-i18n="mock.ph.final">终面</option>
-      </select>
-    </div>
-    <div class="mock-log" id="mock-log"></div>
-    <div class="mock-input">
-      <input type="text" id="mock-input" data-i18n-ph="mock.ph" placeholder="输入你的回答..." onkeydown="if(event.key==='Enter')mockSend()">
-      <button class="btn btn-primary" id="mock-send" onclick="mockSend()" data-i18n="mock.send">发送</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <button class="btn btn-secondary" onclick="mockStart()" data-i18n="mock.start">开始面试</button>
-      <button class="btn btn-ghost" onclick="mockEnd()" data-i18n="mock.end">结束并总结</button>
-    </div>
   </div>
 </div>
 
@@ -464,7 +468,11 @@ zh:{
  'reportbox.title':'分析报告','resume.title':'简历（可编辑）','resume.export':'导出 PDF','resume.build':'制作简历',
  'resume.ph':'粘贴或编辑你的简历（Markdown：# 姓名 / ## 章节 / ### 经历）',
  'resume.empty':'简历为空，先填写或运行分析生成','resume.generated':'已生成定向简历，可在右侧编辑或导出',
- 'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败'
+ 'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败',
+ 'pts.unit':'积分','pts.balance':'积分余额','pts.redeem':'兑换码','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'兑换','pts.redeem.hint':'兑换码可向作者获取，一次性使用，兑换后积分累加。',
+ 'pts.insufficient':'积分不足，请先兑换积分','pts.redeemed':'兑换成功，+{N} 积分','pts.invalid':'兑换码无效','pts.used':'兑换码已被使用',
+ 'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点击上方「运行」按钮生成结果',
+ 'side.analysis':'求职分析','side.resume':'简历','side.explore':'职业探索','side.execute':'求职执行','side.offer':'面试与Offer','side.data':'数据'
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
@@ -528,7 +536,11 @@ en:{
  'reportbox.title':'Analysis Report','resume.title':'Resume (editable)','resume.export':'Export PDF','resume.build':'Generate Resume',
  'resume.ph':'Paste or edit your resume (Markdown: # Name / ## sections / ### entries)',
  'resume.empty':'Resume is empty — fill it in or run an analysis first','resume.generated':'Tailored resume generated — edit or export on the right',
- 'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed'
+ 'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed',
+ 'pts.unit':'pts','pts.balance':'Point Balance','pts.redeem':'Redeem Code','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'Redeem','pts.redeem.hint':'Get a redeem code from the author. Single-use; points are added on redemption.',
+ 'pts.insufficient':'Not enough points — redeem more first','pts.redeemed':'Redeemed, +{N} pts','pts.invalid':'Invalid redeem code','pts.used':'Code already used',
+ 'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Click Run above to generate the result',
+ 'side.analysis':'Job Analysis','side.resume':'Resume','side.explore':'Career Explore','side.execute':'Job Execution','side.offer':'Interview & Offer','side.data':'Data'
 }
 };
 var lang=localStorage.getItem('plang')||'zh';
@@ -542,42 +554,74 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.placeholder=t(el.getAttribute('data-i18n-ph'));});
   document.querySelectorAll('[data-i18n-opt]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n-opt'));});
   var lb=document.getElementById('lang-btn');if(lb)lb.textContent=lang==='en'?'中文':'EN';
-  updateProfileNote();renderReports();renderLib();renderMemory();
+  renderSidebar();updateProfileNote();renderReports();renderLib();renderMemory();
   setBot(t('bot.ready'));
 }
 
 function switchPage(name){
-  document.querySelectorAll('.topnav-link').forEach(function(b){b.classList.remove('active');});
-  var btn=document.querySelector('.topnav-link[data-page="'+name+'"]');
+  document.querySelectorAll('.side-item').forEach(function(b){b.classList.remove('active');});
+  var btn=document.querySelector('.side-item[data-page="'+name+'"]');
   if(btn)btn.classList.add('active');
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  var pg=document.getElementById('page-'+name);
+  var pg=null;
+  if(name==='library'){pg=document.getElementById('page-library');renderLib();}
+  else if(name==='reports'){pg=document.getElementById('page-reports');renderReports();}
+  else if(name==='memory'){pg=document.getElementById('page-memory');renderMemory();}
+  else if(name==='full'){pg=document.getElementById('page-full');updateProfileNote();}
+  else if(name==='build'){pg=document.getElementById('page-build');updateProfileNote();initResumeEditor();}
+  else if(name==='mock'){pg=document.getElementById('page-mock');}
+  else{renderFeaturePage(name);pg=document.getElementById('page-feature');}
   if(pg)pg.classList.add('active');
-  var ib=document.getElementById('analysis-inputbar');
-  if(ib)ib.style.display=(name==='analysis')?'block':'none';
-  if(name==='analysis'){updateProfileNote();initResumeEditor();}
-  if(name==='reports')renderReports();
-  if(name==='library')renderLib();
-  if(name==='memory')renderMemory();
+  window.scrollTo(0,0);
 }
-document.querySelectorAll('.topnav-link').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
 
 function loadLib(){try{var d=JSON.parse(localStorage.getItem('plib_v2'))||[];var changed=false;for(var i=0;i<d.length;i++){if(!d[i].category){d[i].category=d[i].type==='resume'?'resume':d[i].type==='certificate'?'portfolio':'project';changed=true;}}if(changed)localStorage.setItem('plib_v2',JSON.stringify(d));return d}catch(e){return[]}}
 function saveLib(d){localStorage.setItem('plib_v2',JSON.stringify(d))}
 function loadRep(){try{return JSON.parse(localStorage.getItem('prep_v2'))||[]}catch(e){return[]}}
 function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 
-/* ============ BYOK 设置 + 激活码 ============ */
+/* ============ BYOK 设置 + 积分制 ============ */
 var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
-var BUY_URL=''; // 手动发码时留空；接入第三方卖码平台后填购买链接，paywall 的「升级」按钮才会显示
-var PAYWALL_ENABLED=true; // 付费墙：免费跑 step1-2，激活码解锁 step3/4/6/7
-var FREE_DAILY_LIMIT=5; // 免费用户每日全流程分析次数上限（防滥用）
+var FREE_STARTER=20; // 新用户首次赠送积分
 var pendingCtx=null;
 
 function loadSettings(){
-  return {apiKey:localStorage.getItem('p_apiKey')||'',baseUrl:localStorage.getItem('p_baseUrl')||DEFAULT_BASE_URL,model:localStorage.getItem('p_model')||DEFAULT_MODEL,license:localStorage.getItem('p_license')||''};
+  return {apiKey:localStorage.getItem('p_apiKey')||'',baseUrl:localStorage.getItem('p_baseUrl')||DEFAULT_BASE_URL,model:localStorage.getItem('p_model')||DEFAULT_MODEL};
 }
-function saveSettingsToStore(s){localStorage.setItem('p_apiKey',s.apiKey);localStorage.setItem('p_baseUrl',s.baseUrl);localStorage.setItem('p_model',s.model);localStorage.setItem('p_license',s.license);}
+function saveSettingsToStore(s){localStorage.setItem('p_apiKey',s.apiKey);localStorage.setItem('p_baseUrl',s.baseUrl);localStorage.setItem('p_model',s.model);}
+
+/* 积分系统：兑换码 → 积分（本地 SHA-256 白名单，无后端） */
+function loadPts(){try{var p=JSON.parse(localStorage.getItem('ppts_v1'))||{};if(typeof p.bal!=='number'){p.bal=FREE_STARTER;}if(!p.used)p.used=[];return p;}catch(e){return {bal:FREE_STARTER,used:[]};}}
+function savePts(p){localStorage.setItem('ppts_v1',JSON.stringify(p));}
+function getBalance(){return loadPts().bal;}
+function setBalance(n){var p=loadPts();p.bal=n;savePts(p);}
+function updatePointsUI(){var b=document.getElementById('pts-balance');if(b)b.textContent=getBalance();var s=document.getElementById('set-balance');if(s)s.textContent=getBalance();}
+function spendPoints(cost){var p=loadPts();if(p.bal<cost)return false;p.bal-=cost;savePts(p);updatePointsUI();return true;}
+// 兑换码哈希白名单：key = sha256(码的大写形式)，value = 积分面额。用 tools/gen-license.js 重新生成你自己的码。
+var CODE_POINTS={
+'9e04803d8296b8c83e1e48e142191dc8d61cf50ce82b7ba9fdb3254ff86ff457':50,
+'1a521acbf727ec659ead021af272957fef179a434ccddb343d2b09be84582e0c':100,
+'96e9612b2c42946da6b4198487795bd91dfff55e5c651fa37948c19ed16a21d4':200,
+'8866207e332bf10b54b4dbbbd0f63372bd0e2e484ed1f516efd47c6dcf4770ad':20
+};
+function redeemCode(code){
+  code=(code||'').trim().toUpperCase().replace(/\s+/g,'');
+  var h=sha256(code);
+  var pts=CODE_POINTS[h];
+  if(!pts)return {ok:false,reason:'invalid'};
+  var p=loadPts();
+  if(p.used.indexOf(h)!==-1)return {ok:false,reason:'used'};
+  p.used.push(h);p.bal+=pts;savePts(p);updatePointsUI();
+  return {ok:true,pts:pts};
+}
+function redeem(){
+  var code=document.getElementById('set-redeem').value;
+  var r=redeemCode(code);
+  if(!r.ok){showToast(t(r.reason==='used'?'pts.used':'pts.invalid'),true);return;}
+  document.getElementById('set-redeem').value='';
+  showToast(t('pts.redeemed').replace('{N}',r.pts),false);
+}
+function requirePoints(cost){if(getBalance()<cost){showToast(t('pts.insufficient'),true);openSettings();return false;}return true;}
 
 // SHA-256（纯 JS，仅 ASCII；与 tools/gen-license.js 的 Node crypto 结果一致）
 function sha256(ascii){
@@ -608,54 +652,29 @@ function sha256(ascii){
   for(i=0;i<8;i++)for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}
   return result;
 }
-// 激活码哈希白名单（用 tools/gen-license.js 生成后粘贴；只存哈希，不放明文码）
-var LICENSE_HASHES=[
-'252c088d0ad403cbffa2f0ea8b5c9d8273f7635f141c5018dda44692de5378d0',
-'7ccc26ee7583c51d3d5052b3f346373ef7a285d7cff545e708c915104ae27cae',
-'e272b440635a152d7a810d7679598751595082d72c1c5ff040e72fa6f59d3cc2',
-'1f8f90acfb8d3dd2392544ee50be32391fb434209ae84df8d7151e875802eb8c',
-'0b9ba202eb3ad74e04e30bd1bfcaaf136d497564b960d569db9022bb657d27ab',
-'4a5dceb18bc4902cba78d437df92a5f4b18915851a4d77c16103de8004858f9e',
-'de3cd5ac924a92c9801f3395cec87a1ac8260c22dcf506bf95cbcebd59e8e646',
-'73591f7a373c0fc7fec3228af43534c4e9be68f83e683bb501b7b9f20877a031',
-'2c5aa823eb4b99d13cc0a00aab44cf730bf714ead5d128e0d97a66c6585288f0',
-'f8bcb2300f5babbec5e0ad9319a40a59c337f4b6d659248deee62520d29077e3'
-];
-function checkKey(k){
-  if(!k)return false;
-  k=k.toUpperCase().replace(/\s+/g,'');
-  if(!/^PLD-[A-Z0-9]{8}-[A-Z0-9]{8}$/.test(k))return false;
-  return LICENSE_HASHES.indexOf(sha256(k))!==-1;
-}
-function isPro(){return checkKey(loadSettings().license);}
-
 function openSettings(){
   var s=loadSettings();
   document.getElementById('set-apikey').value=s.apiKey;
   document.getElementById('set-model').value=s.model;
-  document.getElementById('set-license').value=s.license;
   var sel=document.getElementById('set-baseurl'),custom=document.getElementById('set-baseurl-custom');
   var presets=['https://api.deepseek.com','https://api.openai.com/v1','https://api.groq.com/openai/v1','https://api.moonshot.cn/v1'];
   if(presets.indexOf(s.baseUrl)!==-1){sel.value=s.baseUrl;custom.style.display='none';custom.value='';}
   else{sel.value='__custom__';custom.style.display='block';custom.value=s.baseUrl;}
-  updateProState();
+  updatePointsUI();
   document.getElementById('settings-modal').classList.add('show');
 }
 function closeSettings(){document.getElementById('settings-modal').classList.remove('show');}
 function onBaseUrlChange(){document.getElementById('set-baseurl-custom').style.display=(document.getElementById('set-baseurl').value==='__custom__')?'block':'none';}
-function updateProState(){var el=document.getElementById('pro-state');el.innerHTML=isPro()?'<span class="pro-badge">'+t('settings.pro')+'</span>':'<span class="pro-badge" style="background:var(--text3);">'+t('settings.free')+'</span>';}
 function saveSettings(){
   var s=loadSettings();
   s.apiKey=document.getElementById('set-apikey').value.trim();
   var base=document.getElementById('set-baseurl').value;
   s.baseUrl=(base==='__custom__')?document.getElementById('set-baseurl-custom').value.trim():base;
   s.model=document.getElementById('set-model').value.trim()||DEFAULT_MODEL;
-  s.license=document.getElementById('set-license').value.trim();
-  if(s.license&&!checkKey(s.license)){showToast(t('license.invalid'),true);return;}
   saveSettingsToStore(s);
   syncKeyBox();
   closeSettings();
-  showToast(isPro()?t('license.valid'):t('toast.saved'),false);
+  showToast(t('toast.saved'),false);
 }
 function syncKeyBox(){
   var el=document.getElementById('topnav-key');if(!el)return;
@@ -769,7 +788,7 @@ var RESUME_BUILD_PROMPT=`你是资深简历专家兼招聘经理。你只站在�
 ## 用户信息（真实素材）
 {RESUME}
 
-## 目标岗位JD
+## 目标岗位JD（若用户只给了岗位方向而非完整JD，按该方向的通用任职要求定位简历）
 {JD}
 
 `+RESUME_6MOD_ZH+`
@@ -781,7 +800,7 @@ var RESUME_BUILD_EN=`You are a senior resume expert and hiring manager. You writ
 ## Candidate info (real material)
 {RESUME}
 
-## Target job description
+## Target job description (if the user only gave a role direction, not a full JD, tailor to that role's common requirements)
 {JD}
 
 `+RESUME_6MOD_EN+`
@@ -793,7 +812,7 @@ var STEPS=[
   {key:'step.1',free:true,prompt:'你是ATS简历筛选系统。请执行以下任务：\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 任务\n1. 从JD中提取所有高频关键词和必须出现的技能/经验术语\n2. 逐条检测简历中是否出现这些关键词\n3. 输出表格:\n\n| 关键词 | JD中出现位置 | 简历中是否命中 | 如未命中建议插入位置 |\n|------|------|:---:|------|\n\n如关键硬性要求缺失，标红警告。',promptEn:'You are an ATS (Applicant Tracking System) resume screener. Complete the following tasks:\n\n## Resume\n{RESUME}\n\n## Job Description\n{JD}\n\n## Tasks\n1. Extract all high-frequency keywords and required skill/experience terms from the JD\n2. Check line by line whether each keyword appears in the resume\n3. Output a table:\n\n| Keyword | Where in JD | In resume? | If missing, where to add |\n|------|------|:---:|------|\n\nFlag any missing hard requirement with a warning.'},
   {key:'step.2',free:true,prompt:'你是招聘评估专家。为候选人进行岗位匹配度评分。\n\n## 简历\n{RESUME}\n\n## 岗位JD\n{JD}\n\n## 评分维度(6维加权)\n- 硬性门槛(学历/专业/年限/证书): 30分\n- 技能栈匹配: 25分\n- 行业经验匹配: 15分\n- 项目/作品匹配: 15分\n- 加分项命中: 10分\n- 隐性匹配(学习能力/自驱力): 5分\n\n## 输出格式\n总分: XX/100 → 🟢高度匹配/🟡较匹配/🟠可冲/🔴不匹配/⚫放弃\n\n每个维度写出评分依据和扣分点。',promptEn:'You are a recruiting assessment expert. Score how well the candidate fits this role.\n\n## Resume\n{RESUME}\n\n## Job Description\n{JD}\n\n## Scoring dimensions (6 weighted)\n- Hard requirements (education/major/years/certifications): 30 pts\n- Skill stack match: 25 pts\n- Industry experience match: 15 pts\n- Project/portfolio match: 15 pts\n- Bonus points hit: 10 pts\n- Hidden fit (learning ability/self-drive): 5 pts\n\n## Output format\nTotal: XX/100 → 🟢Strong match / 🟡Good match / 🟠Reach / 🔴Poor match / ⚫Skip\n\nFor each dimension, state the scoring basis and point deductions.'},
   {key:'step.3',free:false,prompt:'你是行业分析师。全面拆解以下岗位JD。注意：你没有联网能力，公司背景仅基于JD本身推断，不确定处标注「推测」。\n\n## JD\n{JD}\n\n## 输出结构\n1. 公司背景(2-3句话讲清商业模式，不确定处标推测)\n2. 岗位业务分析(入职后实际在做什么)\n3. 硬性要求(🔴必须/🟡优选/🟢加分)\n4. 隐形需求(JD没写但面试官在意的)\n5. 面试追问方向(6-8题，标注真正在测什么)',promptEn:'You are an industry analyst. Break down the following job description in depth. Note: you have no internet access, so infer the company background from the JD alone and mark anything uncertain as [inferred].\n\n## Job Description\n{JD}\n\n## Output structure\n1. Company background (2-3 sentences on the business model; mark uncertain parts as inferred)\n2. Role business analysis (what you actually do after joining)\n3. Hard requirements (🔴must / 🟡preferred / 🟢nice-to-have)\n4. Hidden requirements (not written in the JD but what the interviewer cares about)\n5. Follow-up interview directions (6-8 questions, noting what each really tests)'},
-  {key:'step.4',free:false,prompt:'你是简历诊断师。逐行对照JD诊断简历，并给出可溯源、可直接复制的定向改写。\n\n## JD分析(前面已完成)\n{JD_ANALYSIS}\n\n## 简历\n{RESUME}\n\n## 输出前四部分\n1. 匹配点(简历原文→JD哪条→强度⭐⭐⭐/⭐⭐/⭐)\n2. 冗余点(简历原文→为什么冗余→删除/压缩/改写)\n3. 缺失点(JD要求→现状→严重度🔴/🟡/🟢)\n4. 风险点(原文→负面信号→风险等级→修复方案)\n\n## 第五部分：定向改写（三栏溯源表）\n用STAR+量化改写每条需要优化的经历，输出三栏表格，让每处修改都能溯源：\n\n| 原文 | AI改写 | 修改依据 |\n|---|---|---|\n\n要求：\n- 每行只改一条经历/一个要点，与原文逐条对应，不跳行\n- 修改依据要具体(如「补量化结果」「删主观形容词」「重组句式对齐JD关键词」「合并两段重复经历」)，并注明是重组已有信息还是新增措辞\n- 只改写真实具备的经历，绝不编造数字、成就和经历；无依据处保留原文并注明「建议补充XX信息」\n\n最后把全部改写合并输出一份「改写后完整简历」（用代码块包裹，方便直接复制）。\n\n「改写后完整简历」代码块内部必须严格使用以下 Markdown 结构（便于直接导入简历模板导出 PDF）：\n'+RESUME_6MOD_ZH,promptEn:'You are a resume diagnostician. Diagnose the resume line by line against the JD, and produce a traceable, copy-ready rewrite.\n\n## JD analysis (done earlier)\n{JD_ANALYSIS}\n\n## Resume\n{RESUME}\n\n## Output four sections\n1. Matches (resume text → which JD requirement → strength ⭐⭐⭐/⭐⭐/⭐)\n2. Redundancy (resume text → why redundant → delete/condense/rewrite)\n3. Gaps (JD requirement → current state → severity 🔴/🟡/🟢)\n4. Risks (text → negative signal → risk level → fix)\n\n## Section 5: Targeted rewrite (three-column traceability table)\nRewrite every experience that needs improvement using STAR + quantification, as a three-column table so each change is traceable:\n\n| Original | AI rewrite | Why changed |\n|---|---|---|\n\nRules:\n- One experience/point per row; map each row to its source, don\'t skip\n- The "why" must be specific (e.g. "added quantifiable result", "removed subjective adjective", "restructured to align with JD keywords", "merged two redundant entries"), and note whether it rearranges existing info or adds new wording\n- Only rewrite experiences you actually have; never fabricate numbers, achievements, or experience. Where there\'s no basis, keep the original and note "suggest adding X info"\n\nAfter the table, merge all rewrites into one "Full rewritten resume" (wrapped in a code block for easy copying).\n\nThe "Full rewritten resume" code block must strictly follow this Markdown structure (so it can be imported into a resume template and exported to PDF):\n'+RESUME_6MOD_EN},
+  {key:'step.4',free:false,prompt:'你是简历诊断师。逐行对照JD诊断简历，并给出可溯源、可直接复制的定向改写。\n\n## JD分析(前面已完成)\n{JD_ANALYSIS}\n\n## 简历\n{RESUME}\n\n## 输出前四部分\n1. 匹配点(简历原文→JD哪条→强度⭐⭐⭐/⭐⭐/⭐)\n2. 冗余点(简历原文→为什么冗余→删除/压缩/改写)\n3. 缺失点(JD要求→现状→严重度🔴/🟡/🟢→最快填补方式)\n4. 风险点(原文→负面信号→风险等级→修复方案)\n\n## 第五部分：定向改写（三栏溯源表）\n用STAR+量化改写每条需要优化的经历，输出三栏表格，让每处修改都能溯源：\n\n| 原文 | AI改写 | 修改依据 |\n|---|---|---|\n\n要求：\n- 每行只改一条经历/一个要点，与原文逐条对应，不跳行\n- 修改依据要具体(如「补量化结果」「删主观形容词」「重组句式对齐JD关键词」「合并两段重复经历」)，并注明是重组已有信息还是新增措辞\n- 只改写真实具备的经历，绝不编造数字、成就和经历；无依据处保留原文并注明「建议补充XX信息」\n\n最后把全部改写合并输出一份「改写后完整简历」（用代码块包裹，方便直接复制）。\n\n「改写后完整简历」代码块内部必须严格使用以下 Markdown 结构（便于直接导入简历模板导出 PDF）：\n'+RESUME_6MOD_ZH,promptEn:'You are a resume diagnostician. Diagnose the resume line by line against the JD, and produce a traceable, copy-ready rewrite.\n\n## JD analysis (done earlier)\n{JD_ANALYSIS}\n\n## Resume\n{RESUME}\n\n## Output four sections\n1. Matches (resume text → which JD requirement → strength ⭐⭐⭐/⭐⭐/⭐)\n2. Redundancy (resume text → why redundant → delete/condense/rewrite)\n3. Gaps (JD requirement → current state → severity 🔴/🟡/🟢 → fastest way to close)\n4. Risks (text → negative signal → risk level → fix)\n\n## Section 5: Targeted rewrite (three-column traceability table)\nRewrite every experience that needs improvement using STAR + quantification, as a three-column table so each change is traceable:\n\n| Original | AI rewrite | Why changed |\n|---|---|---|\n\nRules:\n- One experience/point per row; map each row to its source, don\'t skip\n- The "why" must be specific (e.g. "added quantifiable result", "removed subjective adjective", "restructured to align with JD keywords", "merged two redundant entries"), and note whether it rearranges existing info or adds new wording\n- Only rewrite experiences you actually have; never fabricate numbers, achievements, or experience. Where there\'s no basis, keep the original and note "suggest adding X info"\n\nAfter the table, merge all rewrites into one "Full rewritten resume" (wrapped in a code block for easy copying).\n\nThe "Full rewritten resume" code block must strictly follow this Markdown structure (so it can be imported into a resume template and exported to PDF):\n'+RESUME_6MOD_EN},
   {key:'step.6',free:false,prompt:'你是学习规划师。基于简历诊断中的缺失点，输出学习计划。\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出: 每条学习任务包含\n- 要补的缺口(对应JD哪条)\n- 学习内容 + 学习资源(优先免费)\n- 预计周期 + 重要程度(🔴必须/🟡建议/🟢可选)\n- 可验证产出(学到什么程度算学完了)\n\n按 严重度+紧急度+学习周期 综合排序。',promptEn:'You are a learning planner. Based on the gaps from the resume diagnosis, produce a study plan.\n\n## Diagnosis\n{DIAGNOSIS}\n\n## Output: each learning task must include\n- The gap to close (which JD requirement)\n- Learning content + resources (free ones first)\n- Estimated duration + priority (🔴must / 🟡recommended / 🟢optional)\n- Verifiable output (what counts as done)\n\nSort by severity + urgency + duration.'},
   {key:'step.7',free:false,prompt:'你是面试教练。基于JD和候选人背景，准备全流程面试题库。注意：你没有联网能力，面试题基于JD和简历推断，不确定处标注「推测」。\n\n## JD分析\n{JD_ANALYSIS}\n\n## 诊断结果\n{DIAGNOSIS}\n\n## 输出6阶段\nA. HR电话初筛(9题逐字话术)\nB. 笔试/测评(预测题型+答题框架)\nC. 技术面(分级题库 ⭐→⭐⭐→⭐⭐⭐)\nD. 行为面(5个STAR故事，每个≤90秒)\nE. 总监/终面(5-8个高层次问题)\nF. 情景模拟(3-5角色扮演脚本)',promptEn:'You are an interview coach. Based on the JD and the candidate background, prepare a full-process interview question bank. Note: you have no internet access, so infer questions from the JD and resume and mark uncertainty as [inferred].\n\n## JD analysis\n{JD_ANALYSIS}\n\n## Diagnosis\n{DIAGNOSIS}\n\n## Output 6 stages\nA. HR phone screen (9 questions with word-for-word scripts)\nB. Written test / assessment (predicted question types + answering frameworks)\nC. Technical interview (tiered questions ⭐→⭐⭐→⭐⭐⭐)\nD. Behavioral interview (5 STAR stories, each ≤90 seconds)\nE. Director / final round (5-8 high-level questions)\nF. Situational simulation (3-5 role-play scripts)'}
 ];
@@ -908,26 +927,6 @@ function mdToHtml(md){
   flushList();flushTable();flushBlock();
   if(inCode){html+='<pre><code>'+esc(codeBuf.join('\n'))+'</code></pre>';}
   return html;
-}
-
-/* ============ 付费墙 ============ */
-function renderPaywall(){
-  var h='<div class="paywall">';
-  h+='<div class="icon">🔒</div><h3>'+t('paywall.title')+'</h3><p>'+t('paywall.desc')+'</p>';
-  if(BUY_URL){h+='<div class="pay-actions"><button class="btn btn-primary" onclick="window.open(\''+BUY_URL+'\',\'_blank\')">'+t('paywall.upgrade')+'</button></div>';}
-  else{h+='<div style="font-size:12px;color:var(--text3);margin:0 0 12px;">'+t('paywall.howto')+'</div>';}
-  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">'+t('paywall.havekey')+'</div>';
-  h+='<div class="license-row"><input type="text" id="pay-license" data-i18n-ph="settings.license.ph" placeholder="PLD-XXXXXXXX-XXXXXXXX"><button class="btn btn-secondary" onclick="activateLicense()">'+t('paywall.activate')+'</button></div>';
-  h+='</div>';
-  return h;
-}
-function activateLicense(){
-  var k=document.getElementById('pay-license').value.trim();
-  if(!checkKey(k)){showToast(t('license.invalid'),true);return;}
-  var s=loadSettings();s.license=k;saveSettingsToStore(s);
-  showToast(t('license.valid'),false);
-  if(pendingCtx){var p=pendingCtx;pendingCtx=null;runPro(p.ctx,p.acc,p.jd).catch(handleError);}
-  else{openSettings();}
 }
 
 var libTab='resume';
@@ -1122,8 +1121,7 @@ async function runAnalysis(){
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
   if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!isPro()&&freeRuns()>=FREE_DAILY_LIMIT){showToast(t('guard.limit'),true);return;}
-  bumpFreeRuns();
+  if(!requirePoints(10))return;
   _startGreet(jd,profile);
   setBot(t('bot.analyzing'));
   document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('analysis.running')+'</div><div class="d">'+t('analysis.running.desc')+'</div></div>';
@@ -1133,12 +1131,12 @@ async function runAnalysis(){
   try{
     var a1=await execStep(STEPS[0],ctx);acc=appendAcc(acc,a1,STEPS[0].key);renderOut(acc,prog());
     var a2=await execStep(STEPS[1],ctx);acc=appendAcc(acc,a2,STEPS[1].key);
-    if(PAYWALL_ENABLED&&!isPro()){renderOut(acc,renderPaywall());setReport(acc,reportTitle(jd));pendingCtx={jd:jd,resume:profile,acc:acc,ctx:ctx};saveReport(jd,{content:acc});setBot(t('bot.done'));return;}
     await runPro(ctx,acc,jd);
+    spendPoints(10);
   }catch(e){handleError(e);}
 }
 async function runResumeBuild(){
-  var jd=document.getElementById('jd-input').value.trim(),profile=getProfileText();
+  var jd=document.getElementById('build-jd').value.trim(),profile=getProfileText();
   if(!jd){showToast(t('toast.needjd'),true);return;}
   if(!profile){showToast(t('toast.needresume'),true);return;}
   var _g=guardInput(jd,'jd');
@@ -1148,18 +1146,17 @@ async function runResumeBuild(){
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
   if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(PAYWALL_ENABLED&&!isPro()){renderOut('',renderPaywall());setBot(t('bot.done'));return;}
+  if(!requirePoints(3))return;
   var pl=detectLang(jd);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
   var user=(pl==='en'?RESUME_BUILD_EN:RESUME_BUILD_PROMPT).replace(/\{RESUME\}/g,wrapData('user_resume',profile)).replace(/\{JD\}/g,wrapData('user_jd',jd));
   setBot(t('bot.running')+' '+t('resume.build'));
-  document.getElementById('analysis-output').innerHTML='<div class="empty"><div class="t">'+t('resume.build')+'</div><div class="d">'+t('analysis.analyzing')+'</div></div>';
   try{
     var raw=await callLLM(sys,user);
     lastRaw=raw;
     var go=guardOutput(raw);if(!go.ok)raw='> '+t('guard.leak')+'\n\n'+raw;
     var rw=extractResumeBlock(raw)||raw.trim();
-    if(rw){setResumeText(rw);showToast(t('resume.generated'),false);}else{showToast(t('resume.empty'),true);}
+    if(rw){setResumeText(rw);showToast(t('resume.generated'),false);spendPoints(3);}else{showToast(t('resume.empty'),true);}
   }catch(e){handleError(e);}
   setBot(t('bot.done'));
 }
@@ -1184,7 +1181,7 @@ function renderReports(){
 }
 function openReport(id){
   var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
-  switchPage('analysis');document.getElementById('jd-input').value=r.jd;
+  switchPage('full');document.getElementById('jd-input').value=r.jd;
   if(r.data){var d=r.data;var md=typeof d==='string'?d:(d.result||d.content||'');document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(md)+'</div>';setReport(md,r.title||'');}
 }
 
@@ -1421,25 +1418,12 @@ function memorySummary(pl){
   return head+parts.join('\n');
 }
 
-/* ============ 独立工具：第5/9/10步（单次） + 第8步 Mock（多轮） ============ */
-var curExtra='5';
-function openExtra(id){openExtraPrefill(id,'');}
-function openExtraPrefill(id,value){
-  curExtra=id;
-  document.getElementById('extra-title').textContent=t('extra.'+id+'.title');
-  document.getElementById('extra-hint').textContent=t('extra.'+id+'.hint');
-  document.getElementById('extra-input').value=value;
-  document.getElementById('extra-output').innerHTML='';
-  document.getElementById('extra-run').textContent=t('extra.run');
-  var pb=document.getElementById('extra-pick');
-  if(pb)pb.style.display=(id==='5'||id==='9'||id==='10')?'inline-flex':'none';
-  document.getElementById('extra-modal').classList.add('show');
-}
-function closeExtra(){document.getElementById('extra-modal').classList.remove('show');}
+/* ============ 功能页调度：单步 / 职业探索 / 独立工具 / Mock（多轮） ============ */
+var curFeature='ats';
 
 /* ============ 报告库选择器（工具从历史分析报告选取依据） ============ */
 var pickerMode='single',pickerTarget='';
-function pickFromCurrent(){openPicker(curExtra==='5'?'multi':'single',curExtra);}
+function pickForCurrent(){var f=featureByKey(curFeature);openPicker(f&&f.ekey==='5'?'multi':'single',curFeature);}
 function openPicker(mode,target){
   var reps=loadRep();
   if(!reps.length){showToast(t('pick.noreport'),true);return;}
@@ -1469,21 +1453,17 @@ function reportText(r){
   return '['+r.title+']\n'+(r.jd||'').trim()+(md?('\n\n匹配分析摘要:\n'+md.slice(0,2500)):'');
 }
 function applyPicked(ids){
-  if(pickerTarget==='8'){
-    var r=reportById(ids[0]);
-    if(r){document.getElementById('mock-jd').value=r.jd||'';showToast(t('pick.filled'),false);}
-    return;
-  }
-  if(pickerTarget==='5'){
+  var inp=document.getElementById('feat-input');
+  if(pickerTarget==='rank'){
     var parts=[];
     for(var i=0;i<ids.length;i++)parts.push(reportText(reportById(ids[i])));
-    openExtraPrefill('5',parts.join('\n\n=====\n\n'));
+    if(inp)inp.value=parts.join('\n\n=====\n\n');
     return;
   }
-  if(pickerTarget==='9'||pickerTarget==='10'){
+  if(pickerTarget==='offer'||pickerTarget==='onboard'){
     var rr=reportById(ids[0]),val=reportText(rr);
-    if(pickerTarget==='9')val+='\n\n=====Offer package=====\n（在此粘贴你的 offer：底薪/年终/期权/社保基数与比例/试用期折扣/补贴/年假等）';
-    openExtraPrefill(pickerTarget,val);
+    if(pickerTarget==='offer')val+='\n\n=====Offer package=====\n（在此粘贴你的 offer：底薪/年终/期权/社保基数与比例/试用期折扣/补贴/年假等）';
+    if(inp)inp.value=val;
     return;
   }
 }
@@ -1495,51 +1475,129 @@ function confirmPicker(){
   closePicker();
   applyPicked(ids);
 }
-async function runExtra(){
-  var input=document.getElementById('extra-input').value.trim();
-  if(!input){showToast(t('toast.needjd'),true);return;}
-  if(curExtra==='greet'&&!getProfileText()){showToast(t('toast.needresume'),true);return;}
-  var _g=guardInput(input,'jd');
+function featErr(e){return '<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';}
+async function runFeature(){
+  var f=featureByKey(curFeature);if(!f)return;
+  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(!requirePoints(f.cost))return;
+  if(f.kind==='step'){await runStepFeature(f);return;}
+  if(f.kind==='pivot'){await runPivotFeature(f);return;}
+  if(f.kind==='greet'){await runGreetFeature();return;}
+  if(f.kind==='netapply'){await runNetapplyFeature();return;}
+  if(f.kind==='extra'){await runExtraFeature(f);return;}
+}
+async function runStepFeature(f){
+  var input=document.getElementById('feat-input');var jd=input?input.value.trim():'';
+  if(!jd){showToast(t('toast.needjd'),true);return;}
+  var profile=getProfileText();
+  if(!profile){showToast(t('toast.needresume'),true);return;}
+  var _g=guardInput(jd,'jd');
   if(!_g.ok){showToast(t('guard.inject'),true);return;}
-  if(_g.truncated){input=_g.text;showToast(t('guard.len'),true);}
-  if(!loadSettings().apiKey){showToast(t('extra.needkey'),true);focusKey();return;}
-  var pl=detectLang(input);
-  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+(curExtra==='greet'?'':memorySummary(pl));
-  var user=(curExtra==='greet'?GREET_PROMPT.replace('{PROFILE}',wrapData('user_resume',getProfileText())):EXTRA_PROMPTS[curExtra][pl]).replace(/\{INPUT\}/g,wrapData('user_input',input));
-  var out=document.getElementById('extra-output');
+  if(_g.truncated){jd=_g.text;showToast(t('guard.len'),true);}
+  var out=document.getElementById('feat-output');
   out.innerHTML=prog();
-  setBot(t('bot.running')+' '+(curExtra==='greet'?t('extra.greet.title'):curExtra==='netapply'?t('netapply.title'):t('step.'+curExtra)));
+  setBot(t('bot.running')+' '+t(STEPKEY[f.step]));
+  var ctx={jd:jd,resume:profile,jd_analysis:'',diag:''};
+  try{
+    if(f.step===3||f.step===4||f.step===5){ctx.jd_analysis=await execStep(STEPS[2],ctx);}
+    if(f.step===4||f.step===5){ctx.diag=await execStep(STEPS[3],ctx);}
+    var res=await execStep(STEPS[f.step],ctx);
+    if(f.step===3){var rw=extractResumeBlock(res);if(rw)setResumeText(rw);}
+    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    spendPoints(f.cost);
+    saveReport(jd,{content:res});
+    setReport(res,reportTitle(jd));
+    addMem('analysis',jd+'\n\n'+res.slice(0,800));
+    setBot(t('bot.done'));
+  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+}
+async function runPivotFeature(f){
+  var profile=getProfileText();
+  if(!profile){showToast(t('toast.needresume'),true);return;}
+  var input=document.getElementById('feat-input');var val=input?input.value.trim():'';
+  var out=document.getElementById('feat-output');
+  out.innerHTML=prog();
+  setBot(t('bot.running')+' '+(lang==='en'?f.title.en:f.title.zh));
+  var pl=detectLang(profile||val);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
+  var user=PIVOT_PROMPTS[f.pkey][pl].replace(/\{PROFILE\}/g,wrapData('user_resume',profile)).replace(/\{INPUT\}/g,wrapData('user_input',val));
+  try{
+    var res=await callLLM(sys,user);
+    var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
+    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    spendPoints(f.cost);
+    addMem('analysis',(val?val+'\n\n':'')+res.slice(0,800));
+    setBot(t('bot.done'));
+  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+}
+async function runGreetFeature(){
+  var input=document.getElementById('feat-input');var jd=input?input.value.trim():'';
+  if(!jd){showToast(t('toast.needjd'),true);return;}
+  var profile=getProfileText();
+  if(!profile){showToast(t('toast.needresume'),true);return;}
+  var out=document.getElementById('feat-output');
+  out.innerHTML=prog();
+  setBot(t('bot.running')+' '+t('extra.greet.title'));
+  var pl=detectLang(jd||profile);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT);
+  var user=GREET_PROMPT.replace('{PROFILE}',wrapData('user_resume',profile)).replace('{INPUT}',wrapData('user_jd',jd));
   try{
     var res=await callLLM(sys,user);
     lastRaw=res;
-    if(curExtra==='netapply'){
-      out.innerHTML='<div class="netapply-out">'+esc(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyLast()">'+t('netapply.copy')+'</button></div>';
-    }else if(curExtra==='greet'){
-      out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyGreet()">'+t('greet.copy')+'</button></div>';
-    }else{
-      out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
-    }
+    var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
+    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyGreet()">'+t('greet.copy')+'</button></div>';
+    spendPoints(1);
+    addMem('greet',jd+'\n\n'+res.slice(0,800));
     setBot(t('bot.done'));
-    addMem(({'5':'rank','9':'offer','10':'onboard','netapply':'netapply','greet':'greet'})[curExtra],input+'\n\n'+res.slice(0,800));
-  }catch(e){
-    out.innerHTML='<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';
-    setBot(t('bot.offline'));
-  }
+  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+}
+async function runNetapplyFeature(){
+  var input=document.getElementById('feat-input');var v=input?input.value.trim():'';
+  var profile=getProfileText();
+  if(!profile){showToast(t('toast.needresume'),true);return;}
+  var out=document.getElementById('feat-output');
+  out.innerHTML=prog();
+  setBot(t('bot.running')+' '+t('netapply.title'));
+  var combined=profile+'\n\n=====岗位JD=====\n'+v;
+  var pl=detectLang(profile);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT);
+  var user=EXTRA_PROMPTS['netapply'][pl].replace(/\{INPUT\}/g,wrapData('user_input',combined));
+  try{
+    var res=await callLLM(sys,user);
+    lastRaw=res;
+    out.innerHTML='<div class="netapply-out">'+esc(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyLast()">'+t('netapply.copy')+'</button></div>';
+    spendPoints(1);
+    addMem('netapply',combined.slice(0,800)+'\n\n'+res.slice(0,800));
+    setBot(t('bot.done'));
+  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+}
+async function runExtraFeature(f){
+  var input=document.getElementById('feat-input');var v=input?input.value.trim():'';
+  if(!v){showToast(t('toast.needjd'),true);return;}
+  var out=document.getElementById('feat-output');
+  out.innerHTML=prog();
+  setBot(t('bot.running')+' '+(lang==='en'?f.title.en:f.title.zh));
+  var pl=detectLang(v);
+  var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
+  var user=EXTRA_PROMPTS[f.ekey][pl].replace(/\{INPUT\}/g,wrapData('user_input',v));
+  try{
+    var res=await callLLM(sys,user);
+    var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
+    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    spendPoints(f.cost);
+    addMem((f.ekey==='5'?'rank':f.ekey==='9'?'offer':'onboard'),v+'\n\n'+res.slice(0,800));
+    setBot(t('bot.done'));
+  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
 }
 
 var lastRaw='';
 function openApply(){
   var profile=getProfileText();
   if(!profile){showToast(t('toast.needresume'),true);return;}
-  var jd=document.getElementById('jd-input').value.trim();
-  curExtra='netapply';
-  document.getElementById('extra-title').textContent=t('netapply.title');
-  document.getElementById('extra-hint').textContent=t('netapply.hint');
-  document.getElementById('extra-input').value=profile+'\n\n=====岗位JD=====\n'+jd;
-  document.getElementById('extra-output').innerHTML='';
-  document.getElementById('extra-run').textContent=t('netapply.run');
-  document.getElementById('extra-pick').style.display='none';
-  document.getElementById('extra-modal').classList.add('show');
+  var jd=(document.getElementById('jd-input').value||'').trim();
+  switchPage('netapply');
+  var inp=document.getElementById('feat-input');
+  if(inp)inp.value=jd;
 }
 function copyLast(){copyText(lastRaw);}
 function extractGreet(raw){
@@ -1580,14 +1638,11 @@ function mockSystem(){
   return [{role:'system',content:sys},{role:'user',content:first}];
 }
 function openMock(){
-  mockMessages=[];
-  document.getElementById('mock-log').innerHTML='';
-  document.getElementById('mock-input').value='';
-  document.getElementById('mock-phase').value='hr';
-  document.getElementById('mock-jd').value=document.getElementById('jd-input').value.trim();
-  document.getElementById('mock-modal').classList.add('show');
+  var jd=(document.getElementById('jd-input').value||'').trim();
+  switchPage('mock');
+  if(jd){var mj=document.getElementById('mock-jd');if(mj)mj.value=jd;}
 }
-function closeMock(){document.getElementById('mock-modal').classList.remove('show');}
+function closeMock(){}
 function mockAdd(role,text){
   mockMessages.push({role:role,content:text});
   var log=document.getElementById('mock-log');
@@ -1599,12 +1654,15 @@ function mockAdd(role,text){
 }
 async function mockStart(){
   var base=mockSystem();if(!base)return;
+  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(!requirePoints(3))return;
   mockMessages=base;
   document.getElementById('mock-log').innerHTML='';
   setBot(t('mock.running'));
   try{
     var res=await callLLMChat(mockMessages);
     mockAdd('assistant',res);
+    spendPoints(3);
     setBot(t('bot.done'));
   }catch(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));}
 }
@@ -1629,6 +1687,107 @@ function mockEnd(){
   callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);addMem('mock',res.slice(0,2000));setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));});
 }
 
+/* ============ 功能页配置 + 侧边栏 ============ */
+var STEPKEY=['step.1','step.2','step.3','step.4','step.6','step.7'];
+var GROUPS=[
+  {key:'analysis',label:'side.analysis'},
+  {key:'resume',label:'side.resume'},
+  {key:'explore',label:'side.explore'},
+  {key:'execute',label:'side.execute'},
+  {key:'offer',label:'side.offer'}
+];
+var DATA_ITEMS=[
+  {key:'library',ic:'🗂️',title:{zh:'信息库',en:'Library'}},
+  {key:'reports',ic:'📦',title:{zh:'报告仓库',en:'Reports'}},
+  {key:'memory',ic:'🧠',title:{zh:'个人记忆',en:'Memory'}}
+];
+var FEATURES=[
+  {key:'full',group:'analysis',ic:'⚡',title:{zh:'一键全流程',en:'Full Pipeline'},cost:10,special:'full'},
+  {key:'ats',group:'analysis',ic:'🎯',title:{zh:'ATS关键词检测',en:'ATS Keywords'},cost:1,input:'jd',kind:'step',step:0},
+  {key:'score',group:'analysis',ic:'📈',title:{zh:'匹配度评分',en:'Fit Score'},cost:2,input:'jd',kind:'step',step:1},
+  {key:'jd',group:'analysis',ic:'🔍',title:{zh:'JD深度拆解',en:'JD Breakdown'},cost:2,input:'jd',kind:'step',step:2},
+  {key:'diag',group:'analysis',ic:'🩺',title:{zh:'简历诊断改写',en:'Resume Diagnosis'},cost:3,input:'jd',kind:'step',step:3},
+  {key:'study',group:'analysis',ic:'📚',title:{zh:'差距学习计划',en:'Study Plan'},cost:2,input:'jd',kind:'step',step:4},
+  {key:'interview',group:'analysis',ic:'🎤',title:{zh:'面试准备题库',en:'Interview Prep'},cost:2,input:'jd',kind:'step',step:5},
+  {key:'build',group:'resume',ic:'📄',title:{zh:'制作简历/定位重写',en:'Build Resume'},cost:3,special:'build'},
+  {key:'roles',group:'explore',ic:'🕵️',title:{zh:'隐藏角色搜索器',en:'Hidden Roles'},cost:2,input:'none',kind:'pivot',pkey:'roles'},
+  {key:'skills',group:'explore',ic:'🔁',title:{zh:'可转移技能翻译器',en:'Transferable Skills'},cost:2,input:'none',kind:'pivot',pkey:'skills'},
+  {key:'pivot',group:'explore',ic:'🗺️',title:{zh:'职业支点地图',en:'Career Pivot Map'},cost:3,input:'none',kind:'pivot',pkey:'pivot'},
+  {key:'industry',group:'explore',ic:'🏭',title:{zh:'最佳匹配行业扫描',en:'Industry Scanner'},cost:2,input:'none',kind:'pivot',pkey:'industry'},
+  {key:'search',group:'execute',ic:'🧭',title:{zh:'机会搜索策略',en:'Search Strategy'},cost:2,input:'role',kind:'pivot',pkey:'search'},
+  {key:'rank',group:'execute',ic:'📊',title:{zh:'多JD优先级排序',en:'Priority Ranking'},cost:2,input:'text',kind:'extra',ekey:'5',pick:true},
+  {key:'greet',group:'execute',ic:'✉️',title:{zh:'招呼语生成',en:'Greeting'},cost:1,input:'jd',kind:'greet'},
+  {key:'netapply',group:'execute',ic:'📋',title:{zh:'网申包生成器',en:'Application Package'},cost:1,input:'jd',kind:'netapply'},
+  {key:'mock',group:'offer',ic:'🎙️',title:{zh:'Mock面试',en:'Mock Interview'},cost:3,special:'mock'},
+  {key:'offer',group:'offer',ic:'💰',title:{zh:'Offer谈判',en:'Offer Negotiation'},cost:3,input:'text',kind:'extra',ekey:'9',pick:true},
+  {key:'onboard',group:'offer',ic:'🚀',title:{zh:'入职指南',en:'Onboarding'},cost:3,input:'text',kind:'extra',ekey:'10',pick:true}
+];
+function featureByKey(k){for(var i=0;i<FEATURES.length;i++)if(FEATURES[i].key===k)return FEATURES[i];return null;}
+function renderSidebar(){
+  var nav=document.getElementById('side-nav');if(!nav)return;
+  var h='',i,f,title;
+  for(var gi=0;gi<GROUPS.length;gi++){
+    h+='<div class="side-group">'+t(GROUPS[gi].label)+'</div>';
+    for(i=0;i<FEATURES.length;i++){
+      f=FEATURES[i];if(f.group!==GROUPS[gi].key)continue;
+      title=(lang==='en'?f.title.en:f.title.zh);
+      h+='<button class="side-item" data-page="'+f.key+'"><span class="si-ic">'+f.ic+'</span>'+title+'<span class="si-cost">'+f.cost+'</span></button>';
+    }
+  }
+  h+='<div class="side-group">'+t('side.data')+'</div>';
+  for(i=0;i<DATA_ITEMS.length;i++){
+    h+='<button class="side-item" data-page="'+DATA_ITEMS[i].key+'"><span class="si-ic">'+DATA_ITEMS[i].ic+'</span>'+(lang==='en'?DATA_ITEMS[i].title.en:DATA_ITEMS[i].title.zh)+'</button>';
+  }
+  nav.innerHTML=h;
+  nav.querySelectorAll('.side-item').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
+}
+function renderFeaturePage(key){
+  var f=featureByKey(key);if(!f)return;
+  curFeature=key;
+  var title=(lang==='en'?f.title.en:f.title.zh);
+  var h='<div class="page-header"><h2>'+title+'</h2><span class="cost-badge">'+f.cost+' '+t('pts.unit')+'</span></div>';
+  if(f.input==='none'){
+    h+='<div class="card" style="background:var(--accent-tint);"><div style="font-size:13px;color:var(--text2);">'+t('feat.autoread')+'</div></div>';
+  }else{
+    var label=(f.input==='jd')?t('feat.jd.label'):(f.input==='role')?t('feat.role.label'):t('feat.text.label');
+    var ph=(f.input==='jd')?t('feat.jd.ph'):(f.input==='role')?t('feat.role.ph'):t('feat.text.ph');
+    var minH=(f.input==='role')?'72px':'180px';
+    h+='<div class="card"><div class="card-header">'+label+'</div>';
+    h+='<textarea id="feat-input" placeholder="'+ph+'" style="min-height:'+minH+';"></textarea>';
+    if(f.pick)h+='<button class="btn btn-ghost btn-sm" onclick="pickForCurrent()" style="margin-top:8px;">'+t('pick.fromrep')+'</button>';
+    h+='</div>';
+  }
+  h+='<button class="btn btn-primary" onclick="runFeature()" style="width:100%;justify-content:center;">'+t('feat.run')+'（-'+f.cost+' '+t('pts.unit')+'）</button>';
+  h+='<div class="card md-output" id="feat-output" style="margin-top:14px;min-height:120px;"><div class="empty"><div class="d">'+t('feat.empty')+'</div></div></div>';
+  document.getElementById('page-feature').innerHTML=h;
+}
+
+/* ============ 职业探索提示词（5 个新功能） ============ */
+var PIVOT_PROMPTS={
+  roles:{
+    zh:'你是职业规划专家。基于候选人的真实简历，识别至少 15 个与其经验、技能、成就、可转移能力相匹配的职位名称（必须包含当前行业之外的跨界角色）。\n\n## 候选人简历\n{PROFILE}\n\n## 输出要求\n1. 一张大表：| 职位名称 | 所属行业 | 契合度(⭐) | 薪资潜力 | 招聘需求 | 进入难度 | 一句话理由 |\n2. 至少 15 个职位，覆盖「直接对口」与「可转移跨界」两类\n3. 每个职位写清「为什么匹配」——对应简历里的哪段经历或技能\n4. 最后给出 Top 5 推荐 + 理由\n\n只基于简历真实内容，不编造经历、数字、证书；不确定处标注「推测」。',
+    en:'You are a career-planning expert. Based on the candidate\'s real resume, identify at least 15 job titles that match their experience, skills, achievements, and transferable abilities (must include cross-industry roles beyond their current field).\n\n## Candidate resume\n{PROFILE}\n\n## Output\n1. One big table: | Job title | Industry | Fit(⭐) | Salary potential | Demand | Entry difficulty | One-line reason |\n2. At least 15 titles, covering both direct matches and transferable cross-field roles\n3. For each title, explain why it fits — which resume experience or skill backs it\n4. Finish with a Top 5 recommendation + reasons\n\nBase everything on the real resume only; never fabricate experience, numbers, or certificates. Mark anything uncertain as "estimate".'
+  },
+  skills:{
+    zh:'你是可转移技能分析专家。审阅候选人简历，提取每一项雇主可能重视的可转移技能，并把每项技能关联到合适的行业、部门、职位名称，解释过往经历如何证明能胜任这些角色。\n\n## 候选人简历\n{PROFILE}\n\n## 输出要求\n1. 表格：| 可转移技能 | 适配行业/部门/职位 | 简历中的证据 | 为什么有价值 |\n2. 每条技能都要有具体证据（引用简历原文的经历或数字）\n3. 最后总结「最抗打」的 3 个跨界方向\n\n只基于简历真实内容，不编造。',
+    en:'You are a transferable-skills analyst. Review the candidate\'s resume, extract every transferable skill an employer might value, and map each skill to suitable industries, departments, and job titles, explaining how past experience proves fit for those roles.\n\n## Candidate resume\n{PROFILE}\n\n## Output\n1. Table: | Transferable skill | Fits industry/dept/title | Evidence in resume | Why it matters |\n2. Each skill must cite concrete evidence (quote the resume\'s experience or numbers)\n3. Finish with the 3 most robust cross-field directions\n\nBase everything on the real resume only; never fabricate.'
+  },
+  pivot:{
+    zh:'你是职业转型规划师。基于候选人简历，设计 5 条现实的职业支点路线。\n\n## 候选人简历\n{PROFILE}\n\n## 每条路线包含\n- 初始角色（起点岗位）\n- 可转移经验（简历里哪些经历能平移过去）\n- 缺失技能（诚实指出还缺什么）\n- 推荐项目（做 1 个什么项目补齐短板）\n- 可能薪资范围（标注「推测」）\n- 30 天过渡计划（每周干什么）\n\n## 输出\n5 条路线，按「可行性从高到低」排序，每条用清晰小节呈现。只基于真实经历，不编造。',
+    en:'You are a career-transition planner. Based on the candidate\'s resume, design 5 realistic career pivot routes.\n\n## Candidate resume\n{PROFILE}\n\n## Each route includes\n- Starting role\n- Transferable experience (which resume experience maps over)\n- Missing skills (honestly name the gaps)\n- Recommended project (one project to close the gap)\n- Likely salary range (mark as "estimate")\n- 30-day transition plan (week by week)\n\n## Output\n5 routes, ordered most-to-least feasible, each in a clear section. Base on real experience only; never fabricate.'
+  },
+  industry:{
+    zh:'你是行业机会分析师。分析候选人经验，识别 10 个其技能可能有价值的行业，按招聘需求、薪酬、远程工作潜力、职业成长、进入难度（是否需从零开始）分类。\n\n## 候选人简历\n{PROFILE}\n\n## 输出\n1. 一张总表：| 行业 | 招聘需求 | 薪酬水平 | 远程潜力 | 职业成长 | 进入难度 | 匹配依据 |\n2. 逐个行业 2-3 句点评\n3. Top 3 推荐行业 + 理由\n\n只基于真实内容；行业数据不确定处标注「推测」。',
+    en:'You are an industry-opportunity analyst. Analyze the candidate\'s experience and identify 10 industries where their skills may be valuable, categorized by hiring demand, salary, remote-work potential, career growth, and entry difficulty.\n\n## Candidate resume\n{PROFILE}\n\n## Output\n1. One master table: | Industry | Demand | Salary | Remote potential | Growth | Entry difficulty | Fit basis |\n2. 2-3 line commentary per industry\n3. Top 3 recommended industries + reasons\n\nBase on real content only; mark uncertain industry data as "estimate".'
+  },
+  search:{
+    zh:'你是求职策略顾问。基于候选人简历和目标岗位，创建一份为期 30 天的求职搜索计划。\n\n## 候选人简历\n{PROFILE}\n\n## 目标岗位/方向\n{INPUT}\n\n## 输出\n1. 合适的职位标题（10+ 个可搜索的岗位名）\n2. 搜索关键词组合（平台关键词 + 过滤条件）\n3. 企业类型（哪些公司值得投）\n4. 申请目标（每周投递量、精投数量）\n5. 网络拓展行动（脉脉/领英/社群）\n6. 联系招聘人员的策略 + 话术\n7. 每周绩效检查点（W1-W4 具体指标）\n\n只基于真实经历，不编造。',
+    en:'You are a job-search strategist. Based on the candidate\'s resume and target role, create a 30-day job-search plan.\n\n## Candidate resume\n{PROFILE}\n\n## Target role / direction\n{INPUT}\n\n## Output\n1. Suitable job titles (10+ searchable titles)\n2. Search keyword combos (platform keywords + filters)\n3. Company types worth targeting\n4. Application targets (weekly volume, quality applications)\n5. Networking actions (LinkedIn / communities)\n6. Recruiter outreach strategy + scripts\n7. Weekly checkpoints (W1-W4 concrete metrics)\n\nBase on real experience only; never fabricate.'
+  }
+};
+
+renderSidebar();
+updatePointsUI();
 applyLang();
 initResumeEditor();
 syncKeyBox();
