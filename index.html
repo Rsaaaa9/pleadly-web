@@ -444,6 +444,7 @@ zh:{
  'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
  'needkey':'请先在上方输入框填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
  'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
+ 'err.timeout':'请求超时：模型响应过慢或网络卡顿，请重试或检查网络/换用更快模型。',
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
  'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
@@ -512,6 +513,7 @@ en:{
  'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
  'needkey':'Please enter your API key in the box above','err.invalidkey':'Invalid API key or insufficient balance (401)',
  'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
+ 'err.timeout':'Request timed out: the model responded too slowly or the network stalled. Retry, or check the network / switch to a faster model.',
  'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock feedback / offer negotiations / onboarding. Stored only on this device.',
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared',
  'mem.empty':'No memories yet','mem.empty.desc':'Run a full analysis or mock interview and your key info will be recorded here automatically',
@@ -584,6 +586,7 @@ function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 
 /* ============ BYOK 设置 + 积分制 ============ */
 var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
+var LLM_TIMEOUT=180000; // 单次 LLM 请求超时(ms)：防止网络卡死导致界面无响应
 var FREE_STARTER=20; // 新用户首次赠送积分
 var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 API Key（桌面同步脚本会自动置为 true）
 var pendingCtx=null;
@@ -887,17 +890,25 @@ async function callLLMChat(messages){
   var s=loadSettings();
   if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
   var base=s.baseUrl.replace(/\/$/,'');
-  var resp=await fetch(base+'/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
-    body:JSON.stringify({model:s.model,messages:messages,temperature:0.3,max_tokens:8192})
-  });
-  if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
-  if(!resp.ok){throw new Error('API error '+resp.status);}
-  var d=await resp.json();
-  var content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
-  if(!content)throw new Error('empty response');
-  return content;
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort();},LLM_TIMEOUT);
+  try{
+    var resp=await fetch(base+'/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+      body:JSON.stringify({model:s.model,messages:messages,temperature:0.3,max_tokens:8192}),
+      signal:ctrl.signal
+    });
+    if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
+    if(!resp.ok){throw new Error('API error '+resp.status);}
+    var d=await resp.json();
+    var content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
+    if(!content)throw new Error('empty response');
+    return content;
+  }catch(e){
+    if(e&&e.name==='AbortError'){var t=new Error('timeout');t.timeout=true;throw t;}
+    throw e;
+  }finally{clearTimeout(timer);}
 }
 async function callLLM(system,user){return callLLMChat([{role:'system',content:system},{role:'user',content:user}]);}
 
@@ -1090,8 +1101,9 @@ function setBot(txt){document.getElementById('bot-text').textContent=txt;}
 function prog(){return '<div style="text-align:center;color:var(--text3);font-size:13px;margin-top:12px;">'+t('analysis.analyzing')+'</div>';}
 function renderOut(acc,extra){document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(acc)+'</div>'+(extra||'');}
 function appendAcc(acc,content,key){return acc+((acc?'\n\n':'')+'### '+t(key)+'\n\n'+content);}
+function errMsg(e){return e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):(e.timeout?t('err.timeout'):t('err.cors')));}
 function handleError(e){
-  var m=e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors'));
+  var m=errMsg(e);
   renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
   if(e.needkey||e.invalidkey)focusKey();
   setBot(t('bot.offline'));
@@ -1167,7 +1179,7 @@ async function runResumeBuild(){
     var go=guardOutput(raw);if(!go.ok)raw='> '+t('guard.leak')+'\n\n'+raw;
     var rw=extractResumeBlock(raw)||raw.trim();
     if(rw){setResumeText(rw);showToast(t('resume.generated'),false);spendPoints(3);}else{showToast(t('resume.empty'),true);}
-  }catch(e){handleError(e);}
+  }catch(e){showToast(errMsg(e),true);if(e.needkey||e.invalidkey)focusKey();}
   setBot(t('bot.done'));
 }
 function saveReport(jd,data){
@@ -1485,7 +1497,7 @@ function confirmPicker(){
   closePicker();
   applyPicked(ids);
 }
-function featErr(e){return '<p style="font-size:13px;color:var(--text2);">'+esc(e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')))+'</p>';}
+function featErr(e){return '<p style="font-size:13px;color:var(--text2);">'+esc(errMsg(e))+'</p>';}
 async function runFeature(){
   var f=featureByKey(curFeature);if(!f)return;
   if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
@@ -1674,7 +1686,7 @@ async function mockStart(){
     mockAdd('assistant',res);
     spendPoints(3);
     setBot(t('bot.done'));
-  }catch(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));}
+  }catch(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}
 }
 async function mockSend(){
   var v=document.getElementById('mock-input').value.trim();
@@ -1687,14 +1699,14 @@ async function mockSend(){
     var res=await callLLMChat(mockMessages);
     mockAdd('assistant',res);
     setBot(t('bot.done'));
-  }catch(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));}
+  }catch(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}
 }
 function mockEnd(){
   if(!mockMessages.length){closeMock();return;}
   var pl=detectLang((mockMessages[0]&&mockMessages[0].content)||'');
   mockAdd('user',pl==='en'?'End the interview and summarize.':'结束面试并给出总结。');
   setBot(t('mock.running'));
-  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);addMem('mock',res.slice(0,2000));setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):t('err.cors')));setBot(t('bot.offline'));});
+  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);addMem('mock',res.slice(0,2000));setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));});
 }
 
 /* ============ 功能页配置 + 侧边栏 ============ */
