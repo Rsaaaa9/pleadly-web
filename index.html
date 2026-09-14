@@ -24,6 +24,7 @@ body{min-height:100vh;background:var(--bg);}
 
 .topnav{display:flex;align-items:center;height:52px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--separator);position:sticky;top:0;z-index:100;}
 .topnav-logo{font-size:16px;font-weight:650;letter-spacing:-0.01em;color:var(--text);margin-right:20px;font-optical-sizing:auto;}
+.topnav-cn{font-size:12px;font-weight:500;color:var(--text3);margin-left:6px;letter-spacing:0.02em;}
 .topnav-links{display:flex;gap:4px;}
 .topnav-link{padding:7px 14px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;border:none;background:none;transition:all 0.2s cubic-bezier(0.4,0,0.2,1);font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .topnav-link:hover{color:var(--text);background:var(--muted-bg);}
@@ -274,7 +275,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
 </svg>
 
 <nav class="topnav">
-  <div class="topnav-logo">Pleadly</div>
+  <div class="topnav-logo">Pleadly<span class="topnav-cn">我求你了</span></div>
   <div class="topnav-right">
     <button class="pts-btn" id="pts-btn" onclick="openSettings()" title="积分 / 设置"><svg class="ic"><use href="#i-coin"/></svg><span id="pts-balance">0</span> <span data-i18n="pts.unit">积分</span></button>
     <div class="keybox" id="keybox" title="API Key">
@@ -328,6 +329,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
     <textarea id="jd-input" data-i18n-ph="analysis.jd.ph" placeholder="在此粘贴岗位 JD ..." style="min-height:150px;"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="runAnalysis()" data-i18n="analysis.run">全流程分析</button>
+      <button class="btn btn-ghost" onclick="switchPage('reports')" data-i18n="nav.reports">报告仓库</button>
     </div>
   </div>
   <div class="step-section">
@@ -359,9 +361,9 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
   </div>
 </div>
 
-<!-- Mock 面试 -->
+<!-- 模拟面试 -->
 <div class="page" id="page-mock">
-  <div class="page-header"><h2 data-i18n="mock.title">Mock 面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge">3 <span data-i18n="pts.unit">积分</span></span></div>
+  <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge">3 <span data-i18n="pts.unit">积分</span></span></div>
   <div class="card">
     <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
     <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;"></textarea>
@@ -375,11 +377,16 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
       </select>
       <button class="btn btn-primary btn-sm" onclick="mockStart()" data-i18n="mock.start">开始面试</button>
       <button class="btn btn-ghost btn-sm" onclick="mockEnd()" data-i18n="mock.end">结束并总结</button>
+      <span id="mock-budget" style="font-size:12px;color:var(--text3);margin-left:auto;"></span>
     </div>
     <div class="mock-log" id="mock-log"></div>
     <div class="mock-input">
       <input type="text" id="mock-input" data-i18n-ph="mock.ph" placeholder="输入你的回答..." onkeydown="if(event.key==='Enter')mockSend()">
       <button class="btn btn-primary" id="mock-send" onclick="mockSend()" data-i18n="mock.send">发送</button>
+    </div>
+    <div id="mock-limit-hint" style="display:none;margin-top:10px;font-size:13px;color:var(--text2);align-items:center;gap:10px;flex-wrap:wrap;">
+      <span data-i18n="mock.limit">本次面试问答次数已用完，继续需再付 3 积分</span>
+      <button class="btn btn-primary btn-sm" onclick="mockContinue()" data-i18n="mock.continue">继续面试（-3 积分）</button>
     </div>
   </div>
 </div>
@@ -398,7 +405,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
     <span id="mem-count" style="font-size:13px;color:var(--text3);"></span>
     <button class="btn btn-ghost btn-sm" onclick="clearMem()" data-i18n="mem.clear" style="margin-left:auto;">清空</button>
   </div>
-  <div id="memory-container"><div class="empty"><div class="t" data-i18n="mem.empty">还没有记忆</div><div class="d" data-i18n="mem.empty.desc">跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息</div></div></div>
+  <div id="memory-container"><div class="empty"><div class="t" data-i18n="mem.empty">还没有记忆</div><div class="d" data-i18n="mem.empty.desc">跑一次全流程分析或 模拟面试，这里会自动记录你的关键信息</div></div></div>
 </div>
 
 </main>
@@ -473,7 +480,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
 <script>
 var I18N={
 zh:{
- 'app.title':'Pleadly — AI求职助手',
+ 'app.title':'Pleadly（我求你了）— AI求职助手',
  'nav.memory':'个人记忆','nav.library':'信息库','nav.analysis':'分析页','nav.tools':'工具','nav.reports':'报告仓库',
  'library.title':'信息库','library.subtitle':'分类上传简历、作品集、项目经历 — AI 自动分块索引',
  'lib.resume':'简历','lib.portfolio':'作品集','lib.project':'项目经历','lib.other':'其他',
@@ -485,7 +492,7 @@ zh:{
  'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
  'analysis.run':'全流程分析',
  'dl.word':'下载 Word','dl.pdf':'下载 PDF','dl.empty':'还没有报告可下载','dl.word.done':'Word 报告已下载','dl.pdf.hint':'在打印窗口选择「另存为 PDF」即可保存',
- 'step.1':'ATS','step.2':'评分','step.3':'JD拆解','step.4':'诊断','step.5':'多JD排序','step.6':'学习计划','step.7':'面试准备','step.8':'Mock面试','step.9':'Offer谈判','step.10':'入职指南',
+ 'step.1':'ATS','step.2':'评分','step.3':'JD拆解','step.4':'诊断','step.5':'多JD排序','step.6':'学习计划','step.7':'面试准备','step.8':'模拟面试','step.9':'Offer谈判','step.10':'入职指南',
  'analysis.empty':'粘贴岗位 JD 后点击「全流程分析」','analysis.empty.desc':'完整分析需要 1-3 分钟，自动读取信息库作为你的背景',
  'step.section':'分步执行','step.section.hint':'不必一次跑完，按需展开单步执行','step.run':'运行此步',
  'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
@@ -512,8 +519,8 @@ zh:{
  'err.timeout':'请求超时：模型响应过慢或网络卡顿，请重试或检查网络/换用更快模型。',
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / Mock 反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空',
- 'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 Mock 面试，这里会自动记录你的关键信息',
- 'mem.kind.analysis':'分析','mem.kind.mock':'Mock面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.greet':'招呼语',
+ 'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全流程分析或 模拟面试，这里会自动记录你的关键信息',
+ 'mem.kind.analysis':'分析','mem.kind.mock':'模拟面试','mem.kind.rank':'多JD排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.greet':'招呼语',
  'extra.5.title':'多JD优先级排序','extra.5.hint':'从报告库选取 2 则以上分析报告，按六维度排序并给出精力分配建议。',
  'extra.9.title':'Offer 谈判','extra.9.hint':'从报告库选取对应岗位的报告，再补充你的 Offer package，针对性生成谈判策略。',
  'extra.10.title':'入职生存指南','extra.10.hint':'从报告库选取对应岗位的报告，生成入职前 30 天生存指南。',
@@ -521,10 +528,10 @@ zh:{
  'extra.greet.title':'招呼语生成','extra.greet.hint':'自动读取你的信息库，再粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
  'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
  'pick.title':'从报告库选取','pick.hint.single':'选择 1 则分析报告','pick.hint.multi':'至少选择 2 则分析报告','pick.cancel':'取消','pick.confirm':'确认','pick.need1':'请先选择 1 则报告','pick.need2':'请至少选择 2 则报告','pick.noreport':'报告库为空，请先完成一次全流程分析','pick.filled':'已填入对应岗位 JD','pick.fromrep':'从报告库选取',
- 'mock.title':'Mock 面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
+ 'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...',
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 3 积分','mock.continue':'继续面试（-3 积分）',
  'tools.title':'工具','tools.subtitle':'独立工具，按需使用，不参与全流程分析',
  'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
@@ -593,7 +600,7 @@ en:{
  'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...',
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 3 more points to continue','mock.continue':'Continue (-3 points)',
  'tools.title':'Tools','tools.subtitle':'Standalone tools — use as needed, not part of the full analysis',
  'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
@@ -927,8 +934,8 @@ var EXTRA_PROMPTS={
       en:'You are a career coach. Based on the company/role info provided, produce a first-30-days survival guide.\n\n## Company / role info\n{INPUT}\n\n## Output\n1. Culture snapshot (big-tech / startup / MNC / SOE / research; decision style; communication style; unwritten rules)\n2. Week-one checklist (who to meet first / what to understand / what NOT to do)\n3. First-month key moves (when to speak / how to build trust / hidden probation criteria)\n4. Exit-signal detection (what shows this company is not for you)\n\nNote: no internet access; infer company info from what the user provided and mark uncertainty as [inferred]. Never fabricate.'},
   };
 var MOCK_PROMPTS={
-  zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
-  en:'You are an interviewer. Run a mock interview based on the JD and resume. Rules:\n1. Confirm the interview stage first\n2. Ask questions randomly, not in order\n3. After each answer, give brief feedback (e.g. "clear logic but missing data", "wrong example", "good angle")\n4. Then follow up or ask the next question\n5. When the user says "end", give a summary (3 things to improve + 3 things done well)\n\n## Job Description\n{JD}\n\n## Resume\n{RESUME}\n\nNever fabricate.'
+  zh:'你是面试官。基于岗位JD和简历进行模拟面试。规则：\n1. 先确认面试阶段\n2. 随机出题，不按顺序，不重复已问过的问题\n3. 用户回答后简短点评(如"逻辑清晰但缺数据""例子选错了""角度好")\n4. 点评后追问或出下一题\n5. 用户说"结束"时给出总结(3个最需改进+3个做得好)\n\n## 岗位JD\n{JD}\n\n## 简历\n{RESUME}\n\n禁止编造。',
+  en:'You are an interviewer. Run a mock interview based on the JD and resume. Rules:\n1. Confirm the interview stage first\n2. Ask questions randomly, not in order, and never repeat an already-asked question\n3. After each answer, give brief feedback (e.g. "clear logic but missing data", "wrong example", "good angle")\n4. Then follow up or ask the next question\n5. When the user says "end", give a summary (3 things to improve + 3 things done well)\n\n## Job Description\n{JD}\n\n## Resume\n{RESUME}\n\nNever fabricate.'
 };
 var GREET_PROMPT=`你是求职招呼语生成助手。用户是一名求职者，正在找工作。你的任务：根据他提供的招聘JD和他的本地信息库（真实简历/经历），生成一段可直接复制到招聘软件（Boss直聘等）发给HR的招呼语，并附上匹配点说明和诚实风险提示。
 
@@ -1615,14 +1622,15 @@ async function runFeature(){
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(f.cost))return;
   setBusy(true);
+  var key=curFeature;
   try{
-    if(f.kind==='step'){await runStepFeature(f);return;}
-    if(f.kind==='pivot'){await runPivotFeature(f);return;}
-    if(f.kind==='greet'){await runGreetFeature();return;}
-    if(f.kind==='extra'){await runExtraFeature(f);return;}
+    if(f.kind==='step'){await runStepFeature(f,null,null,key);return;}
+    if(f.kind==='pivot'){await runPivotFeature(f,key);return;}
+    if(f.kind==='greet'){await runGreetFeature(key);return;}
+    if(f.kind==='extra'){await runExtraFeature(f,key);return;}
   }finally{setBusy(false);}
 }
-async function runStepFeature(f,jdEl,outEl){
+async function runStepFeature(f,jdEl,outEl,key){
   var input=jdEl||document.getElementById('feat-input');var jd=input?input.value.trim():'';
   if(!jd){showToast(t('toast.needjd'),true);return;}
   var profile=getProfileText();
@@ -1631,7 +1639,8 @@ async function runStepFeature(f,jdEl,outEl){
   if(!_g.ok){showToast(t('guard.inject'),true);return;}
   if(_g.truncated){jd=_g.text;showToast(t('guard.len'),true);}
   var out=outEl||document.getElementById('feat-output');
-  out.innerHTML=prog();
+  function w(html){if(key){featOut(key,html);}else{out.innerHTML=html;}}
+  w(prog());
   setBot(t('bot.running')+' '+t(STEPKEY[f.step]));
   var ctx={jd:jd,resume:profile,jd_analysis:'',diag:''};
   try{
@@ -1639,20 +1648,20 @@ async function runStepFeature(f,jdEl,outEl){
     if(f.step===4||f.step===5){ctx.diag=await execStep(STEPS[3],ctx);}
     var res=await execStep(STEPS[f.step],ctx);
     if(f.step===3){var rw=extractResumeBlock(res);if(rw)setResumeText(rw);}
-    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    w('<div class="md-output">'+mdToHtml(res)+'</div>');
     spendPoints(f.cost);
-    saveReport(jd,{content:res});
+    if(!key)saveReport(jd,{content:res});
     setReport(res,reportTitle(jd));
     addMem('analysis',jd+'\n\n'+res.slice(0,800));
     setBot(t('bot.done'));
-  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+  }catch(e){w(featErr(e));setBot(t('bot.offline'));}
 }
-async function runPivotFeature(f){
+async function runPivotFeature(f,key){
+  key=key||curFeature;
   var profile=getProfileText();
   if(!profile){showToast(t('toast.needresume'),true);return;}
   var input=document.getElementById('feat-input');var val=input?input.value.trim():'';
-  var out=document.getElementById('feat-output');
-  out.innerHTML=prog();
+  featOut(key,prog());
   setBot(t('bot.running')+' '+(lang==='en'?f.title.en:f.title.zh));
   var pl=detectLang(profile||val);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
@@ -1660,19 +1669,19 @@ async function runPivotFeature(f){
   try{
     var res=await callLLM(sys,user);
     var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
-    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    featOut(key,'<div class="md-output">'+mdToHtml(res)+'</div>');
     spendPoints(f.cost);
     addMem('analysis',(val?val+'\n\n':'')+res.slice(0,800));
     setBot(t('bot.done'));
-  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+  }catch(e){featOut(key,featErr(e));setBot(t('bot.offline'));}
 }
-async function runGreetFeature(){
+async function runGreetFeature(key){
+  key=key||curFeature;
   var input=document.getElementById('feat-input');var jd=input?input.value.trim():'';
   if(!jd){showToast(t('toast.needjd'),true);return;}
   var profile=getProfileText();
   if(!profile){showToast(t('toast.needresume'),true);return;}
-  var out=document.getElementById('feat-output');
-  out.innerHTML=prog();
+  featOut(key,prog());
   setBot(t('bot.running')+' '+t('extra.greet.title'));
   var pl=detectLang(jd||profile);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT);
@@ -1681,17 +1690,17 @@ async function runGreetFeature(){
     var res=await callLLM(sys,user);
     lastRaw=res;
     var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
-    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyGreet()">'+t('greet.copy')+'</button></div>';
+    featOut(key,'<div class="md-output">'+mdToHtml(res)+'</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="copyGreet()">'+t('greet.copy')+'</button></div>');
     spendPoints(1);
     addMem('greet',jd+'\n\n'+res.slice(0,800));
     setBot(t('bot.done'));
-  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+  }catch(e){featOut(key,featErr(e));setBot(t('bot.offline'));}
 }
-async function runExtraFeature(f){
+async function runExtraFeature(f,key){
+  key=key||curFeature;
   var input=document.getElementById('feat-input');var v=input?input.value.trim():'';
   if(!v){showToast(t('toast.needjd'),true);return;}
-  var out=document.getElementById('feat-output');
-  out.innerHTML=prog();
+  featOut(key,prog());
   setBot(t('bot.running')+' '+(lang==='en'?f.title.en:f.title.zh));
   var pl=detectLang(v);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
@@ -1699,11 +1708,11 @@ async function runExtraFeature(f){
   try{
     var res=await callLLM(sys,user);
     var go=guardOutput(res);if(!go.ok)res='> '+t('guard.leak')+'\n\n'+res;
-    out.innerHTML='<div class="md-output">'+mdToHtml(res)+'</div>';
+    featOut(key,'<div class="md-output">'+mdToHtml(res)+'</div>');
     spendPoints(f.cost);
     addMem((f.ekey==='5'?'rank':f.ekey==='9'?'offer':'onboard'),v+'\n\n'+res.slice(0,800));
     setBot(t('bot.done'));
-  }catch(e){out.innerHTML=featErr(e);setBot(t('bot.offline'));}
+  }catch(e){featOut(key,featErr(e));setBot(t('bot.offline'));}
 }
 
 var lastRaw='';
@@ -1734,6 +1743,23 @@ function legacyCopy(txt,done){
 }
 
 var mockMessages=[];
+var mockRounds=0,MOCK_LIMIT=7;
+function saveMockHist(){try{var arr=[];for(var i=0;i<mockMessages.length;i++){if(mockMessages[i].role!=='system')arr.push(mockMessages[i]);}localStorage.setItem('pmock_v1',JSON.stringify(arr));}catch(e){}}
+function restoreMockHist(){try{var arr=JSON.parse(localStorage.getItem('pmock_v1')||'null');if(!arr||!arr.length)return;var log=document.getElementById('mock-log');if(!log)return;log.innerHTML='';for(var i=0;i<arr.length;i++){var m=arr[i];var d=document.createElement('div');d.className='mock-msg mock-'+(m.role==='user'?'user':'ai');d.textContent=m.content;log.appendChild(d);}}catch(e){}}
+function mockBudgetText(){return t('mock.budget').replace('{n}',Math.max(0,MOCK_LIMIT-mockRounds));}
+function updateMockBudget(){var b=document.getElementById('mock-budget');if(b)b.textContent=mockBudgetText();}
+function setMockLimited(on){
+  var hint=document.getElementById('mock-limit-hint');if(hint)hint.style.display=on?'flex':'none';
+  var inp=document.getElementById('mock-input');if(inp)inp.disabled=on;
+  var send=document.getElementById('mock-send');if(send)send.disabled=on;
+  var b=document.getElementById('mock-budget');if(b)b.textContent=on?t('mock.limit'):mockBudgetText();
+}
+function mockContinue(){
+  if(!requirePoints(3))return;
+  mockRounds=0;
+  setMockLimited(false);
+  setBot(t('bot.ready'));
+}
 function mockSystem(){
   var jd=document.getElementById('mock-jd').value.trim();
   var profile=getProfileText();
@@ -1759,6 +1785,7 @@ function mockAdd(role,text){
   d.textContent=text;
   log.appendChild(d);
   log.scrollTop=log.scrollHeight;
+  saveMockHist();
 }
 async function mockStart(){
   var base=mockSystem();if(!base)return;
@@ -1766,7 +1793,11 @@ async function mockStart(){
   if(!requirePoints(3))return;
   setBusy(true);
   mockMessages=base;
+  mockRounds=0;
+  try{localStorage.removeItem('pmock_v1');}catch(e){}
   document.getElementById('mock-log').innerHTML='';
+  setMockLimited(false);
+  updateMockBudget();
   setBot(t('mock.running'));
   try{
     var res=await callLLMChat(mockMessages);
@@ -1777,10 +1808,13 @@ async function mockStart(){
   finally{setBusy(false);}
 }
 async function mockSend(){
+  if(mockRounds>=MOCK_LIMIT){setMockLimited(true);return;}
   var v=document.getElementById('mock-input').value.trim();
   if(!v)return;
   document.getElementById('mock-input').value='';
   if(!mockMessages.length){await mockStart();return;}
+  mockRounds++;
+  updateMockBudget();
   mockAdd('user',v);
   setBusy(true);
   setBot(t('mock.running'));
@@ -1788,6 +1822,7 @@ async function mockSend(){
     var res=await callLLMChat(mockMessages);
     mockAdd('assistant',res);
     setBot(t('bot.done'));
+    if(mockRounds>=MOCK_LIMIT){setMockLimited(true);}
   }catch(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}
   finally{setBusy(false);}
 }
@@ -1830,7 +1865,7 @@ var FEATURES=[
   {key:'search',group:'execute',ic:'compass',tone:'#059669',title:{zh:'机会搜索策略',en:'Search Strategy'},cost:2,input:'role',kind:'pivot',pkey:'search',desc:{zh:'30天搜索计划：关键词、渠道、投递节奏',en:'30-day search plan: keywords, channels, cadence'}},
   {key:'rank',group:'execute',ic:'chart',tone:'#0891b2',title:{zh:'多JD优先级排序',en:'Priority Ranking'},cost:2,input:'text',kind:'extra',ekey:'5',pick:true,desc:{zh:'多岗位六维排序+精力分配建议',en:'Rank roles on 6 dimensions + effort allocation'}},
   {key:'greet',group:'execute',ic:'mail',tone:'#c0501f',title:{zh:'招呼语生成',en:'Greeting'},cost:1,input:'jd',kind:'greet',desc:{zh:'生成可直接发给HR的招呼语',en:'A greeting ready to send to HR'}},
-  {key:'mock',group:'offer',ic:'chat',title:{zh:'Mock面试',en:'Mock Interview'},cost:3,special:'mock'},
+  {key:'mock',group:'offer',ic:'chat',title:{zh:'模拟面试',en:'Mock Interview'},cost:3,special:'mock'},
   {key:'offer',group:'offer',ic:'coin',tone:'#c0501f',title:{zh:'Offer谈判',en:'Offer Negotiation'},cost:3,input:'text',kind:'extra',ekey:'9',pick:true,desc:{zh:'逐项谈判策略+可直接复制的消息模板',en:'Per-item strategy + ready-to-send scripts'}},
   {key:'onboard',group:'offer',ic:'send',tone:'#059669',title:{zh:'入职指南',en:'Onboarding'},cost:3,input:'text',kind:'extra',ekey:'10',pick:true,desc:{zh:'入职前30天生存指南',en:'First-30-days onboarding guide'}}
 ];
@@ -1854,9 +1889,25 @@ function renderSidebar(){
   nav.innerHTML=h;
   nav.querySelectorAll('.side-item').forEach(function(b){b.addEventListener('click',function(){switchPage(this.dataset.page);});});
 }
+var FEAT_CACHE={};
+function featOut(key,html){
+  FEAT_CACHE[key]=FEAT_CACHE[key]||{input:'',output:''};
+  FEAT_CACHE[key].output=html;
+  if(key===curFeature){var o=document.getElementById('feat-output');if(o)o.innerHTML=html;}
+}
 function renderFeaturePage(key){
+  // 切换前先把当前功能页的输入与结果暂存，切换/返回时恢复，避免结果丢失
+  var _pf=document.getElementById('page-feature');
+  if(_pf){
+    var _in=document.getElementById('feat-input');
+    var _out=document.getElementById('feat-output');
+    if(_in||_out)FEAT_CACHE[curFeature]={input:_in?_in.value:'',output:_out?_out.innerHTML:''};
+  }
   var f=featureByKey(key);if(!f)return;
   curFeature=key;
+  var c=FEAT_CACHE[key];
+  var iv=c&&c.input?c.input:'';
+  var ov=c&&c.output?c.output:'<div class="empty"><div class="d">'+t('feat.empty')+'</div></div>';
   var title=(lang==='en'?f.title.en:f.title.zh);
   var h='<div class="page-header"><h2>'+title+'</h2>'+(FREE_MODE?'':'<span class="cost-badge">'+f.cost+' '+t('pts.unit')+'</span>')+'</div>';
   if(f.desc){h+='<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text2);margin:-4px 0 14px;line-height:1.5;">'+(f.tone?'<svg class="ic" style="width:16px;height:16px;color:'+f.tone+';flex:none;"><use href="#i-'+f.ic+'"/></svg>':'')+'<span>'+(lang==='en'?f.desc.en:f.desc.zh)+'</span></div>';}
@@ -1867,12 +1918,12 @@ function renderFeaturePage(key){
     var ph=(f.input==='jd')?t('feat.jd.ph'):(f.input==='role')?t('feat.role.ph'):t('feat.text.ph');
     var minH=(f.input==='role')?'72px':'180px';
     h+='<div class="card"><div class="card-header">'+label+'</div>';
-    h+='<textarea id="feat-input" placeholder="'+ph+'" style="min-height:'+minH+';"></textarea>';
+    h+='<textarea id="feat-input" placeholder="'+ph+'" style="min-height:'+minH+';">'+esc(iv)+'</textarea>';
     if(f.pick)h+='<button class="btn btn-ghost btn-sm" onclick="pickForCurrent()" style="margin-top:8px;">'+t('pick.fromrep')+'</button>';
     h+='</div>';
   }
   h+='<button class="btn btn-primary" onclick="runFeature()" style="width:100%;justify-content:center;">'+t('feat.run')+(FREE_MODE?'':'（-'+f.cost+' '+t('pts.unit')+'）')+'</button>';
-  h+='<div class="card md-output" id="feat-output" style="margin-top:14px;min-height:120px;"><div class="empty"><div class="d">'+t('feat.empty')+'</div></div></div>';
+  h+='<div class="card md-output" id="feat-output" style="margin-top:14px;min-height:120px;">'+ov+'</div>';
   document.getElementById('page-feature').innerHTML=h;
 }
 
@@ -1941,8 +1992,9 @@ if(!FREE_MODE)syncServerBalance();
 applyLang();
 initResumeEditor();
 syncKeyBox();
+restoreMockHist();
 if(FREE_MODE){document.querySelectorAll('.cost-badge').forEach(function(e){e.style.display='none';});}
-else{var _bb=document.getElementById('byok-box');if(_bb)_bb.style.display='none';}
+else{var _bb=document.getElementById('byok-box');if(_bb)_bb.style.display='none';var _kb=document.getElementById('keybox');if(_kb)_kb.style.display='none';}
 </script>
 </body>
 </html>
