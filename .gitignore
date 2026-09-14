@@ -4,3 +4,6 @@ codes.txt
 # 依赖 / 临时文件
 node_modules/
 *.log
+
+# Cloudflare wrangler 本地缓存（含登录 token 与账号邮箱，绝不提交）
+.wrangler/

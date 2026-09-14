@@ -421,6 +421,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
         <div style="font-size:12px;color:var(--text3);margin-top:6px;" data-i18n="pts.redeem.hint">兑换码可向作者获取，一次性使用，兑换后积分累加。</div>
       </div>
     </div>
+    <div id="byok-box">
     <div class="settings-field">
       <label data-i18n="settings.apiKey">API Key</label>
       <input type="password" id="set-apikey" data-i18n-ph="settings.apiKey.ph" placeholder="sk-...">
@@ -442,6 +443,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
     </div>
     <button class="btn btn-primary" onclick="saveSettings()" style="width:100%;justify-content:center;" data-i18n="settings.save">保存</button>
     <div class="settings-note" data-i18n="settings.privacy">你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。</div>
+    </div>
   </div>
 </div>
 
@@ -651,6 +653,25 @@ var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
 var LLM_TIMEOUT=180000; // 单次 LLM 请求超时(ms)：防止网络卡死导致界面无响应
 var FREE_STARTER=20; // 新用户首次赠送积分
 var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 API Key（桌面同步脚本会自动置为 true）
+var API_BASE='https://pleadly-api.pleadly.workers.dev'; // 付费版后端地址
+var _sessionId='',_pendingCost=0;
+function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now()+'-'+Math.random().toString(16).slice(2));}catch(e){id='d-'+Date.now()+'-'+Math.random().toString(16).slice(2);}localStorage.setItem(k,id);}return id;}
+async function _openSession(cost){
+  var resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost})});
+  if(resp.status===402){var e=new Error('nopoints');e.nopoints=true;throw e;}
+  if(!resp.ok){var e=new Error('session error '+resp.status);throw e;}
+  var d=await resp.json();
+  _sessionId=d.sessionId;setBalance(d.balance);updatePointsUI();
+  return d.sessionId;
+}
+async function syncServerBalance(){
+  try{
+    var resp=await fetch(API_BASE+'/points?deviceId='+encodeURIComponent(deviceId()));
+    if(!resp.ok)return;
+    var d=await resp.json();
+    setBalance(d.balance);updatePointsUI();
+  }catch(e){}
+}
 var pendingCtx=null;
 
 function loadSettings(){
@@ -670,7 +691,7 @@ function updatePointsUI(){
   var b=document.getElementById('pts-balance');if(b)b.textContent=getBalance();
   var s=document.getElementById('set-balance');if(s)s.textContent=getBalance();
 }
-function spendPoints(cost){if(FREE_MODE)return true;var p=loadPts();if(p.bal<cost)return false;p.bal-=cost;savePts(p);updatePointsUI();return true;}
+function spendPoints(cost){if(FREE_MODE)return true;updatePointsUI();return true;}
 // 兑换码哈希白名单：key = sha256(码的大写形式)，value = 积分面额。用 tools/gen-license.js 重新生成你自己的码。
 var CODE_POINTS={
 '9e04803d8296b8c83e1e48e142191dc8d61cf50ce82b7ba9fdb3254ff86ff457':50,
@@ -678,24 +699,26 @@ var CODE_POINTS={
 '96e9612b2c42946da6b4198487795bd91dfff55e5c651fa37948c19ed16a21d4':200,
 '8866207e332bf10b54b4dbbbd0f63372bd0e2e484ed1f516efd47c6dcf4770ad':20
 };
-function redeemCode(code){
+async function redeemCode(code){
   code=(code||'').trim().toUpperCase().replace(/\s+/g,'');
-  var h=sha256(code);
-  var pts=CODE_POINTS[h];
-  if(!pts)return {ok:false,reason:'invalid'};
-  var p=loadPts();
-  if(p.used.indexOf(h)!==-1)return {ok:false,reason:'used'};
-  p.used.push(h);p.bal+=pts;savePts(p);updatePointsUI();
-  return {ok:true,pts:pts};
+  if(FREE_MODE)return {ok:false,reason:'invalid'}; // 免费版无需兑换码
+  try{
+    var resp=await fetch(API_BASE+'/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),code:code})});
+    if(resp.status===409)return {ok:false,reason:'used'};
+    if(!resp.ok)return {ok:false,reason:'invalid'};
+    var d=await resp.json();
+    setBalance(d.balance);updatePointsUI();
+    return {ok:true,pts:d.added};
+  }catch(e){return {ok:false,reason:'invalid'};}
 }
-function redeem(){
+async function redeem(){
   var code=document.getElementById('set-redeem').value;
-  var r=redeemCode(code);
+  var r=await redeemCode(code);
   if(!r.ok){showToast(t(r.reason==='used'?'pts.used':'pts.invalid'),true);return;}
   document.getElementById('set-redeem').value='';
   showToast(t('pts.redeemed').replace('{N}',r.pts),false);
 }
-function requirePoints(cost){if(FREE_MODE)return true;if(getBalance()<cost){showToast(t('pts.insufficient'),true);openSettings();return false;}return true;}
+function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';if(getBalance()<cost){showToast(t('pts.insufficient'),true);openSettings();return false;}return true;}
 
 // SHA-256（纯 JS，仅 ASCII；与 tools/gen-license.js 的 Node crypto 结果一致）
 function sha256(ascii){
@@ -947,28 +970,52 @@ var GREET_PROMPT=`你是求职招呼语生成助手。用户是一名求职者�
 
 /* ============ LLM 直连（OpenAI 兼容 /chat/completions） ============ */
 async function callLLMChat(messages){
-  var s=loadSettings();
-  if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
-  var base=s.baseUrl.replace(/\/$/,'');
-  var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort();},LLM_TIMEOUT);
+  if(FREE_MODE){
+    var s=loadSettings();
+    if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
+    var base=s.baseUrl.replace(/\/$/,'');
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},LLM_TIMEOUT);
+    try{
+      var resp=await fetch(base+'/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+        body:JSON.stringify({model:s.model,messages:messages,temperature:0.3,max_tokens:8192}),
+        signal:ctrl.signal
+      });
+      if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
+      if(!resp.ok){throw new Error('API error '+resp.status);}
+      var d=await resp.json();
+      var content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
+      if(!content)throw new Error('empty response');
+      return content;
+    }catch(e){
+      if(e&&e.name==='AbortError'){var t=new Error('timeout');t.timeout=true;throw t;}
+      throw e;
+    }finally{clearTimeout(timer);}
+  }
+  // 付费版：走服务端会话（一次功能扣一次分，本功能内多次调用复用同一会话）
+  if(!_sessionId){await _openSession(_pendingCost||1);}
+  var ctrl2=new AbortController();
+  var timer2=setTimeout(function(){ctrl2.abort();},LLM_TIMEOUT);
   try{
-    var resp=await fetch(base+'/chat/completions',{
+    var resp2=await fetch(API_BASE+'/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
-      body:JSON.stringify({model:s.model,messages:messages,temperature:0.3,max_tokens:8192}),
-      signal:ctrl.signal
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sessionId:_sessionId,messages:messages}),
+      signal:ctrl2.signal
     });
-    if(resp.status===401){var e2=new Error('invalidkey');e2.invalidkey=true;throw e2;}
-    if(!resp.ok){throw new Error('API error '+resp.status);}
-    var d=await resp.json();
-    var content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
-    if(!content)throw new Error('empty response');
-    return content;
+    if(resp2.status===401){var e3=new Error('nopoints');e3.nopoints=true;e3.message='session expired';throw e3;}
+    if(resp2.status===402){var e4=new Error('nopoints');e4.nopoints=true;e4.message='session depleted';throw e4;}
+    if(!resp2.ok){var e5=new Error('API error '+resp2.status);throw e5;}
+    var d2=await resp2.json();
+    var content2=(d2.content||'').trim();
+    if(!content2)throw new Error('empty response');
+    return content2;
   }catch(e){
-    if(e&&e.name==='AbortError'){var t=new Error('timeout');t.timeout=true;throw t;}
+    if(e&&e.name==='AbortError'){var tt=new Error('timeout');tt.timeout=true;throw tt;}
     throw e;
-  }finally{clearTimeout(timer);}
+  }finally{clearTimeout(timer2);}
 }
 async function callLLM(system,user){return callLLMChat([{role:'system',content:system},{role:'user',content:user}]);}
 
@@ -1162,7 +1209,7 @@ function prog(){return '<div class="prog"><span class="spinner"></span><span>'+t
 function setBusy(on){document.body.classList.toggle('is-busy',!!on);}
 function renderOut(acc,extra){document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(acc)+'</div>'+(extra||'');}
 function appendAcc(acc,content,key){return acc+((acc?'\n\n':'')+'### '+t(key)+'\n\n'+content);}
-function errMsg(e){return e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):(e.timeout?t('err.timeout'):t('err.cors')));}
+function errMsg(e){return e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):(e.timeout?t('err.timeout'):(e.nopoints?t('pts.insufficient'):t('err.cors'))));}
 function handleError(e){
   var m=errMsg(e);
   renderOut('<p>'+esc(m)+'</p><p style="font-size:12px;color:var(--text3)">'+(e&&e.message?esc(e.message):'')+'</p>','');
@@ -1203,7 +1250,7 @@ async function runAnalysis(){
   var _g2=guardInput(profile,'resume');
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(10))return;
   setBusy(true);
   _startGreet(jd,profile);
@@ -1230,7 +1277,7 @@ async function runResumeBuild(){
   var _g2=guardInput(profile,'resume');
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(3))return;
   setBusy(true);
   var pl=detectLang(jd);
@@ -1557,7 +1604,7 @@ function confirmPicker(){
 function featErr(e){return '<p style="font-size:13px;color:var(--text2);">'+esc(errMsg(e))+'</p>';}
 async function runFeature(){
   var f=featureByKey(curFeature);if(!f)return;
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(f.cost))return;
   setBusy(true);
   try{
@@ -1707,7 +1754,7 @@ function mockAdd(role,text){
 }
 async function mockStart(){
   var base=mockSystem();if(!base)return;
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(3))return;
   setBusy(true);
   mockMessages=base;
@@ -1849,7 +1896,7 @@ function toggleStep(i){
 }
 async function runStepInline(i){
   var f=STEP_FEATURES[i];if(!f)return;
-  if(!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
+  if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(f.cost))return;
   setBusy(true);
   try{await runStepFeature(f,document.getElementById('jd-input'),document.getElementById('step-output-'+i));}
@@ -1882,10 +1929,12 @@ var PIVOT_PROMPTS={
 
 renderSidebar();
 updatePointsUI();
+if(!FREE_MODE)syncServerBalance();
 applyLang();
 initResumeEditor();
 syncKeyBox();
 if(FREE_MODE){document.querySelectorAll('.cost-badge').forEach(function(e){e.style.display='none';});}
+else{var _bb=document.getElementById('byok-box');if(_bb)_bb.style.display='none';}
 </script>
 </body>
 </html>

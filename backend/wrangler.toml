@@ -1,0 +1,12 @@
+name = "pleadly-api"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# KV 命名空间：先跑 `wrangler kv namespace create PLEADLY_KV`，把返回的 id 填到下面
+[[kv_namespaces]]
+binding = "PLEADLY_KV"
+id = "dd42bb9bf956485c841d16137c10e696"
+
+# 密钥用命令行设置（不要写进这个文件）：
+#   wrangler secret put DEEPSEEK_API_KEY
+#   wrangler secret put ADMIN_SECRET
