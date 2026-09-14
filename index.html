@@ -491,7 +491,7 @@ zh:{
  'analysis.running':'正在运行全流程分析...','analysis.running.desc':'预计1-3分钟','analysis.analyzing':'正在分析...',
  'analysis.offline':'离线模式。启动Pleadly后端后重试。','analysis.noBackend':'后端未连接。请启动Pleadly后端后重试。',
  'reports.title':'报告仓库','reports.subtitle':'历史分析报告存档',
- 'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档',
+ 'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档','reports.del':'删除','reports.del.confirm':'确定删除这份报告吗？删除后不可恢复。','reports.deleted':'报告已删除',
  'report.unspecified':'未指定','report.match':'匹配','report.stretch':'冲击','report.pass':'放弃',
  'bot.ready':'就绪','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
  'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请先在信息库上传简历或经历','toast.saved':'报告已存档',
@@ -560,7 +560,7 @@ en:{
  'analysis.running':'Running full analysis...','analysis.running.desc':'Estimated 1-3 min','analysis.analyzing':'Analyzing...',
  'analysis.offline':'Offline mode. Start the Pleadly backend and retry.','analysis.noBackend':'Backend not connected. Start the Pleadly backend and retry.',
  'reports.title':'Reports','reports.subtitle':'Archive of past analysis reports',
- 'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis',
+ 'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis','reports.del':'Delete','reports.del.confirm':'Delete this report? This cannot be undone.','reports.deleted':'Report deleted',
  'report.unspecified':'Unspecified','report.match':'Match','report.stretch':'Stretch','report.pass':'Pass',
  'bot.ready':'Ready','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
  'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Upload a resume or experiences to the Library first','toast.saved':'Report saved',
@@ -1307,11 +1307,19 @@ function renderReports(){
   for(var i=0;i<reps.length;i++){
     var r=reps[i],bc=r.score>=70?'var(--text)':r.score>=50?'var(--text2)':'var(--text3)',lvl=r.score>=70?t('report.match'):r.score>=50?t('report.stretch'):t('report.pass');
     h+='<div class="card card-clickable" style="border-left:3px solid '+bc+';" onclick="openReport(\''+r.id+'\')">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:15px;">'+r.title+'</span><span style="font-size:22px;font-weight:800;">'+r.score+'</span></div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:15px;">'+r.title+'</span><span style="display:flex;align-items:center;gap:10px;"><button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;line-height:1;" title="'+t('reports.del')+'" onclick="event.stopPropagation();deleteReport(\''+r.id+'\')">🗑</button><span style="font-size:22px;font-weight:800;">'+r.score+'</span></span></div>';
     h+='<div style="font-size:13px;color:var(--text3);margin-top:6px;">'+r.date+' / '+lvl+'</div>';
     h+='<div style="font-size:13px;color:var(--text3);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+r.jd+'</div></div>';
   }
   grid.innerHTML=h;
+}
+function deleteReport(id){
+  if(!confirm(t('reports.del.confirm')))return;
+  var reps=loadRep(),next=[];
+  for(var i=0;i<reps.length;i++)if(reps[i].id!==id)next.push(reps[i]);
+  saveRep(next);
+  showToast(t('reports.deleted'),false);
+  renderReports();
 }
 function openReport(id){
   var r=loadRep().find(function(x){return x.id===id;});if(!r)return;
