@@ -12,7 +12,7 @@
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com';
 const MODEL = 'deepseek-chat';
-const FREE_STARTER = 20;        // 新设备赠送积分（防刷可改成 0）
+const FREE_STARTER = 0;         // 新设备赠送积分（0=不赠送，防换设备ID刷）
 const MAX_OUT_TOKENS = 8192;
 const SESSION_TTL = 30 * 60;    // 会话有效期（秒）
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去 I/O/0/1 防混淆
