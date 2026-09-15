@@ -660,7 +660,7 @@ var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-chat';
 var LLM_TIMEOUT=180000; // 单次 LLM 请求超时(ms)：防止网络卡死导致界面无响应
 var FREE_STARTER=0; // 新用户首次赠送积分（0=不赠送）
 var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 API Key（桌面同步脚本会自动置为 true）
-var API_BASE='https://pleadly-api.pleadly.workers.dev'; // 付费版后端地址
+var API_BASE='https://api.pleadly.top'; // 付费版后端地址
 var _sessionId='',_pendingCost=0;
 function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now()+'-'+Math.random().toString(16).slice(2));}catch(e){id='d-'+Date.now()+'-'+Math.random().toString(16).slice(2);}localStorage.setItem(k,id);}return id;}
 async function _openSession(cost){

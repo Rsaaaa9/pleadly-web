@@ -28,7 +28,7 @@
 改 `index.html` 里这一行，然后 commit + push（桌面监视器会自动同步桌面版，但桌面是免费版不受影响）：
 
 ```js
-var API_BASE='https://pleadly-api.你的账号.workers.dev';
+var API_BASE='https://api.pleadly.top';
 ```
 
 ## 三、生成兑换码（要卖多少生成多少）
@@ -58,4 +58,4 @@ curl -X POST "https://<你的后端>/admin/codes" \
   - KV 是最终一致、非严格原子，极端并发「同码双兑换」有极小竞态窗口；量大了可换 D1(SQLite) 事务或 Durable Objects。
   - `FREE_STARTER=20` 赠送积分可被「换设备 ID」刷（清浏览器存储 = 新身份）。成本极低（一次全流程约 ¥0.12），介意可把 `worker.js` 里 `FREE_STARTER` 改成 0。
   - 买家无需注册，用设备 ID 记账；清浏览器会丢积分（需重新用码，但码已标记已用，不会重复加）。
-- **国内访问**：`*.workers.dev` 在大陆可能不稳定/被墙。若买家打不开，需要给 Worker 绑一个已 ICP 备案的域名，或换到国内云函数（腾讯云 SCF / 阿里云 FC），逻辑可直接移植。
+- **国内访问**：`*.workers.dev` 在大陆被墙（SNI 阻断）。已解决：给 Worker 绑定自定义域名 `api.pleadly.top`（无需 ICP 备案），走 Cloudflare 正常边缘节点即可访问。
