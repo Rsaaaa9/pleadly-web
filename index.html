@@ -980,7 +980,7 @@ zh:{
  'needkey':'请先在上方输入框填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
  'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
  'err.timeout':'请求超时：模型响应过慢或网络卡顿，请重试或检查网络/换用更快模型。',
- 'err.generic':'抱歉，生成失败，请稍后重试。',
+ 'err.generic':'抱歉，生成失败，请稍后重试。','err.verify':'人机验证未通过，请重试（若多次失败请更换网络后再试）。',
  'err.sorry':'这次没能成功生成结果，已为你自动退回积分。请稍后重试，或联系客服处理。',
  'err.details':'报错详情','err.detail.title':'报错详情','err.detail.hint':'复制详情或发送给客服，我们会尽快处理。','err.copy':'复制详情','err.report':'发送给客服',
  'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / 模拟面试反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
@@ -1056,7 +1056,7 @@ en:{
  'needkey':'Please enter your API key in the box above','err.invalidkey':'Invalid API key or insufficient balance (401)',
  'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
  'err.timeout':'Request timed out: the model responded too slowly or the network stalled. Retry, or check the network / switch to a faster model.',
- 'err.generic':'Sorry, something went wrong — please try again.',
+ 'err.generic':'Sorry, something went wrong — please try again.','err.verify':'Verification failed — please retry (switch networks if it keeps failing).',
  'err.sorry':'This run did not complete. Your points have been refunded. Please retry, or contact support.',
  'err.details':'Error details','err.detail.title':'Error details','err.detail.hint':'Copy the details or send them to support — we will look into it.','err.copy':'Copy details','err.report':'Send to support',
  'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock interview feedback / offer negotiations / onboarding. Stored only on this device.',
@@ -1169,30 +1169,39 @@ function ensureTurnstile(){
   }
   return __tsWidgetId;
 }
+var __tsQueue=Promise.resolve();
 function getTurnstileToken(){
-  return new Promise(function(resolve){
+  var p=__tsQueue.then(function(){return new Promise(function(resolve){
     if(!TURNSTILE_SITE_KEY){ resolve(''); return; }
     if(!window.turnstile || !window.turnstile.ready){ resolve(''); return; }
     window.turnstile.ready(function(){
       var id=ensureTurnstile();
       if(!id){ resolve(''); return; }
       try{ window.turnstile.reset(id); }catch(e){}
-      var done=false;
-      __tsResolver=function(v){ if(!done){done=true;resolve(v);} };
-      var timer=setTimeout(function(){ if(!done){done=true;__tsResolver=null;resolve('');} },12000);
+      var done=false,timer=null;
+      __tsResolver=function(v){ if(!done){done=true;if(timer)clearTimeout(timer);resolve(v||'');} };
+      timer=setTimeout(function(){ if(!done){done=true;__tsResolver=null;resolve('');} },20000);
       try{ window.turnstile.execute(id,{action:'session'}); }
-      catch(e){ if(!done){done=true;__tsResolver=null;clearTimeout(timer);resolve('');} }
+      catch(e){ if(!done){done=true;__tsResolver=null;if(timer)clearTimeout(timer);resolve('');} }
     });
-  });
+  });});
+  __tsQueue=p.then(function(){},function(){});
+  return p;
 }
 var _sessionId='',_pendingCost=0,_sessionPromise=null;
 function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now()+'-'+Math.random().toString(16).slice(2));}catch(e){id='d-'+Date.now()+'-'+Math.random().toString(16).slice(2);}localStorage.setItem(k,id);}return id;}
 function authToken(){return localStorage.getItem('p_token')||'';}
 function acctUser(){return localStorage.getItem('p_user')||'';}
 async function _openSession(cost){
-  var tk=await getTurnstileToken();
-  var resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),turnstileToken:tk})});
+  var resp=null;
+  for(var attempt=0;attempt<3;attempt++){
+    var tk=await getTurnstileToken();
+    resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),turnstileToken:tk})});
+    if(resp.status!==403)break; // 403=人机验证失败，换新 token 重试
+    await new Promise(function(r){setTimeout(r,500);});
+  }
   if(resp.status===402){var e=new Error('nopoints');e.nopoints=true;throw e;}
+  if(resp.status===403){var e=new Error('verify');e.verify=true;throw e;}
   if(!resp.ok){var e=new Error('session error '+resp.status);throw e;}
   var d=await resp.json();
   _sessionId=d.sessionId;setBalance(d.balance);updatePointsUI();
@@ -1802,7 +1811,7 @@ function setBusy(on){document.body.classList.toggle('is-busy',!!on);}
 function renderOut(acc,extra){document.getElementById('analysis-output').innerHTML='<div class="md-output">'+mdToHtml(acc)+'</div>'+(extra||'');}
 function appendAcc(acc,content,key){return acc+((acc?'\n\n':'')+'### '+t(key)+'\n\n'+content);}
 var _lastError=null;
-function errMsg(e){return e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):(e.timeout?t('err.timeout'):(e.nopoints?t('pts.insufficient'):t('err.generic'))));}
+function errMsg(e){return e.needkey?t('needkey'):(e.invalidkey?t('err.invalidkey'):(e.timeout?t('err.timeout'):(e.nopoints?t('pts.insufficient'):(e.verify?t('err.verify'):t('err.generic')))));}
 function captureError(e){
   _lastError={
     time:new Date().toISOString(),

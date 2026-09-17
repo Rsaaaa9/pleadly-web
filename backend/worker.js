@@ -613,6 +613,31 @@ export default {
       return json(issued);
     }
 
+    // 5d) 管理：清理未发货且未使用的码（可按面额过滤；不传 points 则清全部未发货码）
+    if (path === '/admin/codes/clean' && request.method === 'POST') {
+      const secret = request.headers.get('X-Admin-Secret') || '';
+      if (secret !== env.ADMIN_SECRET) return json({ error: 'forbidden' }, 403);
+      const body = await request.json().catch(() => ({}));
+      const points = Math.max(0, parseInt(body.points || '0', 10) || 0); // 0 = 全部
+      let removed = 0;
+      let cursor;
+      do {
+        const list = await env.PLEADLY_KV.list({ prefix: 'code:', cursor });
+        for (const key of list.keys) {
+          const raw = await env.PLEADLY_KV.get(key.name);
+          try {
+            const p = JSON.parse(raw);
+            if (!p.used && !p.sold && (!points || p.points === points)) {
+              await env.PLEADLY_KV.delete(key.name);
+              removed++;
+            }
+          } catch (e) {}
+        }
+        cursor = list.list_complete ? undefined : list.cursor;
+      } while (cursor);
+      return json({ removed });
+    }
+
     return json({ error: 'not found' }, 404);
   },
 

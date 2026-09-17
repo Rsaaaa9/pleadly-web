@@ -14,3 +14,5 @@ backend/school-tiers.json
 # 发货工具的后端管理密钥 + 发货流水（本地，绝不提交）
 tools/.admin-secret
 tools/issued-codes.txt
+发货工具.bat
+码池管理.html
