@@ -26,6 +26,58 @@ const SMS_CODE_TTL = 5 * 60;         // 短信验证码 5 分钟有效（秒）
 const SMS_RESEND = 60;               // 同一手机号重发间隔（秒）
 const SMS_MAX_TRIES = 5;             // 同一验证码最多试错次数
 
+// —— 学历硬门槛：学校层级名单存 KV（私有，避免把学校名单/作者学校写进公开仓库）——
+// KV key 'school-tiers' → JSON 对象 {校名: 层级}，层级 ∈ {985, 211, 双一流, 一本}。
+// 递进包含：985 ⊃ 211 ⊃ 双一流 ⊃ 一本；985/211/双一流 均满足「统招重点本科以上」。
+// 名单用一次性命令写入 KV（wrangler kv key put），未配置则跳过注入、交给模型自行判断。
+const TIER_RANK = { '985': 4, '211': 3, '双一流': 2, '一本': 1 };
+const SCHOOL_BOUNDARY = /[\s|｜,，、:：;；.。\-—>]/;
+
+async function loadSchoolTiers(env) {
+  try {
+    const raw = await env.PLEADLY_KV.get('school-tiers');
+    if (!raw) return null;
+    const tiers = JSON.parse(raw);
+    const names = Object.keys(tiers).filter((k) => TIER_RANK[tiers[k]]);
+    if (!names.length) return null;
+    names.sort((a, b) => b.length - a.length);  // 长名优先，避免「电子科技大学」误吞「西安电子科技大学」
+    return { tiers, names };
+  } catch (e) {
+    return null;
+  }
+}
+
+// 从简历文本反查学校层级：从左到右取每个位置的「最长校名」，判断其后缀是否独立学院/分校，
+// 收集全部有效命中后取最高层级（如本科+硕士多校取最高）。命中返回 {name, tier}，否则 null。
+function findSchoolTier(text, tiers, names) {
+  if (!text) return null;
+  let best = null;
+  let i = 0;
+  while (i < text.length) {
+    let matched = null;
+    for (let k = 0; k < names.length; k++) {
+      if (text.startsWith(names[k], i)) { matched = names[k]; break; }  // 最长名优先，避免「电子科技大学」误吞「西安电子科技大学」
+    }
+    if (!matched) { i++; continue; }
+    const after = text[i + matched.length];
+    let valid = false;
+    if (after === undefined || SCHOOL_BOUNDARY.test(after)) {
+      valid = true;  // 干净边界（空白/标点/结尾）
+    } else {
+      // 紧跟中文：若为「…学院/…分校/…校区」短名 → 独立院校/分校（不同学校），跳过；
+      // 否则（专业名、二级学院如「医学部」）视为同一学校。
+      const tail = text.slice(i + matched.length);
+      if (!/^[一-龥]{0,6}(学院|分校|校区)/.test(tail)) valid = true;
+    }
+    if (valid) {
+      const tier = tiers[matched];
+      if (!best || TIER_RANK[tier] > TIER_RANK[best.tier]) best = { name: matched, tier: tier };
+    }
+    i += matched.length;
+  }
+  return best;
+}
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -326,10 +378,30 @@ export default {
       sess.budget -= 1;
       await env.PLEADLY_KV.put('session:' + sessionId, JSON.stringify(sess), { expirationTtl: SESSION_TTL });
 
+      // 学历硬门槛：从 <user_resume> 标签内反查学校层级（名单存 KV，未配置则跳过、交给模型自行判断）
+      let outMessages = messages;
+      const tiersData = await loadSchoolTiers(env);
+      if (tiersData) {
+        const allText = messages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('\n');
+        const rm = allText.match(/<\s*user_resume\s*>([\s\S]*?)<\s*\/user_resume\s*>/i);
+        if (rm && rm[1]) {
+          const hit = findSchoolTier(rm[1], tiersData.tiers, tiersData.names);
+          if (hit) {
+            const note = '\n\n【权威学校层级｜Authoritative school tier】简历中出现「' + hit.name + '」，名单显示其办学层次为「' + hit.tier + '」。判断 JD 学历硬门槛（统招重点本科/全日制本科/985/211/双一流/硕士等）时请以此为主要参考；若简历原文显示该校为独立学院/分校或其他院校，以简历原文为准。';
+            const sysIdx = outMessages.findIndex((m) => m.role === 'system');
+            if (sysIdx >= 0) {
+              outMessages = outMessages.map((m, i) => (i === sysIdx ? { role: m.role, content: (m.content || '') + note } : m));
+            } else {
+              outMessages = [{ role: 'system', content: note }].concat(outMessages);
+            }
+          }
+        }
+      }
+
       const upstream = await fetch(DEEPSEEK_BASE + '/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.DEEPSEEK_API_KEY },
-        body: JSON.stringify({ model: MODEL, messages: messages, thinking: { type: 'enabled' }, reasoning_effort: 'high', max_tokens: MAX_OUT_TOKENS }),
+        body: JSON.stringify({ model: MODEL, messages: outMessages, thinking: { type: 'enabled' }, reasoning_effort: 'high', max_tokens: MAX_OUT_TOKENS }),
       });
       if (!upstream.ok) {
         // 上游失败：退回这次额度，让用户能重试

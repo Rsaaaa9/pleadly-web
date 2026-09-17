@@ -7,3 +7,6 @@ node_modules/
 
 # Cloudflare wrangler 本地缓存（含登录 token 与账号邮箱，绝不提交）
 .wrangler/
+
+# 学校层级名单（含作者学校，仅存 KV，绝不提交到仓库）
+backend/school-tiers.json
