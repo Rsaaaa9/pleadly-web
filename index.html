@@ -354,10 +354,10 @@ body.standalone .page{max-width:none;padding:0;}
 .lang-switch button{flex:1;}
 .settings-card{max-width:520px;}
 </style>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </head>
 <body class="standalone">
-<div id="turnstile-widget" style="display:none"></div>
+<div id="turnstile-widget"></div>
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
@@ -1158,20 +1158,32 @@ var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 AP
 var API_BASE='https://api.pleadly.top'; // 付费版后端地址
 // Cloudflare Turnstile（第 3 步防白嫖）：site key 公开无害；secret 用 wrangler secret put TURNSTILE_SECRET 设置
 var TURNSTILE_SITE_KEY='0x4AAAAAAE5_mKlYVI5jUwaX'; // Turnstile site key（公开无害）；secret 用 wrangler secret put TURNSTILE_SECRET 设置
-var __tsWidgetId=null;
-function onTurnstileLoad(){
-  if(window.turnstile && TURNSTILE_SITE_KEY){
-    try{ __tsWidgetId=turnstile.render('#turnstile-widget',{sitekey:TURNSTILE_SITE_KEY}); }catch(e){}
+var __tsWidgetId=null,__tsResolver=null;
+function ensureTurnstile(){
+  if(window.turnstile && TURNSTILE_SITE_KEY && __tsWidgetId===null){
+    try{
+      __tsWidgetId=window.turnstile.render('#turnstile-widget',{
+        sitekey:TURNSTILE_SITE_KEY,
+        callback:function(t){ if(__tsResolver){var r=__tsResolver;__tsResolver=null;r(t||'');} },
+        'error-callback':function(){ if(__tsResolver){var r=__tsResolver;__tsResolver=null;r('');} }
+      });
+    }catch(e){}
   }
+  return __tsWidgetId;
 }
 function getTurnstileToken(){
   return new Promise(function(resolve){
-    if(!TURNSTILE_SITE_KEY || !__tsWidgetId || !window.turnstile){ resolve(''); return; }
-    var done=false;
-    var timer=setTimeout(function(){ if(!done){done=true;resolve('');} },6000);
-    try{
-      turnstile.execute(__tsWidgetId,{action:'session',callback:function(t){ if(!done){done=true;clearTimeout(timer);resolve(t||'');} },'error-callback':function(){ if(!done){done=true;clearTimeout(timer);resolve('');} }});
-    }catch(e){ if(!done){done=true;clearTimeout(timer);resolve('');} }
+    if(!TURNSTILE_SITE_KEY){ resolve(''); return; }
+    if(!window.turnstile || !window.turnstile.ready){ resolve(''); return; }
+    window.turnstile.ready(function(){
+      var id=ensureTurnstile();
+      if(!id){ resolve(''); return; }
+      var done=false;
+      __tsResolver=function(v){ if(!done){done=true;resolve(v);} };
+      var timer=setTimeout(function(){ if(!done){done=true;__tsResolver=null;resolve('');} },6000);
+      try{ window.turnstile.execute(id,{action:'session'}); }
+      catch(e){ if(!done){done=true;__tsResolver=null;clearTimeout(timer);resolve('');} }
+    });
   });
 }
 var _sessionId='',_pendingCost=0;
