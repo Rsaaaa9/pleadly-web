@@ -11,16 +11,25 @@
 // KV 命名空间绑定名：PLEADLY_KV
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com';
-const MODEL = 'deepseek-chat';
-const FREE_STARTER = 0;         // 新设备赠送积分（0=不赠送，防换设备ID刷）
-const MAX_OUT_TOKENS = 8192;
+const MODEL = 'deepseek-v4-pro';
+const FREE_STARTER = 5;         // 新设备免费试用积分（5 分，不足以跑完整「全面分析」，防白嫖策略见方案文档）
+const MAX_OUT_TOKENS = 16384;
 const SESSION_TTL = 30 * 60;    // 会话有效期（秒）
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去 I/O/0/1 防混淆
+const DEFAULT_POINTS = 25;   // 自动补码默认面额（对应 ¥9.9=25 档）
+const MIN_FRESH = 5;         // 新鲜码低于此数时自动补齐
+const REFILL_TARGET = 20;    // 补齐到的新鲜码数量
+const FREE_TTL = 7 * 24 * 60 * 60;  // 免费试用分 7 天过期（秒）
+const SESSION_PER_IP = 20;   // 同一 IP 每小时最多开会话数（防脚本刷免费分）
+const SESSION_WINDOW = 60 * 60;      // IP 限流窗口（秒）
+const SMS_CODE_TTL = 5 * 60;         // 短信验证码 5 分钟有效（秒）
+const SMS_RESEND = 60;               // 同一手机号重发间隔（秒）
+const SMS_MAX_TRIES = 5;             // 同一验证码最多试错次数
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, Authorization',
 };
 
 function json(data, status = 200) {
@@ -46,15 +55,168 @@ function randId(n) {
 function randCode() {
   return 'PLD-' + randId(8) + '-' + randId(8);
 }
+function randCode6() {
+  const b = crypto.getRandomValues(new Uint8Array(6));
+  let s = '';
+  for (let i = 0; i < 6; i++) s += String(b[i] % 10);
+  return s;
+}
 
-async function getBalance(env, deviceId) {
-  const raw = await env.PLEADLY_KV.get('user:' + deviceId);
-  if (raw !== null) return parseInt(raw, 10);
-  await env.PLEADLY_KV.put('user:' + deviceId, String(FREE_STARTER));
+// ===== 积分账本：付费分（永久）+ 免费分（7 天过期）双账本 =====
+// 付费分 user:<owner>：兑换码充入，永不过期
+// 免费分 free:<owner> + freeat:<owner>：首次访问赠送 FREE_STARTER，7 天后过期
+// freegranted:<owner>：是否已授予过免费分（一次性，防反复领取）
+
+async function getPaid(env, owner) {
+  const raw = await env.PLEADLY_KV.get('user:' + owner);
+  return raw !== null ? parseInt(raw, 10) : 0;
+}
+async function setPaid(env, owner, bal) {
+  await env.PLEADLY_KV.put('user:' + owner, String(bal));
+}
+
+// 首次访问授予免费分（每个 owner 只授一次）
+async function ensureFree(env, owner) {
+  const granted = await env.PLEADLY_KV.get('freegranted:' + owner);
+  if (granted) return 0;
+  await env.PLEADLY_KV.put('freegranted:' + owner, '1');
+  await env.PLEADLY_KV.put('freeat:' + owner, String(Date.now()));
+  await env.PLEADLY_KV.put('free:' + owner, String(FREE_STARTER), { expirationTtl: FREE_TTL });
   return FREE_STARTER;
 }
-async function setBalance(env, deviceId, bal) {
-  await env.PLEADLY_KV.put('user:' + deviceId, String(bal));
+
+// 读免费分：按 freeat 判断是否超过 7 天，过期返回 0
+async function getFree(env, owner) {
+  const at = await env.PLEADLY_KV.get('freeat:' + owner);
+  if (!at) return 0;
+  if (Date.now() - parseInt(at, 10) > FREE_TTL * 1000) return 0;
+  const raw = await env.PLEADLY_KV.get('free:' + owner);
+  return raw !== null ? parseInt(raw, 10) : 0;
+}
+
+// 写免费分：保留最早授予时间，剩余有效期按 freeat 折算（不因扣分重置 7 天）
+async function setFree(env, owner, bal) {
+  const at = await env.PLEADLY_KV.get('freeat:' + owner);
+  if (!at) { await env.PLEADLY_KV.put('free:' + owner, '0'); return; }
+  const remaining = Math.floor((parseInt(at, 10) + FREE_TTL * 1000 - Date.now()) / 1000);
+  if (bal <= 0 || remaining <= 0) {
+    await env.PLEADLY_KV.put('free:' + owner, '0');
+  } else {
+    await env.PLEADLY_KV.put('free:' + owner, String(bal), { expirationTtl: Math.max(60, remaining) });
+  }
+}
+
+// 总余额 = 付费分 + 免费分（顺带首次授予免费分）
+async function getBalance(env, owner) {
+  await ensureFree(env, owner);
+  return (await getPaid(env, owner)) + (await getFree(env, owner));
+}
+
+// 扣分：先扣免费分（免费分先用掉/先过期），再扣付费分。不够返回 null
+async function spend(env, owner, cost) {
+  const paid = await getPaid(env, owner);
+  const free = await getFree(env, owner);
+  if (paid + free < cost) return null;
+  let rest = cost;
+  const useFree = Math.min(free, rest);
+  if (useFree > 0) { await setFree(env, owner, free - useFree); rest -= useFree; }
+  if (rest > 0) await setPaid(env, owner, paid - rest);
+  return paid + free - cost;
+}
+
+// 把设备上的付费分 + 免费分并入账号（免费分保留原 7 天过期），设备账本清零防双花
+async function mergeIntoAccount(env, deviceId, accountId) {
+  await ensureFree(env, deviceId);
+  const paid = await getPaid(env, deviceId);
+  const free = await getFree(env, deviceId);
+
+  if (paid > 0) {
+    await setPaid(env, deviceId, 0);
+    await setPaid(env, accountId, (await getPaid(env, accountId)) + paid);
+  }
+
+  // 免费分资格跟着设备走：设备授过就标记账号已授，避免账号再领一份免费分
+  if (await env.PLEADLY_KV.get('freegranted:' + deviceId)) {
+    await env.PLEADLY_KV.put('freegranted:' + accountId, '1');
+  }
+  if (free > 0) {
+    await setFree(env, deviceId, 0);
+    const acctFree = await getFree(env, accountId);
+    const devAtRaw = await env.PLEADLY_KV.get('freeat:' + deviceId);
+    const acctAtRaw = await env.PLEADLY_KV.get('freeat:' + accountId);
+    const devAt = devAtRaw ? parseInt(devAtRaw, 10) : Date.now();
+    const acctAt = acctAtRaw ? parseInt(acctAtRaw, 10) : devAt;
+    await env.PLEADLY_KV.put('freeat:' + accountId, String(Math.min(devAt, acctAt)));
+    await setFree(env, accountId, acctFree + free);
+  }
+}
+
+// IP 限流：同一 IP 每小时开会话数上限（防脚本刷免费分）
+async function rateLimited(env, ip) {
+  const key = 'rl:session:' + ip;
+  const raw = await env.PLEADLY_KV.get(key);
+  const n = raw !== null ? parseInt(raw, 10) : 0;
+  if (n >= SESSION_PER_IP) return true;
+  await env.PLEADLY_KV.put(key, String(n + 1), { expirationTtl: SESSION_WINDOW });
+  return false;
+}
+
+// 校验 Cloudflare Turnstile（人机验证）。未配置 TURNSTILE_SECRET 时放行，配置后自动生效。
+async function verifyTurnstile(env, token, ip) {
+  if (!env.TURNSTILE_SECRET) return true; // 未配置 = 平滑放行
+  if (!token) return false;
+  const form = new URLSearchParams();
+  form.set('secret', env.TURNSTILE_SECRET);
+  form.set('response', token);
+  if (ip) form.set('remoteip', ip);
+  const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString(),
+  });
+  try { const d = await r.json(); return !!d.success; } catch (e) { return false; }
+}
+
+// 发送短信验证码。接入短信服务商后实现真实发送（见 TODO）。
+async function sendSms(env, phone, code) {
+  // TODO: 换成你的短信服务商。个人可用：UniSMS(uni.apistd.com)、云片(www.yunpian.com)。
+  // 示例（按服务商文档改）：
+  //   await fetch(env.SMS_ENDPOINT, {
+  //     method:'POST',
+  //     headers:{'Authorization':'Bearer '+env.SMS_API_KEY,'Content-Type':'application/json'},
+  //     body:JSON.stringify({to:phone, signature:env.SMS_SIGNATURE, template:env.SMS_TEMPLATE, data:{code}})
+  //   });
+  // 上线前把 SMS_* 用 wrangler secret put 设好，并删除下面这行调试日志。
+  console.log('[sms] to', phone, 'code', code);
+}
+
+// ===== 账号系统：PBKDF2 密码哈希 + 登录态 =====
+const PBKDF2_ITER = 100000;
+const TOKEN_TTL = 30 * 24 * 60 * 60; // 登录态 30 天（秒）
+
+function randSalt() {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  return Array.from(b).map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+async function pbkdf2Hash(password, salt, iterations) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return Array.from(new Uint8Array(bits)).map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+// 解析「当前记账户」：登录态优先账号，否则回退设备 ID（未登录向后兼容）
+async function resolveOwner(env, deviceId, token) {
+  if (token) {
+    const acct = await env.PLEADLY_KV.get('tok:' + token.slice(0, 80));
+    if (acct) return acct;
+  }
+  return deviceId;
 }
 
 export default {
@@ -67,14 +229,25 @@ export default {
     // 1) 查余额
     if (path === '/points' && request.method === 'GET') {
       const deviceId = (url.searchParams.get('deviceId') || '').toString().slice(0, 64);
+      const token = (url.searchParams.get('token') || '').toString().slice(0, 80);
       if (!deviceId) return json({ error: 'missing deviceId' }, 400);
-      return json({ balance: await getBalance(env, deviceId) });
+      const owner = await resolveOwner(env, deviceId, token);
+      await ensureFree(env, owner);
+      const free = await getFree(env, owner);
+      const paid = await getPaid(env, owner);
+      const atRaw = await env.PLEADLY_KV.get('freeat:' + owner);
+      return json({
+        balance: paid + free,
+        free,
+        freeExpiresAt: (free > 0 && atRaw) ? parseInt(atRaw, 10) + FREE_TTL * 1000 : null,
+      });
     }
 
     // 2) 兑换码
     if (path === '/redeem' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      const token = (body.token || '').toString().slice(0, 80);
       const code = (body.code || '').trim().toUpperCase();
       if (!deviceId || !code) return json({ error: 'missing fields' }, 400);
       const rec = await env.PLEADLY_KV.get('code:' + code);
@@ -83,26 +256,41 @@ export default {
       if (parsed.used) return json({ error: 'used' }, 409);
       parsed.used = true;
       await env.PLEADLY_KV.put('code:' + code, JSON.stringify(parsed));
-      const bal = await getBalance(env, deviceId);
-      const newBal = bal + parsed.points;
-      await setBalance(env, deviceId, newBal);
-      return json({ added: parsed.points, balance: newBal });
+      const owner = await resolveOwner(env, deviceId, token);
+      await ensureFree(env, owner);
+      const paid = await getPaid(env, owner);
+      const newPaid = paid + parsed.points;
+      await setPaid(env, owner, newPaid);
+      const free = await getFree(env, owner);
+      return json({ added: parsed.points, balance: newPaid + free });
     }
 
     // 3) 开会话（一次功能扣一次分）
     if (path === '/session' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      const token = (body.token || '').toString().slice(0, 80);
       const cost = Math.max(0, parseInt(body.cost || '0', 10) || 0);
       if (!deviceId) return json({ error: 'missing deviceId' }, 400);
-      const bal = await getBalance(env, deviceId);
+
+      // IP 限流：防脚本拿免费分刷 API（同一 IP 每小时开会话数上限）
+      const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
+      if (ip && (await rateLimited(env, ip))) return json({ error: 'rate_limited' }, 429);
+
+      // Turnstile 人机验证（未配置 TURNSTILE_SECRET 时放行，平滑上线）
+      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
+      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+
+      const owner = await resolveOwner(env, deviceId, token);
+      const bal = await getBalance(env, owner);
       if (bal < cost) return json({ error: 'no_points' }, 402);
-      await setBalance(env, deviceId, bal - cost);
+      const newBal = await spend(env, owner, cost);
+      if (newBal === null) return json({ error: 'no_points' }, 402);
       const sessionId = randId(24);
       await env.PLEADLY_KV.put('session:' + sessionId, JSON.stringify({
-        deviceId, budget: budgetFor(cost), expires: Date.now() + SESSION_TTL * 1000,
+        owner, budget: budgetFor(cost), expires: Date.now() + SESSION_TTL * 1000,
       }), { expirationTtl: SESSION_TTL });
-      return json({ sessionId, balance: bal - cost });
+      return json({ sessionId, balance: newBal });
     }
 
     // 4) LLM 代理（凭会话）
@@ -122,7 +310,7 @@ export default {
       const upstream = await fetch(DEEPSEEK_BASE + '/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.DEEPSEEK_API_KEY },
-        body: JSON.stringify({ model: MODEL, messages: messages, temperature: 0.3, max_tokens: MAX_OUT_TOKENS }),
+        body: JSON.stringify({ model: MODEL, messages: messages, thinking: { type: 'enabled' }, reasoning_effort: 'high', max_tokens: MAX_OUT_TOKENS }),
       });
       if (!upstream.ok) {
         // 上游失败：退回这次额度，让用户能重试
@@ -136,6 +324,137 @@ export default {
       return json({ content });
     }
 
+    // 4b) 注册：账号(8位数字) + 用户名(任意) + 密码(8-16位字母数字)，PBKDF2 哈希 + 合并本设备旧余额
+    if (path === '/register' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const account = (body.account || '').trim();
+      const username = (body.username || '').trim();
+      const password = (body.password || '');
+      const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      if (!account || !password || !deviceId) return json({ error: 'missing fields' }, 400);
+      if (!/^\d{8}$/.test(account)) return json({ error: 'bad account' }, 400);
+      if (username.length > 32) return json({ error: 'bad username' }, 400);
+      if (!/^[A-Za-z0-9]{8,16}$/.test(password)) return json({ error: 'bad password' }, 400);
+      const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
+      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
+      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      if (await env.PLEADLY_KV.get('acctNum:' + account)) return json({ error: 'taken' }, 409);
+
+      const accountId = 'u-' + randId(20);
+      const salt = randSalt();
+      const hash = await pbkdf2Hash(password, salt, PBKDF2_ITER);
+      await env.PLEADLY_KV.put('acct:' + accountId, JSON.stringify({
+        id: accountId, account, username, salt, hash, iter: PBKDF2_ITER, deviceId, createdAt: Date.now(),
+      }));
+      await env.PLEADLY_KV.put('acctNum:' + account, accountId);
+
+      // 合并设备余额到账号（付费分永久 + 免费分保留原 7 天过期），设备账本清零防双花
+      await mergeIntoAccount(env, deviceId, accountId);
+      const bal = await getBalance(env, accountId);
+
+      const token = randId(32);
+      await env.PLEADLY_KV.put('tok:' + token, accountId, { expirationTtl: TOKEN_TTL });
+      return json({ token, account, username, balance: bal });
+    }
+
+    // 4c) 登录（账号 = 8 位数字）
+    if (path === '/login' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const account = (body.account || '').trim();
+      const password = (body.password || '');
+      const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      if (!account || !password || !deviceId) return json({ error: 'missing fields' }, 400);
+      const accountId = await env.PLEADLY_KV.get('acctNum:' + account);
+      if (!accountId) return json({ error: 'no_account' }, 404);
+      const raw = await env.PLEADLY_KV.get('acct:' + accountId);
+      const acct = JSON.parse(raw);
+      const hash = await pbkdf2Hash(password, acct.salt, acct.iter);
+      if (hash !== acct.hash) return json({ error: 'bad_password' }, 401);
+
+      // 其它设备上的余额（付费分 + 剩余免费分）一并并入账号
+      if (deviceId !== acct.deviceId) {
+        await mergeIntoAccount(env, deviceId, accountId);
+      }
+      const bal = await getBalance(env, accountId);
+      const token = randId(32);
+      await env.PLEADLY_KV.put('tok:' + token, accountId, { expirationTtl: TOKEN_TTL });
+      return json({ token, account: acct.account || account, username: acct.username, balance: bal });
+    }
+
+    // 4d) 当前登录用户信息
+    if (path === '/me' && request.method === 'GET') {
+      const auth = request.headers.get('Authorization') || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+      const accountId = await resolveOwner(env, '', token);
+      if (!accountId) return json({ error: 'unauthorized' }, 401);
+      const raw = await env.PLEADLY_KV.get('acct:' + accountId);
+      if (!raw) return json({ error: 'unauthorized' }, 401);
+      const acct = JSON.parse(raw);
+      return json({ account: acct.account, username: acct.username, balance: await getBalance(env, accountId) });
+    }
+
+    // 5e) 发送短信验证码（手机号登录 · 第一步）
+    if (path === '/sms/send' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const phone = (body.phone || '').toString().trim();
+      const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      if (!/^1\d{10}$/.test(phone)) return json({ error: 'bad phone' }, 400);
+      const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
+      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
+      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      const last = await env.PLEADLY_KV.get('smslast:' + phone);
+      if (last && Date.now() - parseInt(last, 10) < SMS_RESEND * 1000) return json({ error: 'too_often' }, 429);
+      const code = randCode6();
+      await env.PLEADLY_KV.put('sms:' + phone, JSON.stringify({ code, exp: Date.now() + SMS_CODE_TTL * 1000, tries: 0 }), { expirationTtl: SMS_CODE_TTL });
+      await env.PLEADLY_KV.put('smslast:' + phone, String(Date.now()), { expirationTtl: SMS_RESEND });
+      await sendSms(env, phone, code);
+      return json({ ok: true });
+    }
+
+    // 5f) 手机号 + 验证码登录（手机号 = 唯一身份，一个手机号只对应一个账号）
+    if (path === '/login/phone' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const phone = (body.phone || '').toString().trim();
+      const code = (body.code || '').toString().trim();
+      const deviceId = (body.deviceId || '').toString().slice(0, 64);
+      if (!/^1\d{10}$/.test(phone) || !/^\d{6}$/.test(code)) return json({ error: 'missing fields' }, 400);
+      const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
+      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
+      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+
+      const raw = await env.PLEADLY_KV.get('sms:' + phone);
+      if (!raw) return json({ error: 'no_code' }, 404);
+      const s = JSON.parse(raw);
+      if (Date.now() > s.exp) return json({ error: 'code_expired' }, 410);
+      if (s.tries >= SMS_MAX_TRIES) return json({ error: 'too_many_tries' }, 429);
+      if (s.code !== code) {
+        s.tries += 1;
+        await env.PLEADLY_KV.put('sms:' + phone, JSON.stringify(s), { expirationTtl: SMS_CODE_TTL });
+        return json({ error: 'bad_code' }, 401);
+      }
+      await env.PLEADLY_KV.delete('sms:' + phone);
+
+      // 找或建账号：一个手机号永久对应一个账号
+      let accountId = await env.PLEADLY_KV.get('phone:' + phone);
+      if (!accountId) {
+        accountId = 'u-' + randId(20);
+        let account;
+        do { account = String((crypto.getRandomValues(new Uint32Array(1))[0]) % 100000000).padStart(8, '0'); } while (await env.PLEADLY_KV.get('acctNum:' + account));
+        await env.PLEADLY_KV.put('acct:' + accountId, JSON.stringify({
+          id: accountId, account, username: '用户' + account.slice(-4), phone, deviceId, createdAt: Date.now(),
+        }));
+        await env.PLEADLY_KV.put('acctNum:' + account, accountId);
+        await env.PLEADLY_KV.put('phone:' + phone, accountId);
+      }
+      // 设备余额（付费分 + 剩余免费分）并入账号
+      await mergeIntoAccount(env, deviceId, accountId);
+      const acct = JSON.parse(await env.PLEADLY_KV.get('acct:' + accountId));
+      const bal = await getBalance(env, accountId);
+      const token = randId(32);
+      await env.PLEADLY_KV.put('tok:' + token, accountId, { expirationTtl: TOKEN_TTL });
+      return json({ token, account: acct.account, username: acct.username, balance: bal });
+    }
+
     // 5a) 管理：列出全部兑换码 + 状态（用 X-Admin-Secret 保护）
     if (path === '/admin/codes' && request.method === 'GET') {
       const secret = request.headers.get('X-Admin-Secret') || '';
@@ -146,10 +465,10 @@ export default {
         const list = await env.PLEADLY_KV.list({ prefix: 'code:', cursor });
         for (const key of list.keys) {
           const code = key.name.slice(5); // 去掉 'code:' 前缀
-          let used = false, points = 0;
+          let used = false, sold = false, points = 0;
           const raw = await env.PLEADLY_KV.get(key.name);
-          try { const p = JSON.parse(raw); used = !!p.used; points = p.points || 0; } catch (e) {}
-          codes.push({ code, points, used });
+          try { const p = JSON.parse(raw); used = !!p.used; sold = !!p.sold; points = p.points || 0; } catch (e) {}
+          codes.push({ code, points, used, sold });
         }
         cursor = list.list_complete ? undefined : list.cursor;
       } while (cursor);
@@ -163,16 +482,72 @@ export default {
       if (secret !== env.ADMIN_SECRET) return json({ error: 'forbidden' }, 403);
       const body = await request.json().catch(() => ({}));
       const count = Math.max(1, Math.min(500, parseInt(body.count || '1', 10) || 1));
-      const points = Math.max(1, parseInt(body.points || '100', 10) || 100);
+      const points = Math.max(1, parseInt(body.points || '', 10) || DEFAULT_POINTS);
       const codes = [];
       for (let i = 0; i < count; i++) {
         const c = randCode();
-        await env.PLEADLY_KV.put('code:' + c, JSON.stringify({ points, used: false }));
+        await env.PLEADLY_KV.put('code:' + c, JSON.stringify({ points, used: false, sold: false, ts: Date.now() }));
         codes.push(c);
       }
       return json({ points, count, codes });
     }
 
+    // 5c) 管理：一键取码发货（取一个「未售未用」的码 → 标记「已发出」→ 返回给卖家）
+    if (path === '/admin/codes/issue' && request.method === 'POST') {
+      const secret = request.headers.get('X-Admin-Secret') || '';
+      if (secret !== env.ADMIN_SECRET) return json({ error: 'forbidden' }, 403);
+      const body = await request.json().catch(() => ({}));
+      const points = Math.max(1, parseInt(body.points || '', 10) || DEFAULT_POINTS);
+      let issued = null, cursor;
+      do {
+        const list = await env.PLEADLY_KV.list({ prefix: 'code:', cursor });
+        for (const key of list.keys) {
+          if (issued) break;
+          const raw = await env.PLEADLY_KV.get(key.name);
+          try {
+            const p = JSON.parse(raw);
+            if (!p.used && !p.sold && p.points === points) {
+              p.sold = true;
+              await env.PLEADLY_KV.put(key.name, JSON.stringify(p));
+              issued = { code: key.name.slice(5), points: p.points };
+            }
+          } catch (e) {}
+        }
+        cursor = list.list_complete ? undefined : list.cursor;
+      } while (cursor && !issued);
+      if (!issued) return json({ error: 'no_code', hint: '码池没有该面额的未售码，请先点下方「生成」' }, 404);
+      return json(issued);
+    }
+
     return json({ error: 'not found' }, 404);
+  },
+
+  // 定时任务：清理已兑换的码 + 补充新鲜码（保持码池数量）
+  async scheduled(event, env, ctx) {
+    let cursor, fresh = 0, usedKeys = [];
+    do {
+      const list = await env.PLEADLY_KV.list({ prefix: 'code:', cursor });
+      for (const key of list.keys) {
+        const raw = await env.PLEADLY_KV.get(key.name);
+        try {
+          const p = JSON.parse(raw);
+          if (p.used) usedKeys.push(key.name);
+          else if (!p.sold) fresh++;
+        } catch (e) {}
+      }
+      cursor = list.list_complete ? undefined : list.cursor;
+    } while (cursor);
+
+    // 删除已兑换的码
+    for (const k of usedKeys) await env.PLEADLY_KV.delete(k);
+
+    // 新鲜码不足则补齐
+    if (fresh < MIN_FRESH) {
+      const need = REFILL_TARGET - fresh;
+      for (let i = 0; i < need; i++) {
+        const c = randCode();
+        await env.PLEADLY_KV.put('code:' + c, JSON.stringify({ points: DEFAULT_POINTS, used: false, sold: false, ts: Date.now() }));
+      }
+    }
   },
 };
