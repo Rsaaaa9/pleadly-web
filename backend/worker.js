@@ -163,8 +163,8 @@ async function rateLimited(env, ip) {
 
 // 校验 Cloudflare Turnstile（人机验证）。未配置 TURNSTILE_SECRET 时放行，配置后自动生效。
 async function verifyTurnstile(env, token, ip) {
-  if (!env.TURNSTILE_SECRET) return true; // 未配置 = 平滑放行
-  if (!token) return false;
+  if (!env.TURNSTILE_SECRET) return { ok: true }; // 未配置 = 平滑放行
+  if (!token) return { ok: false, codes: ['missing-input-response'] };
   const form = new URLSearchParams();
   form.set('secret', env.TURNSTILE_SECRET);
   form.set('response', token);
@@ -174,7 +174,8 @@ async function verifyTurnstile(env, token, ip) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form.toString(),
   });
-  try { const d = await r.json(); return !!d.success; } catch (e) { return false; }
+  try { const d = await r.json(); return { ok: !!d.success, codes: d['error-codes'] || [] }; }
+  catch (e) { return { ok: false, codes: ['siteverify-network-error'] }; }
 }
 
 // 发送短信验证码。接入短信服务商后实现真实发送（见 TODO）。
@@ -279,7 +280,8 @@ export default {
 
       // Turnstile 人机验证（未配置 TURNSTILE_SECRET 时放行，平滑上线）
       const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      const _ts = await verifyTurnstile(env, turnstileToken, ip);
+      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
 
       const owner = await resolveOwner(env, deviceId, token);
       const bal = await getBalance(env, owner);
@@ -287,10 +289,27 @@ export default {
       const newBal = await spend(env, owner, cost);
       if (newBal === null) return json({ error: 'no_points' }, 402);
       const sessionId = randId(24);
+      const initBudget = budgetFor(cost);
       await env.PLEADLY_KV.put('session:' + sessionId, JSON.stringify({
-        owner, budget: budgetFor(cost), expires: Date.now() + SESSION_TTL * 1000,
+        owner, cost, budget: initBudget, initBudget, expires: Date.now() + SESSION_TTL * 1000,
       }), { expirationTtl: SESSION_TTL });
       return json({ sessionId, balance: newBal });
+    }
+
+    // 3b) 退款：功能中途失败时前端调用，按剩余额度比例退还没用完的积分
+    if (path === '/session/refund' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const sessionId = (body.sessionId || '').toString();
+      if (!sessionId) return json({ error: 'missing sessionId' }, 400);
+      const raw = await env.PLEADLY_KV.get('session:' + sessionId);
+      if (!raw) return json({ error: 'session_expired' }, 401);
+      const sess = JSON.parse(raw);
+      if (Date.now() > sess.expires) { await env.PLEADLY_KV.delete('session:' + sessionId); return json({ error: 'session_expired' }, 401); }
+      const initBudget = sess.initBudget || sess.budget || 1;
+      const refund = Math.max(0, Math.round((sess.cost || 0) * (sess.budget || 0) / initBudget));
+      if (refund > 0) await setPaid(env, sess.owner, (await getPaid(env, sess.owner)) + refund);
+      await env.PLEADLY_KV.delete('session:' + sessionId);
+      return json({ refunded: refund, balance: await getBalance(env, sess.owner) });
     }
 
     // 4) LLM 代理（凭会话）
@@ -337,7 +356,8 @@ export default {
       if (!/^[A-Za-z0-9]{8,16}$/.test(password)) return json({ error: 'bad password' }, 400);
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
       const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      const _ts = await verifyTurnstile(env, turnstileToken, ip);
+      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
       if (await env.PLEADLY_KV.get('acctNum:' + account)) return json({ error: 'taken' }, 409);
 
       const accountId = 'u-' + randId(20);
@@ -401,7 +421,8 @@ export default {
       if (!/^1\d{10}$/.test(phone)) return json({ error: 'bad phone' }, 400);
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
       const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      const _ts = await verifyTurnstile(env, turnstileToken, ip);
+      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
       const last = await env.PLEADLY_KV.get('smslast:' + phone);
       if (last && Date.now() - parseInt(last, 10) < SMS_RESEND * 1000) return json({ error: 'too_often' }, 429);
       const code = randCode6();
@@ -420,7 +441,8 @@ export default {
       if (!/^1\d{10}$/.test(phone) || !/^\d{6}$/.test(code)) return json({ error: 'missing fields' }, 400);
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
       const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      if (!(await verifyTurnstile(env, turnstileToken, ip))) return json({ error: 'verify_failed' }, 403);
+      const _ts = await verifyTurnstile(env, turnstileToken, ip);
+      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
 
       const raw = await env.PLEADLY_KV.get('sms:' + phone);
       if (!raw) return json({ error: 'no_code' }, 404);

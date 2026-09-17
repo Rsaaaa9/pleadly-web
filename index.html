@@ -1152,7 +1152,7 @@ function saveRep(d){localStorage.setItem('prep_v2',JSON.stringify(d))}
 
 /* ============ BYOK 设置 + 积分制 ============ */
 var DEFAULT_BASE_URL='https://api.deepseek.com',DEFAULT_MODEL='deepseek-v4-pro';
-var LLM_TIMEOUT=180000; // 单次 LLM 请求超时(ms)：防止网络卡死导致界面无响应
+var LLM_TIMEOUT=300000; // 单次 LLM 请求超时(ms)：思考模式较慢，放宽到 5 分钟
 var FREE_STARTER=0; // 新用户首次赠送积分（0=不赠送）
 var FREE_MODE=false; // 本地免费版开关：true=免积分、仅用自有 API Key（桌面同步脚本会自动置为 true）
 var API_BASE='https://api.pleadly.top'; // 付费版后端地址
@@ -1178,15 +1178,16 @@ function getTurnstileToken(){
     window.turnstile.ready(function(){
       var id=ensureTurnstile();
       if(!id){ resolve(''); return; }
+      try{ window.turnstile.reset(id); }catch(e){}
       var done=false;
       __tsResolver=function(v){ if(!done){done=true;resolve(v);} };
-      var timer=setTimeout(function(){ if(!done){done=true;__tsResolver=null;resolve('');} },6000);
+      var timer=setTimeout(function(){ if(!done){done=true;__tsResolver=null;resolve('');} },12000);
       try{ window.turnstile.execute(id,{action:'session'}); }
       catch(e){ if(!done){done=true;__tsResolver=null;clearTimeout(timer);resolve('');} }
     });
   });
 }
-var _sessionId='',_pendingCost=0;
+var _sessionId='',_pendingCost=0,_sessionPromise=null;
 function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now()+'-'+Math.random().toString(16).slice(2));}catch(e){id='d-'+Date.now()+'-'+Math.random().toString(16).slice(2);}localStorage.setItem(k,id);}return id;}
 function authToken(){return localStorage.getItem('p_token')||'';}
 function acctUser(){return localStorage.getItem('p_user')||'';}
@@ -1205,6 +1206,14 @@ async function syncServerBalance(){
     if(!resp.ok)return;
     var d=await resp.json();
     setBalance(d.balance);updatePointsUI();
+  }catch(e){}
+}
+async function refundCurrentSession(){
+  if(!_sessionId)return;
+  var sid=_sessionId;_sessionId='';
+  try{
+    var resp=await fetch(API_BASE+'/session/refund',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sid})});
+    if(resp.ok){var d=await resp.json();setBalance(d.balance);updatePointsUI();}
   }catch(e){}
 }
 var pendingCtx=null;
@@ -1253,7 +1262,7 @@ async function redeem(){
   document.getElementById('set-redeem').value='';
   showToast(t('pts.redeemed').replace('{N}',r.pts),false);
 }
-function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
+function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';_sessionPromise=null;if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
 
 // SHA-256（纯 JS，仅 ASCII；与 tools/gen-license.js 的 Node crypto 结果一致）
 function sha256(ascii){
@@ -1367,7 +1376,7 @@ async function acctRegister(){
   }catch(e){showToast(t('acct.fail'),true);}
   finally{setBusy(false);}
 }
-function acctLogout(){localStorage.removeItem('p_token');localStorage.removeItem('p_user');localStorage.removeItem('p_account');renderProfile();showToast(t('acct.loggedout'),false);}
+function acctLogout(){localStorage.removeItem('p_token');localStorage.removeItem('p_user');localStorage.removeItem('p_account');_sessionId='';_sessionPromise=null;setBalance(0);updatePointsUI();renderProfile();showToast(t('acct.loggedout'),false);syncServerBalance();}
 function onBaseUrlChange(){document.getElementById('set-baseurl-custom').style.display=(document.getElementById('set-baseurl').value==='__custom__')?'block':'none';}
 function saveSettings(){
   var s=loadSettings();
@@ -1574,7 +1583,8 @@ var GREET_PROMPT=`你是求职招呼语生成助手。用户是一名求职者�
 {INPUT}`;
 
 /* ============ LLM 直连（OpenAI 兼容 /chat/completions） ============ */
-async function callLLMChat(messages){
+async function callLLMChat(messages,opts){
+  opts=opts||{};
   if(FREE_MODE){
     var s=loadSettings();
     if(!s.apiKey){var e=new Error('needkey');e.needkey=true;throw e;}
@@ -1600,7 +1610,10 @@ async function callLLMChat(messages){
     }finally{clearTimeout(timer);}
   }
   // 付费版：走服务端会话（一次功能扣一次分，本功能内多次调用复用同一会话）
-  if(!_sessionId){await _openSession(_pendingCost||1);}
+  if(!_sessionId){
+    if(!_sessionPromise){_sessionPromise=_openSession(_pendingCost||1).finally(function(){_sessionPromise=null;});}
+    await _sessionPromise;
+  }
   var ctrl2=new AbortController();
   var timer2=setTimeout(function(){ctrl2.abort();},LLM_TIMEOUT);
   try{
@@ -1618,11 +1631,14 @@ async function callLLMChat(messages){
     if(!content2)throw new Error('empty response');
     return content2;
   }catch(e){
+    // 功能中途失败（超时/403/上游报错等）：退还没用完的会话积分，避免「积分没了报告也没产出」。
+    // 辅助性并发调用（如分析时的招呼语预览条）传 noRefund，避免把主功能仍在使用的会话误退掉。
+    if(!opts.noRefund)await refundCurrentSession();
     if(e&&e.name==='AbortError'){var tt=new Error('timeout');tt.timeout=true;throw tt;}
     throw e;
   }finally{clearTimeout(timer2);}
 }
-async function callLLM(system,user){return callLLMChat([{role:'system',content:system},{role:'user',content:user}]);}
+async function callLLM(system,user,opts){return callLLMChat([{role:'system',content:system},{role:'user',content:user}],opts);}
 
 /* ============ Markdown → HTML 渲染 ============ */
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1838,7 +1854,7 @@ function _startGreet(jd,profile){
   var pl=detectLang(jd||profile);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT);
   var user=GREET_PROMPT.replace('{PROFILE}',wrapData('user_resume',profile)).replace('{INPUT}',wrapData('user_jd',jd));
-  callLLM(sys,user).then(function(res){
+  callLLM(sys,user,{noRefund:true}).then(function(res){
     lastRaw=res;
     if(body)body.textContent=extractGreet(res);
   }).catch(function(e){
