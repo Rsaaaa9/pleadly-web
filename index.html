@@ -191,14 +191,6 @@ tr:hover td{background:var(--surface2);}
 .settings-field{margin-bottom:14px;}
 .settings-field label{display:block;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:0.02em;}
 .settings-note{font-size:12px;color:var(--text3);margin-top:14px;line-height:1.55;background:var(--surface2);padding:10px 14px;border-radius:10px;}
-.pro-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius);font-size:11px;font-weight:600;background:var(--text);color:#fff;margin-left:6px;vertical-align:middle;}
-.paywall{margin-top:16px;padding:28px 22px;border-radius:var(--radius);text-align:center;background:var(--surface2);border:1px solid var(--border);}
-.paywall .icon{font-size:34px;}
-.paywall h3{font-size:18px;font-weight:800;margin:10px 0 6px;}
-.paywall p{font-size:13px;color:var(--text2);margin:0 auto 16px;max-width:380px;}
-.paywall .pay-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
-.paywall .license-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
-.paywall .license-row input{width:230px;}
 .know-card{padding:16px 18px;}
 .know-body{margin-top:10px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text2);}
 .extra-body{display:flex;flex-direction:column;gap:14px;}
@@ -982,15 +974,9 @@ zh:{
  'settings.title':'设置','settings.apiKey':'API Key','settings.apiKey.ph':'粘贴你的 API Key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'自定义 Custom',
  'settings.model':'模型 Model','settings.model.ph':'deepseek-chat',
- 'settings.license':'激活码 License','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
  'settings.save':'保存','settings.privacy':'你的 API Key 只保存在浏览器本地，仅直接发送给你选择的模型厂商，不会经过 Pleadly 的任何服务器。',
- 'settings.pro':'Pro','settings.free':'免费版',
  'key.ph':'粘贴 API Key','key.saved':'API Key 已更新',
- 'license.invalid':'激活码无效','license.valid':'Pro 已解锁',
- 'guard.inject':'检测到可疑指令内容，已拦截','guard.len':'输入过长，已截断','guard.limit':'今日免费次数已用完，明日再来或解锁 Pro','guard.leak':'检测到输出可能泄露系统提示词',
- 'paywall.howto':'激活码请向作者获取',
- 'paywall.title':'前 2 步已免费生成','paywall.desc':'解锁全部分析：JD拆解 / 简历诊断改写 / 学习计划 / 面试准备',
- 'paywall.upgrade':'升级 Pro','paywall.havekey':'已有激活码？','paywall.activate':'激活',
+ 'guard.inject':'检测到可疑指令内容，已拦截','guard.len':'输入过长，已截断','guard.limit':'今日免费次数已用完，明日再来或兑换积分','guard.leak':'检测到输出可能泄露系统提示词',
  'needkey':'请先在上方输入框填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
  'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
  'err.timeout':'请求超时：模型响应过慢或网络卡顿，请重试或检查网络/换用更快模型。',
@@ -1064,15 +1050,9 @@ en:{
  'settings.title':'Settings','settings.apiKey':'API Key','settings.apiKey.ph':'Paste your API key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'Custom',
  'settings.model':'Model','settings.model.ph':'deepseek-chat',
- 'settings.license':'License Key','settings.license.ph':'PLD-XXXXXXXX-XXXXXXXX',
  'settings.save':'Save','settings.privacy':'Your API key is stored only in your browser and sent directly to your chosen provider. It never touches Pleadly servers.',
- 'settings.pro':'Pro','settings.free':'Free',
  'key.ph':'API Key','key.saved':'API Key updated',
- 'license.invalid':'Invalid license key','license.valid':'Pro unlocked',
- 'guard.inject':'Suspicious instruction content detected — blocked','guard.len':'Input too long — truncated','guard.limit':'Daily free limit reached — come back tomorrow or unlock Pro','guard.leak':'Output may contain a leaked system prompt',
- 'paywall.howto':'Get an activation code from the author',
- 'paywall.title':'First 2 steps generated free','paywall.desc':'Unlock the comprehensive analysis: JD breakdown / resume tailoring / study plan / interview prep',
- 'paywall.upgrade':'Upgrade to Pro','paywall.havekey':'Already have a key?','paywall.activate':'Activate',
+ 'guard.inject':'Suspicious instruction content detected — blocked','guard.len':'Input too long — truncated','guard.limit':'Daily free limit reached — come back tomorrow or redeem points','guard.leak':'Output may contain a leaked system prompt',
  'needkey':'Please enter your API key in the box above','err.invalidkey':'Invalid API key or insufficient balance (401)',
  'err.cors':'Call failed: the provider may not allow browser calls (CORS), or network error. Try DeepSeek / OpenAI which support browser calls.',
  'err.timeout':'Request timed out: the model responded too slowly or the network stalled. Retry, or check the network / switch to a faster model.',
@@ -1254,13 +1234,6 @@ function updatePointsUI(){
   var s=document.getElementById('set-balance');if(s)s.textContent=getBalance();
 }
 function spendPoints(cost){if(FREE_MODE)return true;updatePointsUI();return true;}
-// 兑换码哈希白名单：key = sha256(码的大写形式)，value = 积分面额。用 tools/gen-license.js 重新生成你自己的码。
-var CODE_POINTS={
-'9e04803d8296b8c83e1e48e142191dc8d61cf50ce82b7ba9fdb3254ff86ff457':50,
-'1a521acbf727ec659ead021af272957fef179a434ccddb343d2b09be84582e0c':100,
-'96e9612b2c42946da6b4198487795bd91dfff55e5c651fa37948c19ed16a21d4':200,
-'8866207e332bf10b54b4dbbbd0f63372bd0e2e484ed1f516efd47c6dcf4770ad':20
-};
 async function redeemCode(code){
   code=(code||'').trim().toUpperCase().replace(/\s+/g,'');
   if(FREE_MODE)return {ok:false,reason:'invalid'}; // 免费版无需兑换码
@@ -1281,36 +1254,6 @@ async function redeem(){
   showToast(t('pts.redeemed').replace('{N}',r.pts),false);
 }
 function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';_sessionPromise=null;if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
-
-// SHA-256（纯 JS，仅 ASCII；与 tools/gen-license.js 的 Node crypto 结果一致）
-function sha256(ascii){
-  function rr(v,a){return (v>>>a)|(v<<(32-a));}
-  var maxWord=Math.pow(2,32),i,j,result='';
-  var words=[],bitLen=ascii.length*8;
-  var hash=sha256.h=sha256.h||[],k=sha256.k=sha256.k||[],primeCounter=k.length;
-  var isComposite={};
-  for(var c=2;primeCounter<64;c++){if(!isComposite[c]){for(i=0;i<313;i+=c)isComposite[i]=c;hash[primeCounter]=(Math.pow(c,.5)*maxWord)|0;k[primeCounter++]=(Math.pow(c,1/3)*maxWord)|0;}}
-  ascii+='\x80';
-  while(ascii.length%64-56)ascii+='\x00';
-  for(i=0;i<ascii.length;i++){j=ascii.charCodeAt(i);if(j>>8)return '';words[i>>2]|=j<<((3-i)%4)*8;}
-  words[words.length]=((bitLen/maxWord)|0);
-  words[words.length]=bitLen;
-  for(j=0;j<words.length;){
-    var w=words.slice(j,j+=16),oldHash=hash;
-    hash=hash.slice(0,8);
-    for(i=0;i<64;i++){
-      var w15=w[i-15],w2=w[i-2];
-      var a=hash[0],e=hash[4];
-      var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
-      var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
-      hash=[(t1+t2)|0].concat(hash);
-      hash[4]=(hash[4]+t1)|0;
-    }
-    for(i=0;i<8;i++)hash[i]=(hash[i]+oldHash[i])|0;
-  }
-  for(i=0;i<8;i++)for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}
-  return result;
-}
 /* ============ 账号 + 个人页 + 头像 + 设置 ============ */
 function authAccount(){return localStorage.getItem('p_account')||'';}
 function setAuthTab(tab){

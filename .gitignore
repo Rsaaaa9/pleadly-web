@@ -10,3 +10,7 @@ node_modules/
 
 # 学校层级名单（含作者学校，仅存 KV，绝不提交到仓库）
 backend/school-tiers.json
+
+# 发货工具的后端管理密钥 + 发货流水（本地，绝不提交）
+tools/.admin-secret
+tools/issued-codes.txt
