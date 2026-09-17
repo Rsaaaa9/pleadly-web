@@ -1246,12 +1246,17 @@ async function redeemCode(code){
     return {ok:true,pts:d.added};
   }catch(e){return {ok:false,reason:'invalid'};}
 }
+var _redeeming=false;
 async function redeem(){
+  if(_redeeming)return;
   var code=document.getElementById('set-redeem').value;
-  var r=await redeemCode(code);
-  if(!r.ok){showToast(t(r.reason==='used'?'pts.used':'pts.invalid'),true);return;}
-  document.getElementById('set-redeem').value='';
-  showToast(t('pts.redeemed').replace('{N}',r.pts),false);
+  _redeeming=true;
+  try{
+    var r=await redeemCode(code);
+    if(!r.ok){showToast(t(r.reason==='used'?'pts.used':'pts.invalid'),true);return;}
+    document.getElementById('set-redeem').value='';
+    showToast(t('pts.redeemed').replace('{N}',r.pts),false);
+  }finally{_redeeming=false;}
 }
 function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';_sessionPromise=null;if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
 /* ============ 账号 + 个人页 + 头像 + 设置 ============ */

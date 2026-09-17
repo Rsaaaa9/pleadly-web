@@ -178,7 +178,7 @@ async function spend(env, owner, cost) {
 
 // 把设备上的付费分 + 免费分并入账号（免费分保留原 7 天过期），设备账本清零防双花
 async function mergeIntoAccount(env, deviceId, accountId) {
-  await ensureFree(env, deviceId);
+  // 只并入设备「已有」余额，绝不在合并时凭空授予免费分（防脚本用新 deviceId 刷免费分）
   const paid = await getPaid(env, deviceId);
   const free = await getFree(env, deviceId);
 
@@ -323,7 +323,7 @@ export default {
       const body = await request.json().catch(() => ({}));
       const deviceId = (body.deviceId || '').toString().slice(0, 64);
       const token = (body.token || '').toString().slice(0, 80);
-      const cost = Math.max(0, parseInt(body.cost || '0', 10) || 0);
+      const cost = Math.min(10, Math.max(1, parseInt(body.cost || '0', 10) || 0)); // 服务端钳制 1..10，杜绝 cost=0 白嫖会话
       if (!deviceId) return json({ error: 'missing deviceId' }, 400);
 
       // IP 限流：防脚本拿免费分刷 API（同一 IP 每小时开会话数上限）
