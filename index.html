@@ -480,10 +480,10 @@ body.standalone .page{max-width:none;padding:0;}
   <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>像真面试一样多轮对话，随时追问、即时点评，结束给你一份复盘总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>10</span></div>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.jd">岗位 JD（可选）</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.jd">岗位 JD（粘贴或从报告库选取）</span>
       <button class="btn btn-ghost btn-sm" onclick="openPicker('single','mock')" data-i18n="pick.fromrep">从报告库选取</button>
     </div>
-    <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;"></textarea>
+    <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD，或从报告库选取一份报告（二选一必填）..." style="min-height:64px;"></textarea>
     <div id="mock-report-tag" style="display:none;margin-top:8px;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
       <span>📄</span>
       <span data-i18n="mock.report">已选取报告：</span>
@@ -1024,9 +1024,9 @@ zh:{
  'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
  'pick.title':'从报告库选取','pick.hint.single':'选择 1 份分析报告','pick.hint.multi':'至少选择 2 份分析报告','pick.cancel':'取消','pick.confirm':'确认','pick.need1':'请先选择 1 份报告','pick.need2':'请至少选择 2 份报告','pick.noreport':'报告库还是空的，先完成一次全面分析吧','pick.filled':'已填入对应岗位 JD','pick.fromrep':'从报告库选取',
  'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'想怎么回答？写下来，我会接着追问...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
- 'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了问题会更有针对性）...',
+ 'mock.jd':'岗位 JD（粘贴或从报告库选取）','mock.jd.ph':'粘贴岗位 JD，或从报告库选取一份报告（二选一必填）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在为你准备下一道题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除','mock.end.confirm':'还有 {n} 次问答未用完，提前结束将作废这 {n} 次机会。确定结束并总结吗？','mock.again':'还想再练一遍「{stage}」面试吗？','mock.replay':'练习之前问过的题','mock.fresh':'重新出题',
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.needsource':'请粘贴岗位 JD，或从报告库选取一份分析报告，再开始模拟面试','mock.running':'正在为你准备下一道题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除','mock.end.confirm':'还有 {n} 次问答未用完，提前结束将作废这 {n} 次机会。确定结束并总结吗？','mock.again':'还想再练一遍「{stage}」面试吗？','mock.replay':'练习之前问过的题','mock.fresh':'重新出题',
  'tools.title':'工具','tools.subtitle':'独立小工具，按需取用，不影响完整分析流程',
  'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
@@ -1101,9 +1101,9 @@ en:{
  'tools.greet.desc':'Paste a JD → greeting + match points + risk notes',
  'pick.title':'Select from Reports','pick.hint.single':'Select 1 analysis report','pick.hint.multi':'Select at least 2 analysis reports','pick.cancel':'Cancel','pick.confirm':'Confirm','pick.need1':'Select one report first','pick.need2':'Select at least two reports','pick.noreport':'No reports yet — run a comprehensive analysis first','pick.filled':'Filled the matching JD','pick.fromrep':'Pick from Reports',
  'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'How would you answer? Write it out and I will follow up...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
- 'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional — questions will be more targeted)...',
+ 'mock.jd':'Job JD (paste, or pick a report)','mock.jd.ph':'Paste the JD, or pick a report from the library (one is required)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Preparing your next question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear','mock.end.confirm':'{n} round(s) left - ending early will forfeit them. End and summarize anyway?','mock.again':'Want to practice the {stage} interview again?','mock.replay':'Re-practice previous questions','mock.fresh':'New questions',
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.needsource':'Paste a job description, or pick a report from the library, before starting the mock interview','mock.running':'Preparing your next question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear','mock.end.confirm':'{n} round(s) left - ending early will forfeit them. End and summarize anyway?','mock.again':'Want to practice the {stage} interview again?','mock.replay':'Re-practice previous questions','mock.fresh':'New questions',
  'tools.title':'Tools','tools.subtitle':'Standalone tools — grab one when you need it, without touching the full analysis',
  'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
@@ -2571,6 +2571,7 @@ function mockSystem(extraNote){
   var jd=document.getElementById('mock-jd').value.trim();
   var profile=getProfileText();
   if(!profile){showToast(t('mock.needjd'),true);return null;}
+  if(!jd && !mockReportId){showToast(t('mock.needsource'),true);return null;}
   var pl=detectLang(jd||profile);
   var stage=document.getElementById('mock-phase').value;
   _mockStage=stage;
