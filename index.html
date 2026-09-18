@@ -515,6 +515,13 @@ body.standalone .page{max-width:none;padding:0;}
       <span data-i18n="mock.limit">本次面试问答次数已用完，继续需再付 10 积分</span>
       <button class="btn btn-primary btn-sm" onclick="mockContinue()"><span data-i18n="mock.continue">继续面试</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>10</span></button>
     </div>
+    <div id="mock-after-summary" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--separator);font-size:13px;color:var(--text2);align-items:center;gap:10px;flex-wrap:wrap;">
+      <span id="mock-again-text"></span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="mockContinueReplay()"><span data-i18n="mock.replay">练习之前问过的题</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>10</span></button>
+        <button class="btn btn-secondary btn-sm" onclick="mockContinueFresh()"><span data-i18n="mock.fresh">重新出题</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>10</span></button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1029,7 +1036,7 @@ zh:{
  'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'想怎么回答？写下来，我会接着追问...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了问题会更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在为你准备下一道题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除',
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在为你准备下一道题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除','mock.end.confirm':'还有 {n} 次问答未用完，提前结束将作废这 {n} 次机会。确定结束并总结吗？','mock.again':'还想再练一遍「{stage}」面试吗？','mock.replay':'练习之前问过的题','mock.fresh':'重新出题',
  'tools.title':'工具','tools.subtitle':'独立小工具，按需取用，不影响完整分析流程',
  'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
@@ -1106,7 +1113,7 @@ en:{
  'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'How would you answer? Write it out and I will follow up...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional — questions will be more targeted)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Preparing your next question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear',
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Preparing your next question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear','mock.end.confirm':'{n} round(s) left - ending early will forfeit them. End and summarize anyway?','mock.again':'Want to practice the {stage} interview again?','mock.replay':'Re-practice previous questions','mock.fresh':'New questions',
  'tools.title':'Tools','tools.subtitle':'Standalone tools — grab one when you need it, without touching the full analysis',
  'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
@@ -2553,6 +2560,7 @@ function autosizeMock(el){
   el.style.height=el.scrollHeight+'px';
 }
 var mockRounds=0,MOCK_LIMIT=7;
+var _mockSysBase='',_mockLang='zh',_mockPrevTranscript='',_mockStage='hr';
 function saveMockHist(){try{var arr=[];for(var i=0;i<mockMessages.length;i++){if(mockMessages[i].role!=='system')arr.push(mockMessages[i]);}localStorage.setItem('pmock_v1',JSON.stringify(arr));}catch(e){}}
 function restoreMockHist(){try{var arr=JSON.parse(localStorage.getItem('pmock_v1')||'null');if(!arr||!arr.length)return;var log=document.getElementById('mock-log');if(!log)return;log.innerHTML='';for(var i=0;i<arr.length;i++){var m=arr[i];var d=document.createElement('div');d.className='mock-msg mock-'+(m.role==='user'?'user':'ai');d.textContent=m.content;log.appendChild(d);}}catch(e){}}
 function mockBudgetText(){return t('mock.budget').replace('{n}',Math.max(0,MOCK_LIMIT-mockRounds));}
@@ -2569,12 +2577,14 @@ function mockContinue(){
   setMockLimited(false);
   setBot(t('bot.ready'));
 }
-function mockSystem(){
+function mockSystem(extraNote){
   var jd=document.getElementById('mock-jd').value.trim();
   var profile=getProfileText();
   if(!profile){showToast(t('mock.needjd'),true);return null;}
   var pl=detectLang(jd||profile);
   var stage=document.getElementById('mock-phase').value;
+  _mockStage=stage;
+  _mockLang=pl;
   var stageLabel=(I18N[pl]&&I18N[pl]['mock.ph.'+stage])||stage;
   var reportFull='';
   var r=reportById(mockReportId);
@@ -2584,6 +2594,7 @@ function mockSystem(){
     .replace(/\{RESUME\}/g,wrapData('user_resume',profile))
     .replace(/\{REPORT\}/g,reportFull?wrapData('user_report',reportFull):'(none)')
     +memorySummary(pl);
+  if(extraNote)sys+=' '+extraNote;
   var first=pl==='en'?('Start the mock interview. Stage: '+stageLabel+'.'):('开始模拟面试。阶段：'+stageLabel+'。');
   return [{role:'system',content:sys},{role:'user',content:first}];
 }
@@ -2603,16 +2614,19 @@ function mockAdd(role,text){
   log.scrollTop=log.scrollHeight;
   saveMockHist();
 }
-async function mockStart(){
-  var base=mockSystem();if(!base)return;
+async function mockStart(extraNote){
+  var base=mockSystem(extraNote);if(!base)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
   if(!requirePoints(10,'mock'))return;
   setBusy(true);
   mockMessages=base;
   mockRounds=0;
+  _mockSysBase=base[0].content;
   try{localStorage.removeItem('pmock_v1');}catch(e){}
   document.getElementById('mock-log').innerHTML='';
   setMockLimited(false);
+  hideMockAfterSummary();
+  injectMockBudget(MOCK_LIMIT);
   updateMockBudget();
   setBot(t('mock.running'));
   try{
@@ -2632,6 +2646,7 @@ async function mockSend(){
   autosizeMock(mi);
   if(!mockMessages.length){await mockStart();return;}
   mockRounds++;
+  injectMockBudget(MOCK_LIMIT-mockRounds);
   updateMockBudget();
   mockAdd('user',v);
   setBusy(true);
@@ -2641,16 +2656,90 @@ async function mockSend(){
     mockAdd('assistant',res);
     setBot(t('bot.done'));
     if(mockRounds>=MOCK_LIMIT){setMockLimited(true);}
-  }catch(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}
+  }catch(e){
+    mockRounds--;
+    injectMockBudget(MOCK_LIMIT-mockRounds);
+    updateMockBudget();
+    mockAdd('assistant',errMsg(e));
+    setBot(t('bot.offline'));
+  }
   finally{setBusy(false);}
 }
 function mockEnd(){
   if(!mockMessages.length){closeMock();return;}
+  var remaining=MOCK_LIMIT-mockRounds;
+  if(remaining>0){if(!confirm(t('mock.end.confirm').split('{n}').join(remaining)))return;}
+  _mockPrevTranscript=mockTranscriptText();
   var pl=detectLang((mockMessages[0]&&mockMessages[0].content)||'');
+  if(mockMessages[0]&&mockMessages[0].role==='system'&&_mockSysBase)mockMessages[0].content=_mockSysBase;
   mockAdd('user',pl==='en'?'End the interview and summarize.':'结束面试并给出总结。');
   setBusy(true);
   setBot(t('mock.running'));
-  callLLMChat(mockMessages).then(function(res){mockAdd('assistant',res);addMem('mock',res.slice(0,8000));setBot(t('bot.done'));}).catch(function(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}).then(function(){setBusy(false);});
+  callLLMChat(mockMessages).then(function(res){
+    mockAdd('assistant',res);
+    addMem('mock',res.slice(0,8000));
+    setBot(t('bot.done'));
+    mockSetDone();
+  }).catch(function(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}).then(function(){setBusy(false);});
+}
+function mockBudgetNote(remaining){
+  if(_mockLang==='en')return ' [Turn budget] This interview has '+MOCK_LIMIT+' Q&A rounds in total, '+remaining+' round(s) left. '+(remaining>0?'Keep interviewing: give feedback then ask or follow up the next question - do not end or summarize early.':'This is the final round. After your feedback, give the closing summary (3 things to improve + 3 things done well).');
+  return ' 【问答次数】本次面试共 '+MOCK_LIMIT+' 轮问答，还剩 '+remaining+' 轮。'+(remaining>0?'请继续点评并追问或出下一题，绝不要提前结束或总结。':'本轮是最后一次问答，请点评后直接给出收尾总结（3 个最需改进 + 3 个做得好）。');
+}
+function injectMockBudget(remaining){
+  if(!mockMessages.length)return;
+  if(!_mockSysBase){_mockSysBase=mockMessages[0].content;_mockLang=detectLang(mockMessages[0].content);}
+  if(mockMessages[0]&&mockMessages[0].role==='system')mockMessages[0].content=_mockSysBase+mockBudgetNote(remaining);
+}
+function mockTranscriptText(){
+  var out=[];
+  for(var i=0;i<mockMessages.length;i++){
+    var m=mockMessages[i];
+    if(m.role==='system')continue;
+    var pre=m.role==='user'?(_mockLang==='en'?'Candidate: ':'候选人：'):(_mockLang==='en'?'Interviewer: ':'面试官：');
+    out.push(pre+m.content);
+  }
+  return out.join(' | ');
+}
+function mockContinuationNote(mode){
+  var stage=document.getElementById('mock-phase').value;
+  var label=(I18N[_mockLang]&&I18N[_mockLang]['mock.ph.'+stage])||stage;
+  var sep=(_mockLang==='en'?' [Previously asked questions (for reference)] ':' 【已问过的题（供参考）】')+(_mockPrevTranscript||mockTranscriptText());
+  if(mode==='replay'){
+    return (_mockLang==='en'
+      ?'The user wants to practice the same '+label+' questions again. Re-ask each question you asked before, in the same order (you may reword slightly). Ignore their previous answers and let them answer fresh.'
+      :'用户想再练一遍「'+label+'」阶段之前问过的题。请按原来顺序把每一道题再问一遍（措辞可微调）。忽略候选人之前的回答，让用户重新作答。')+sep;
+  }
+  return (_mockLang==='en'
+    ?'The user wants a fresh set of '+label+' questions. Do not repeat any question already asked; generate entirely new questions (you may vary angle or difficulty).'
+    :'用户想换一批「'+label+'」阶段的新题。请不要重复之前问过的任何题，全部换新的题（可换角度或难度）。')+sep;
+}
+function showMockAfterSummary(){
+  var p=document.getElementById('mock-after-summary');
+  if(p)p.style.display='flex';
+  var againEl=document.getElementById('mock-again-text');
+  if(againEl){
+    var label=(I18N[lang]&&I18N[lang]['mock.ph.'+_mockStage])||_mockStage;
+    againEl.textContent=t('mock.again').replace('{stage}',label);
+  }
+}
+function hideMockAfterSummary(){
+  var p=document.getElementById('mock-after-summary');
+  if(p)p.style.display='none';
+}
+function mockContinueReplay(){
+  if(!_mockPrevTranscript)_mockPrevTranscript=mockTranscriptText();
+  mockStart(mockContinuationNote('replay'));
+}
+function mockContinueFresh(){
+  if(!_mockPrevTranscript)_mockPrevTranscript=mockTranscriptText();
+  mockStart(mockContinuationNote('fresh'));
+}
+function mockSetDone(){
+  var inp=document.getElementById('mock-input');if(inp)inp.disabled=true;
+  var send=document.getElementById('mock-send');if(send)send.disabled=true;
+  var hint=document.getElementById('mock-limit-hint');if(hint)hint.style.display='none';
+  showMockAfterSummary();
 }
 
 /* ============ 功能页配置 + 侧边栏 ============ */
