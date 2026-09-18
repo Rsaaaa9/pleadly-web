@@ -483,7 +483,10 @@ body.standalone .page{max-width:none;padding:0;}
 <div class="page" id="page-mock">
   <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>5</span></div>
   <div class="card">
-    <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;" data-i18n="mock.jd">岗位 JD（可选）</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+      <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.jd">岗位 JD（可选）</span>
+      <button class="btn btn-ghost btn-sm" onclick="openPicker('single','mock')" data-i18n="pick.fromrep">从报告库选取</button>
+    </div>
     <textarea id="mock-jd" data-i18n-ph="mock.jd.ph" placeholder="粘贴岗位 JD（可选，填了更有针对性）..." style="min-height:64px;"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;">
       <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.phase">面试阶段</span>
@@ -2375,6 +2378,11 @@ function applyPicked(ids){
   if(pickerTarget==='build'){
     var b=document.getElementById('build-jd');
     if(b)b.value=reportText(reportById(ids[0]));
+    return;
+  }
+  if(pickerTarget==='mock'){
+    var m=document.getElementById('mock-jd');
+    if(m)m.value=reportText(reportById(ids[0]));
     return;
   }
 }
