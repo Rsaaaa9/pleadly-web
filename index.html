@@ -218,8 +218,8 @@ tr:hover td{background:var(--surface2);}
 .mock-msg{max-width:82%;padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
 .mock-user{align-self:flex-end;background:var(--text);color:#fff;border-bottom-right-radius:6px;}
 .mock-ai{align-self:flex-start;background:var(--surface3);color:var(--text);border-bottom-left-radius:6px;}
-.mock-input{display:flex;gap:8px;}
-.mock-input input{flex:1;}
+.mock-input{display:flex;gap:8px;align-items:flex-end;}
+.mock-input textarea{flex:1;min-height:40px;max-height:180px;resize:none;overflow-y:auto;border-radius:18px;padding:10px 14px;line-height:1.45;background:var(--surface);font-size:14px;}
 .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:4px;}
 .tool-card{cursor:pointer;padding:22px;transition:background-color 0.15s;}
 .tool-card:hover{background:var(--surface2);}
@@ -481,7 +481,7 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 模拟面试 -->
 <div class="page" id="page-mock">
-  <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>5</span></div>
+  <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>10</span></div>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
       <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.jd">岗位 JD（可选）</span>
@@ -508,12 +508,12 @@ body.standalone .page{max-width:none;padding:0;}
     </div>
     <div class="mock-log" id="mock-log"></div>
     <div class="mock-input">
-      <input type="text" id="mock-input" data-i18n-ph="mock.ph" placeholder="输入你的回答..." onkeydown="if(event.key==='Enter')mockSend()">
+      <textarea id="mock-input" rows="1" data-i18n-ph="mock.ph" placeholder="输入你的回答..." oninput="autosizeMock(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();mockSend();}"></textarea>
       <button class="btn btn-primary" id="mock-send" onclick="mockSend()" data-i18n="mock.send">发送</button>
     </div>
     <div id="mock-limit-hint" style="display:none;margin-top:10px;font-size:13px;color:var(--text2);align-items:center;gap:10px;flex-wrap:wrap;">
-      <span data-i18n="mock.limit">本次面试问答次数已用完，继续需再付 5 积分</span>
-      <button class="btn btn-primary btn-sm" onclick="mockContinue()"><span data-i18n="mock.continue">继续面试</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>5</span></button>
+      <span data-i18n="mock.limit">本次面试问答次数已用完，继续需再付 10 积分</span>
+      <button class="btn btn-primary btn-sm" onclick="mockContinue()"><span data-i18n="mock.continue">继续面试</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>10</span></button>
     </div>
   </div>
 </div>
@@ -807,7 +807,7 @@ body.standalone .page{max-width:none;padding:0;}
       <li>全面分析：10 积分/次（完整流程，可分步单独使用）</li>
       <li>职业定位：10 积分/次（4 步，可分步单独使用）</li>
       <li>离职指南：4 积分/次　在职帮助：5 积分/次</li>
-      <li>简历诊断改写：3 积分　简历定制：3 积分　模拟面试：5 积分/场　Offer 谈判：3 积分　入职指南：3 积分</li>
+      <li>简历诊断改写：3 积分　简历定制：3 积分　模拟面试：10 积分/场　Offer 谈判：3 积分　入职指南：3 积分</li>
       <li>匹配度评分 / JD 深度拆解 / 差距学习计划 / 面试准备题库：各 2 积分</li>
       <li>岗位优先级排序：2 积分</li>
       <li>ATS 关键词检测 / 招呼语生成：各 1 积分</li>
@@ -1023,7 +1023,7 @@ zh:{
  'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
  'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 5 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除',
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除',
  'tools.title':'工具','tools.subtitle':'独立工具，按需使用，不参与全面分析',
  'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
@@ -1100,7 +1100,7 @@ en:{
  'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
  'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 5 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear',
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear',
  'tools.title':'Tools','tools.subtitle':'Standalone tools — use as needed, not part of the comprehensive analysis',
  'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
@@ -2542,6 +2542,10 @@ function mockClearReport(){
   mockReportId='';
   mockReportTag();
 }
+function autosizeMock(el){
+  el.style.height='auto';
+  el.style.height=el.scrollHeight+'px';
+}
 var mockRounds=0,MOCK_LIMIT=7;
 function saveMockHist(){try{var arr=[];for(var i=0;i<mockMessages.length;i++){if(mockMessages[i].role!=='system')arr.push(mockMessages[i]);}localStorage.setItem('pmock_v1',JSON.stringify(arr));}catch(e){}}
 function restoreMockHist(){try{var arr=JSON.parse(localStorage.getItem('pmock_v1')||'null');if(!arr||!arr.length)return;var log=document.getElementById('mock-log');if(!log)return;log.innerHTML='';for(var i=0;i<arr.length;i++){var m=arr[i];var d=document.createElement('div');d.className='mock-msg mock-'+(m.role==='user'?'user':'ai');d.textContent=m.content;log.appendChild(d);}}catch(e){}}
@@ -2554,7 +2558,7 @@ function setMockLimited(on){
   var b=document.getElementById('mock-budget');if(b)b.textContent=on?t('mock.limit'):mockBudgetText();
 }
 function mockContinue(){
-  if(!requirePoints(5,'mock'))return;
+  if(!requirePoints(10,'mock'))return;
   mockRounds=0;
   setMockLimited(false);
   setBot(t('bot.ready'));
@@ -2596,7 +2600,7 @@ function mockAdd(role,text){
 async function mockStart(){
   var base=mockSystem();if(!base)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(5,'mock'))return;
+  if(!requirePoints(10,'mock'))return;
   setBusy(true);
   mockMessages=base;
   mockRounds=0;
@@ -2608,7 +2612,7 @@ async function mockStart(){
   try{
     var res=await callLLMChat(mockMessages);
     mockAdd('assistant',res);
-    spendPoints(5);
+    spendPoints(10);
     setBot(t('bot.done'));
   }catch(e){mockAdd('assistant',errMsg(e));setBot(t('bot.offline'));}
   finally{setBusy(false);}
@@ -2617,7 +2621,9 @@ async function mockSend(){
   if(mockRounds>=MOCK_LIMIT){setMockLimited(true);return;}
   var v=document.getElementById('mock-input').value.trim();
   if(!v)return;
-  document.getElementById('mock-input').value='';
+  var mi=document.getElementById('mock-input');
+  mi.value='';
+  autosizeMock(mi);
   if(!mockMessages.length){await mockStart();return;}
   mockRounds++;
   updateMockBudget();
@@ -2677,7 +2683,7 @@ var FEATURES=[
   {key:'position',group:'explore',ic:'compass',title:{zh:'职业定位',en:'Career Positioning'},cost:10,special:'position'},
   {key:'rank',group:'execute',ic:'chart',tone:'#0891b2',title:{zh:'岗位优先级排序',en:'Job Priority Ranking'},cost:2,input:'text',kind:'extra',ekey:'5',pick:true,desc:{zh:'多岗位六维排序+精力分配建议',en:'Rank roles on 6 dimensions + effort allocation'}},
   {key:'greet',group:'execute',ic:'mail',tone:'#c0501f',title:{zh:'招呼语生成',en:'Greeting'},cost:1,input:'jd',kind:'greet',pick:true,desc:{zh:'生成可直接发给HR的招呼语',en:'A greeting ready to send to HR'}},
-  {key:'mock',group:'offer',ic:'chat',title:{zh:'模拟面试',en:'Mock Interview'},cost:5,special:'mock'},
+  {key:'mock',group:'offer',ic:'chat',title:{zh:'模拟面试',en:'Mock Interview'},cost:10,special:'mock'},
   {key:'offer',group:'offer',ic:'coin',tone:'#c0501f',title:{zh:'Offer谈判',en:'Offer Negotiation'},cost:3,input:'text',kind:'extra',ekey:'9',pick:true,desc:{zh:'逐项谈判策略+可直接复制的消息模板',en:'Per-item strategy + ready-to-send scripts'}},
   {key:'onboard',group:'onoff',ic:'send',tone:'#059669',title:{zh:'入职指南',en:'Onboarding'},cost:3,input:'text',kind:'extra',ekey:'10',pick:true,desc:{zh:'入职前30天生存指南',en:'First-30-days onboarding guide'}},
   {key:'resign',group:'onoff',ic:'logout',tone:'#dc2626',title:{zh:'离职指南',en:'Resignation Guide'},cost:4,special:'resign'},
