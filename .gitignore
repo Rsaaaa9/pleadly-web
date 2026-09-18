@@ -16,3 +16,8 @@ tools/.admin-secret
 tools/issued-codes.txt
 发货工具.bat
 码池管理.html
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

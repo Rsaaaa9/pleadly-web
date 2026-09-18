@@ -463,10 +463,10 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 简历定制 -->
 <div class="page" id="page-build">
-  <div class="page-header"><h2 data-i18n="resume.build">简历定制</h2><p>把你做过的事，重写成目标岗位想要的样子</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>3</span></div>
+  <div class="page-header"><h2 data-i18n="resume.build">简历定制</h2><p>把你做过的事，重写成目标岗位真正想要的样子</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>3</span></div>
   <div class="card">
     <div class="card-header">目标岗位 JD 或方向</div>
-    <textarea id="build-jd" placeholder="贴一段 JD，或只写一个方向（如「用户研究员」）" style="min-height:110px;"></textarea>
+    <textarea id="build-jd" placeholder="贴一段 JD，或只写一个方向，比如「用户研究员」" style="min-height:110px;"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="runResumeBuild()" data-i18n="resume.generate">生成简历</button>
       <button class="btn btn-ghost" onclick="openPicker('single','build')" data-i18n="pick.fromrep">从报告库选取</button>
@@ -481,7 +481,7 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 模拟面试 -->
 <div class="page" id="page-mock">
-  <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>多轮模拟面试，可追问、即时点评、结束给总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>10</span></div>
+  <div class="page-header"><h2 data-i18n="mock.title">模拟面试</h2><p>像真面试一样多轮对话，随时追问、即时点评，结束给你一份复盘总结</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>10</span></div>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
       <span style="font-size:12px;font-weight:600;color:var(--text3);" data-i18n="mock.jd">岗位 JD（可选）</span>
@@ -553,8 +553,14 @@ body.standalone .page{max-width:none;padding:0;}
 <div class="page active" id="page-home">
   <div class="landing">
     <div class="landing-logo">Pleadly</div>
+    <div class="landing-tag" data-i18n="home.tagline">你的 AI 求职教练——从定位方向、读懂 JD、打磨简历，到面试、谈薪、入职离职，全程陪你走完。</div>
+    <div class="landing-feats">
+      <div class="landing-feat"><b data-i18n="home.f1.t">10 步全流程</b><span data-i18n="home.f1.d">从 ATS 到 Offer 谈判、入职离职，一站式走完</span></div>
+      <div class="landing-feat"><b data-i18n="home.f2.t">只存本机</b><span data-i18n="home.f2.d">你的简历与记忆留在浏览器，绝不上传</span></div>
+      <div class="landing-feat"><b data-i18n="home.f3.t">按次付费</b><span data-i18n="home.f3.d">用多少付多少，积分明码标价</span></div>
+    </div>
     <div class="landing-cta">
-      <button class="btn btn-primary" onclick="startJourney()" data-i18n="home.cta.start">→ 开启你的职业旅程</button>
+      <button class="btn btn-primary" onclick="startJourney()" data-i18n="home.cta.start">→ 开启你的求职之旅</button>
     </div>
     <div class="landing-contact">
       <div data-i18n="home.contact.title">联系我们</div>
@@ -709,7 +715,7 @@ body.standalone .page{max-width:none;padding:0;}
 <div class="page" id="page-resign">
   <div class="page-header"><h2 data-i18n="resign.title">离职指南</h2><p data-i18n="resign.subtitle">按时间线收集关键信息，生成一份个人离职计划 + 时间线 + 全套文书</p><span class="cost-badge"><svg class="ic"><use href="#i-coin"/></svg>4</span></div>
   <div class="card">
-    <div class="card-header" data-i18n="resign.form.title">离职信息（逐项填写，用于法律条件分支）</div>
+    <div class="card-header" data-i18n="resign.form.title">离职信息（逐项填写）</div>
     <div class="settings-field">
       <label data-i18n="resign.f.nca">竞业限制协议</label>
       <select id="resign-nca">
@@ -793,11 +799,11 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 功能与积分规则 -->
 <div class="page" id="page-rules">
-  <div class="page-header"><h2 data-i18n="info.rules">功能与积分规则</h2><p>积分是 Pleadly 内的虚拟计量单位，用于计量可使用的服务次数。</p></div>
+  <div class="page-header"><h2 data-i18n="info.rules">功能与积分规则</h2><p>积分是 Pleadly 里的虚拟计量单位，用来计量你可用的服务次数。</p></div>
   <div class="card info-body">
     <h3>积分规则</h3>
     <ul>
-      <li>积分仅在本服务内使用，不可提现、不可转让。</li>
+      <li>积分仅在本服务内使用，不可提现、不可转让、不可兑换现金，除法律规定或另有约定外不予退款。</li>
       <li>积分兑换码为一次性使用，一经兑换即视为交付完成；一经兑换即失效。</li>
       <li>充值积分永不过期；免费试用的 5 积分自领取起 7 天后过期。</li>
       <li>换设备：注册账号后积分跟随账号跨设备同步；未注册时积分仅跟随当前浏览器。手机号/微信一键登录即将上线，届时跨设备同步更便捷。</li>
@@ -818,16 +824,16 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 使用说明 -->
 <div class="page" id="page-guide">
-  <div class="page-header"><h2 data-i18n="info.guide">使用说明</h2><p>三步上手：上传材料 → 粘贴 JD → 跑分析。</p></div>
+  <div class="page-header"><h2 data-i18n="info.guide">使用说明</h2><p>三步上手：上传材料 → 粘贴 JD → 跑分析，几分钟就能看到第一份报告。</p></div>
   <div class="card info-body">
     <h3>第 1 步 · 上传你的材料</h3>
     <ul><li>进入「信息库」，上传简历 / 作品集 / 项目经历（支持 docx / pdf / txt / md）。AI 会自动分块索引。</li></ul>
     <h3>第 2 步 · 粘贴岗位 JD</h3>
     <ul><li>进入「全面分析」，粘贴目标岗位的 JD，点击「全面分析」。</li></ul>
     <h3>第 3 步 · 使用结果</h3>
-    <ul><li>完整流程约 5-10 分钟，产出匹配评分、简历诊断、学习计划、面试准备、定向简历等。</li><li>报告自动存进「报告仓库」，关键信息自动记入「个人记忆」。</li></ul>
+    <ul><li>完整流程约 5–10 分钟，会产出匹配评分、简历诊断、学习计划、面试准备、定向简历等。</li><li>报告自动存进「报告仓库」，关键信息自动记入「个人记忆」。</li></ul>
     <h3>其他工具</h3>
-    <ul><li>「职业定位」从技能盘点 → 市场扫描 → 转型路径 → 求职计划四步确定方向，适合还没锁定目标岗位的情况。</li><li>「离职指南」生成离职决策自检、法律核查、时间线与全套文书模板。</li><li>「在职帮助」填当前在职信息，生成试用期转正、绩效冲刺、向上管理、加薪晋升的生存与成长计划。</li></ul>
+    <ul><li>「职业定位」从技能盘点 → 市场扫描 → 路线锁定 → 落地执行四步找到方向，适合还没锁定目标岗位的情况。</li><li>「离职指南」生成离职决策自检、法律核查、时间线与全套文书模板。</li><li>「在职帮助」填当前在职信息，生成试用期转正、绩效冲刺、向上管理、加薪晋升的生存与成长计划。</li></ul>
     <h3>获取积分</h3>
     <ul><li>点击右上角头像进入「个人资料」，在「兑换码」输入框粘贴兑换码。兑换码通过小红书 pleadly 或邮箱 pleadly@163.com 获取。</li></ul>
   </div>
@@ -835,12 +841,12 @@ body.standalone .page{max-width:none;padding:0;}
 
 <!-- 常见问题 -->
 <div class="page" id="page-faq">
-  <div class="page-header"><h2 data-i18n="info.faq">常见问题</h2><p>常见问题解答。</p></div>
+  <div class="page-header"><h2 data-i18n="info.faq">常见问题</h2><p>积分、账号与隐私——你可能想知道的，都在这里。</p></div>
   <div class="card info-body">
     <h3>Q：积分会过期吗？</h3><p>A：充值积分永不过期；免费试用的 5 积分自领取起 7 天后过期，过期未用完自动清零。</p>
     <h3>Q：换设备积分会丢吗？</h3><p>A：注册账号后积分跟随账号跨设备同步；未注册时积分跟随当前浏览器。手机号/微信一键登录即将上线，届时跨设备同步更便捷。</p>
     <h3>Q：我的简历会上传吗？</h3><p>A：默认只存你本地浏览器，仅在你发起分析时发送给 AI 模型。</p>
-    <h3>Q：AI 建议能保证找到工作吗？</h3><p>A：不能，仅供求职参考（见免责声明）。</p>
+    <h3>Q：AI 建议能保证找到工作吗？</h3><p>A：不能，所有输出仅供求职参考（见免责声明）。</p>
     <h3>Q：职业定位和全面分析有什么区别？</h3><p>A：全面分析针对「已明确岗位」做求职闭环；职业定位面向「还没确定方向」，帮你从自身技能与市场机会中圈定目标并制定求职计划。</p>
     <h3>Q：注册账号有什么用？</h3><p>A：登录后积分跟随账号，可跨设备使用，还能设置用户名与头像。</p>
     <h3>Q：积分用完了怎么办？</h3><p>A：兑换新的兑换码即可。充值积分永不过期；免费试用的 5 积分自领取起 7 天后过期。</p>
@@ -858,7 +864,7 @@ body.standalone .page{max-width:none;padding:0;}
       <li>若你选择注册账号，我们会存储你设置的账号名与密码的加密哈希（不存储明文密码）。</li>
     </ul>
     <h3>二、信息如何使用</h3>
-    <ul><li>在你发起分析时，你选择的信息库内容与岗位 JD 会被发送给第三方大模型服务（DeepSeek）用于生成分析结果。我们不会将这些内容用于模型训练以外的任何用途，也不会出售、出租你的任何信息。</li></ul>
+    <ul><li>在你发起分析时，你选择的信息库内容与岗位 JD 会被发送给第三方大模型服务（DeepSeek）用于生成分析结果。我们不会将这些内容用于生成分析结果以外的任何用途，也不会出售、出租你的任何信息。</li></ul>
     <h3>三、信息如何存储与保护</h3>
     <ul>
       <li>本地信息由你的浏览器保管，你随时可清空浏览器数据删除。</li>
@@ -977,26 +983,26 @@ var I18N={
 zh:{
  'app.title':'Pleadly — AI 求职助手',
  'nav.memory':'个人记忆','nav.library':'信息库','nav.analysis':'分析页','nav.tools':'工具','nav.reports':'报告仓库',
- 'library.title':'信息库','library.subtitle':'分类上传简历、作品集、项目经历 — AI 自动分块索引',
+ 'library.title':'信息库','library.subtitle':'上传简历、作品集与项目经历，AI 自动分块索引，随时取用',
  'lib.resume':'简历','lib.portfolio':'作品集','lib.project':'项目经历','lib.other':'其他',
  'lib.upload':'点击上传文件','lib.upload.hint':'点击上传','lib.supported':'支持 docx / pdf / txt / md',
- 'lib.empty':'暂无文档','lib.empty.desc':'点击上方虚线区域上传文件',
+ 'lib.empty':'还没有文档','lib.empty.desc':'把你的简历或经历拖进来，这里会成为你的专属材料库',
  'lib.th.name':'文件名','lib.th.type':'类型','lib.th.size':'大小','lib.th.action':'操作','lib.del':'删除','lib.preview':'点击预览','lib.parse.fail':'已按纯文本读取（PDF/Word 解析库加载失败，可能离线）。建议联网后重新上传。','lib.parse.err':'解析失败',
- 'analysis.title':'全面分析','analysis.subtitle':'粘贴岗位JD，自动读取信息库作为你的背景',
- 'analysis.jd':'岗位 JD','analysis.jd.ph':'在此粘贴岗位 JD ...',
+ 'analysis.title':'全面分析','analysis.subtitle':'粘贴目标岗位 JD，信息库自动成为你的背景，一次走完求职全流程',
+ 'analysis.jd':'岗位 JD','analysis.jd.ph':'把岗位 JD 粘贴到这里，剩下的交给我...',
  'analysis.resume':'简历','analysis.resume.select':'从信息库选择','analysis.resume.ph':'或直接粘贴简历内容 ...',
  'analysis.run':'全面分析',
  'dl.word':'下载 Word','dl.pdf':'下载 PDF','dl.empty':'还没有报告可下载','dl.word.done':'Word 报告已下载','dl.pdf.hint':'在打印窗口选择「另存为 PDF」即可保存',
  'step.1':'ATS','step.2':'评分','step.3':'JD拆解','step.4':'诊断','step.5':'岗位排序','step.6':'学习计划','step.7':'面试准备','step.8':'模拟面试','step.9':'Offer谈判','step.10':'入职指南',
- 'analysis.empty':'粘贴岗位 JD 后点击「全面分析」','analysis.empty.desc':'完整分析约需 5-10 分钟（思考模型较慢），请耐心等待，不要刷新或关闭页面',
- 'step.section':'分步执行','step.section.hint':'不必一次跑完，可按需单独执行某一步','step.run':'运行',
- 'analysis.running':'正在运行全面分析...','analysis.running.desc':'预计 5-10 分钟，请耐心等待，不要刷新或关闭页面','analysis.analyzing':'正在分析...',
+ 'analysis.empty':'还没有开始分析','analysis.empty.desc':'完整跑完约 5–10 分钟，请安心等待，别刷新或关闭页面',
+ 'step.section':'分步执行','step.section.hint':'不用一次跑完，想看哪一步就点哪一步','step.run':'运行',
+ 'analysis.running':'正在为你跑完求职全流程...','analysis.running.desc':'预计 5–10 分钟，好结果值得等一会儿——请别刷新或关闭页面','analysis.analyzing':'正在分析...',
  'analysis.offline':'离线模式。启动Pleadly后端后重试。','analysis.noBackend':'后端未连接。请启动Pleadly后端后重试。',
- 'reports.title':'报告仓库','reports.subtitle':'历史分析报告存档',
- 'reports.empty':'暂无报告','reports.empty.desc':'完成分析后自动存档','reports.del':'删除','reports.del.confirm':'确定删除这份报告吗？删除后不可恢复。','reports.deleted':'报告已删除',
+ 'reports.title':'报告仓库','reports.subtitle':'你跑过的每一份分析都在这里归档，随时回看',
+ 'reports.empty':'还没有报告','reports.empty.desc':'完成一次全面分析后，报告会自动归档到这里','reports.del':'删除','reports.del.confirm':'确定删除这份报告吗？删除后不可恢复。','reports.deleted':'报告已删除',
  'report.unspecified':'未指定','report.match':'匹配','report.stretch':'冲击','report.pass':'放弃',
- 'bot.ready':'就绪','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
- 'toast.added':'已添加','toast.needjd':'请先输入JD','toast.needresume':'请先在信息库上传简历或经历','toast.saved':'报告已存档',
+ 'bot.ready':'已就绪，等你开始','bot.analyzing':'分析中...','bot.done':'分析完成','bot.offline':'离线模式','bot.running':'运行:',
+ 'toast.added':'已添加','toast.needjd':'先粘贴岗位 JD','toast.needresume':'先到「信息库」上传简历或经历','toast.saved':'报告已存档',
  'settings.title':'设置','settings.apiKey':'API Key','settings.apiKey.ph':'粘贴你的 API Key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'自定义 Custom',
  'settings.model':'模型 Model','settings.model.ph':'deepseek-chat',
@@ -1004,27 +1010,27 @@ zh:{
  'key.ph':'粘贴 API Key','key.saved':'API Key 已更新',
  'guard.inject':'检测到可疑指令内容，已拦截','guard.len':'输入过长，已截断','guard.limit':'今日免费次数已用完，明日再来或兑换积分','guard.leak':'检测到输出可能泄露系统提示词',
  'needkey':'请先在上方输入框填入 API Key','err.invalidkey':'API Key 无效或余额不足（401）',
- 'err.cors':'调用失败：该厂商可能不支持浏览器直连（CORS），或网络异常。可换用 DeepSeek / OpenAI 等支持浏览器调用的服务。',
- 'err.timeout':'请求超时：模型响应过慢或网络卡顿，请重试或检查网络/换用更快模型。',
- 'err.generic':'抱歉，生成失败，请稍后重试。','err.verify':'人机验证未通过，请重试（若多次失败请更换网络后再试）。',
- 'err.sorry':'这次没能成功生成结果，已为你自动退回积分。请稍后重试，或联系客服处理。',
+ 'err.cors':'调用失败：这个服务商可能不允许浏览器直连（CORS），或网络异常。换用 DeepSeek / OpenAI 这类支持浏览器调用的服务试试。',
+ 'err.timeout':'等待超时了：模型响应有点慢或网络卡顿。重试一次，或换个更快的模型。',
+ 'err.generic':'抱歉，这次没生成成功，请稍后再试一次。','err.verify':'人机验证未通过，请重试（若多次失败请更换网络后再试）。',
+ 'err.sorry':'这次没能生成完整结果，积分已自动退回。请稍后再试，或找客服帮你。',
  'err.details':'报错详情','err.detail.title':'报错详情','err.detail.hint':'复制详情或发送给客服，我们会尽快处理。','err.copy':'复制详情','err.report':'发送给客服',
- 'mem.title':'个人记忆','mem.subtitle':'随你的使用自动积累：分析 / 模拟面试反馈 / Offer 谈判 / 入职指南。只存本机浏览器，绝不上传。',
+ 'mem.title':'个人记忆','mem.subtitle':'你的专属求职记忆——分析结论、面试反馈、谈判要点，自动积累，只存本机、绝不上传。',
  'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空','mem.all':'全部','mem.used':'已用','mem.view':'查看全文','mem.compress':'压缩记忆','mem.compress.done':'已压缩为一条长期摘要','mem.compress.empty':'记忆不足，无需压缩','mem.warn':'记忆接近上限，可压缩腾出空间',
- 'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全面分析或 模拟面试，这里会自动记录你的关键信息',
+ 'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全面分析或模拟面试，关键信息会自动记在这里',
  'mem.kind.analysis':'分析','mem.kind.mock':'模拟面试','mem.kind.rank':'岗位排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.greet':'招呼语',
- 'extra.5.title':'岗位优先级排序','extra.5.hint':'从报告库选取 2 则以上分析报告，按六维度排序并给出精力分配建议。',
- 'extra.9.title':'Offer 谈判','extra.9.hint':'从报告库选取对应岗位的报告，再补充你的 Offer package，针对性生成谈判策略。',
- 'extra.10.title':'入职生存指南','extra.10.hint':'从报告库选取对应岗位的报告，生成入职前 30 天生存指南。',
+ 'extra.5.title':'岗位优先级排序','extra.5.hint':'从报告库选 2 份以上报告，按六维度排序，并给出你的精力分配建议。',
+ 'extra.9.title':'Offer 谈判','extra.9.hint':'选对应岗位的报告，再补充你的 Offer 条件，得到针对性的谈判策略。',
+ 'extra.10.title':'入职生存指南','extra.10.hint':'选对应岗位的报告，生成入职前 30 天的生存指南。',
  'extra.run':'运行','extra.needkey':'请先在上方输入框填入 API Key',
- 'extra.greet.title':'招呼语生成','extra.greet.hint':'自动读取你的信息库，再粘贴岗位 JD，生成可直接发给 HR 的招呼语，并附匹配点说明 + 诚实风险提示。全部基于你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
+ 'extra.greet.title':'招呼语生成','extra.greet.hint':'自动读取你的信息库，粘贴 JD 即可生成能直接发给 HR 的招呼语，附匹配点与风险提示——全部来自你的真实经历，绝不编造。','greet.copy':'复制招呼语','copied':'已复制到剪贴板',
  'tools.greet.desc':'粘贴 JD → 生成可直接发给 HR 的招呼语 + 匹配点 + 风险提示',
- 'pick.title':'从报告库选取','pick.hint.single':'选择 1 则分析报告','pick.hint.multi':'至少选择 2 则分析报告','pick.cancel':'取消','pick.confirm':'确认','pick.need1':'请先选择 1 则报告','pick.need2':'请至少选择 2 则报告','pick.noreport':'报告库为空，请先完成一次全面分析','pick.filled':'已填入对应岗位 JD','pick.fromrep':'从报告库选取',
- 'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'输入你的回答...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
- 'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了更有针对性）...',
+ 'pick.title':'从报告库选取','pick.hint.single':'选择 1 份分析报告','pick.hint.multi':'至少选择 2 份分析报告','pick.cancel':'取消','pick.confirm':'确认','pick.need1':'请先选择 1 份报告','pick.need2':'请至少选择 2 份报告','pick.noreport':'报告库还是空的，先完成一次全面分析吧','pick.filled':'已填入对应岗位 JD','pick.fromrep':'从报告库选取',
+ 'mock.title':'模拟面试','mock.phase':'面试阶段','mock.ph':'想怎么回答？写下来，我会接着追问...','mock.send':'发送','mock.start':'开始面试','mock.end':'结束并总结',
+ 'mock.jd':'岗位 JD（可选）','mock.jd.ph':'粘贴岗位 JD（可选，填了问题会更有针对性）...',
  'mock.ph.hr':'HR初筛','mock.ph.tech':'技术面','mock.ph.behavior':'行为面','mock.ph.final':'终面',
- 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在生成问题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除',
- 'tools.title':'工具','tools.subtitle':'独立工具，按需使用，不参与全面分析',
+ 'mock.needjd':'请先在信息库上传简历或经历，再开始模拟面试','mock.running':'正在为你准备下一道题...','mock.budget':'剩余问答 {n} 次','mock.limit':'本次面试问答次数已用完，继续需再付 10 积分','mock.continue':'继续面试','mock.report':'已选取报告：','mock.report.clear':'清除',
+ 'tools.title':'工具','tools.subtitle':'独立小工具，按需取用，不影响完整分析流程',
  'tools.5.desc':'从报告库选 2 则以上报告，六维度排序 + 精力分配建议',
  'tools.8.desc':'多轮模拟面试，可追问、即时点评、结束给总结',
  'tools.9.desc':'选对应岗位报告 + 补 offer package，输出谈判策略 + 话术',
@@ -1038,41 +1044,41 @@ zh:{
  'pts.unit':'积分','pts.balance':'积分余额','pts.redeem':'兑换码','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'兑换','pts.redeem.hint':'兑换码可向作者获取，一次性使用，兑换后积分累加。',
  'pts.insufficient':'积分不足，请先兑换积分','pts.redeemed':'兑换成功，+{N} 积分','pts.invalid':'兑换码无效','pts.used':'兑换码已被使用',
  'pts.history':'积分明细','pts.history.empty':'暂无明细','pts.history.redeem':'兑换码充值','pts.history.free':'新用户赠送','pts.history.spend':'功能消费','pts.history.refund':'退款','pts.history.memory':'记忆整理','pts.history.balance':'余额',
- 'acct.title':'账号（跨设备同步积分）','acct.username':'用户名','acct.username.ph':'2-32 字符','acct.password':'密码（8-16 位数字或英文字母）','acct.password.ph':'至少 6 位','acct.login':'登录','acct.register':'注册','acct.hint':'注册后积分跟随账号，可跨设备同步；注册时自动合并本设备已有积分。','acct.loggedin':'已登录','acct.logout':'退出登录','acct.loggedin.hint':'积分已与账号绑定，换设备登录即可同步。','acct.needfield':'请输入用户名和密码','acct.baduser':'用户名需 2-32 个字符','acct.shortpass':'密码至少 6 位','acct.noaccount':'账号不存在','acct.badpass':'密码错误','acct.taken':'用户名已被占用','acct.fail':'操作失败，请稍后重试','acct.loggedout':'已退出登录',
- 'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点击上方「运行」按钮生成结果',
+ 'acct.title':'账号（跨设备同步积分）','acct.username':'用户名','acct.password':'密码（8-16 位数字或英文字母）','acct.login':'登录','acct.register':'注册','acct.hint':'注册后积分跟随账号，可跨设备同步；注册时自动合并本设备已有积分。','acct.loggedin':'已登录','acct.logout':'退出登录','acct.loggedin.hint':'积分已与账号绑定，换设备登录即可同步。','acct.shortpass':'密码至少 6 位','acct.noaccount':'账号不存在','acct.badpass':'密码错误','acct.taken':'用户名已被占用','acct.fail':'操作失败，请稍后重试','acct.loggedout':'已退出登录',
+ 'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点上方「运行」，结果会出现在这里',
  'side.analysis':'求职分析','side.resume':'简历','side.explore':'职业探索','side.execute':'求职执行','side.offer':'面试与Offer','side.onoff':'入职与离职','side.data':'数据','side.about':'关于与帮助',
  'info.home':'首页','info.rules':'功能与积分规则','info.guide':'使用说明','info.faq':'常见问题','info.privacy':'隐私政策','info.terms':'用户协议','info.service':'权益与售后','info.disclaimer':'免责声明',
- 'home.title':'Pleadly','home.tagline':'AI 求职助手 —— 从职业定位、岗位匹配、简历诊断到面试、Offer 谈判、入职离职，一条龙陪你走完求职全程。','home.cta.start':'→ 开启你的职业旅程','home.cta.full':'开始全面分析','home.cta.rules':'了解积分规则','home.steps.title':'一条 10 步全流程','home.contact.title':'联系我们','home.contact.xhs':'小红书','home.contact.email':'邮箱',
- 'acct.account':'账号（8 位纯数字）','acct.account.ph':'8 位数字','acct.skip':'暂不登录，直接使用 →','acct.badaccount':'账号必须是 8 位数字','acct.badpassfmt':'密码需 8-16 位字母或数字','acct.needfield':'请输入账号和密码','acct.baduser':'用户名不能超过 32 个字符','acct.username.ph':'任意昵称（≤32 字符）','acct.password.ph':'8-16 位字母或数字',
- 'position.title':'职业定位','position.subtitle':'4 步定位你的职业方向：盘点技能 → 扫市场 → 锁路线 → 落执行','position.runall':'一键职业定位','position.runall.title':'一键职业定位','position.runall.desc':'4 步依次执行，前一步结果自动注入下一步，无需重复输入。','position.step.section':'分步执行','position.step.section.hint':'不必一次跑完，可按需单独执行某一步','position.empty':'点击上方按钮开始职业定位','position.empty.desc':'自动读取信息库作为你的背景',
- 'pos.skill':'技能盘点','pos.market':'市场扫描','pos.pivot':'路线锁定','pos.search':'搜索执行',
- 'profile.title':'个人资料','profile.subtitle':'头像、账号与积分','profile.avatar':'更换头像','profile.notlogged':'尚未登录，积分跟随当前设备；手机号/微信一键登录即将上线','profile.gologin':'登录 / 注册',
- 'settings.subtitle':'语言设置','settings.lang':'语言 / Language','settings.theme':'主题 / Theme','settings.data':'数据管理 / Data','settings.export':'导出本地数据','settings.clear':'清除本地数据','settings.data.note':'信息库、报告、记忆均保存在你本地浏览器；导出可备份，清除后不可恢复。','settings.exported':'已导出备份文件','settings.cleared':'本地数据已清除','settings.clear.confirm':'确定清除本地信息库、报告与记忆吗？此操作不可恢复。',
- 'resign.title':'离职指南','resign.subtitle':'按时间线收集关键信息，生成一份个人离职计划 + 时间线 + 全套文书','resign.form.title':'离职信息（逐项填写，用于法律条件分支）','resign.f.nca':'竞业限制协议','resign.f.city':'社保公积金所在城市','resign.f.next':'下家状态','resign.f.when':'期望离职时点','resign.f.extra':'补充说明（可选）','resign.nca.none':'没签过 / 不记得有','resign.nca.signed':'签过，且可能生效','resign.nca.unsure':'不确定','resign.city.ph':'如：深圳（跨城转移会额外说明）','resign.next.offer':'已拿到 Offer','resign.next.interview':'面试中','resign.next.bare':'裸辞 / 未定','resign.when.30d':'提前 30 天（正式员工标准）','resign.when.3d':'试用期（提前 3 天）','resign.when.asap':'尽快走','resign.extra.ph':'公司性质、当前岗位、想离职的原因、已谈好的条件等（有助于生成更有针对性的计划）...','resign.run':'生成离职计划','resign.empty':'填写上方信息后点击生成','resign.empty.desc':'将产出：离职决策自检 + 法律核查 + 时间线 + 文书模板',
- 'onjob.title':'在职帮助','onjob.subtitle':'填当前在职信息，生成试用期/绩效/晋升/加薪的生存与成长计划','onjob.form.title':'当前在职信息（逐项填写）','onjob.f.role':'当前岗位','onjob.role.ph':'如：产品运营 / 电商运营专员','onjob.f.company':'公司性质 / 行业','onjob.company.ph':'如：互联网电商 · 中小厂（可留空）','onjob.f.stage':'在职阶段','onjob.stage.trial':'试用期','onjob.stage.regular':'已转正','onjob.stage.new':'刚入职（<1 个月）','onjob.f.kpi':'绩效周期与 KPI','onjob.kpi.ph':'如：季度考核，考核 GMV 增长、转化率（可留空）','onjob.f.goal':'当前目标','onjob.goal.trial':'通过试用期 / 转正','onjob.goal.raise':'争取加薪','onjob.goal.promo':'争取晋升','onjob.goal.jump':'跳槽 / 骑驴找马','onjob.goal.survive':'综合生存与发展','onjob.f.extra':'补充说明（可选）','onjob.extra.ph':'直属风格、KPI 细节、当前困境、时间节点等，越具体越有针对性...','onjob.run':'生成在职计划','onjob.empty':'填写上方信息后点击生成','onjob.empty.desc':'将产出：试用期/转正自评 + 绩效冲刺 + 向上管理 + 加薪晋升话术 + 30 天行动时间线',
+ 'home.title':'Pleadly','home.tagline':'你的 AI 求职教练——从定位方向、读懂 JD、打磨简历，到面试、谈薪、入职离职，全程陪你走完。','home.cta.start':'→ 开启你的求职之旅','home.cta.full':'开始全面分析','home.cta.rules':'了解积分规则','home.steps.title':'一条 10 步全流程','home.f1.t':'10 步全流程','home.f1.d':'从 ATS 到 Offer 谈判、入职离职，一站式走完','home.f2.t':'只存本机','home.f2.d':'你的简历与记忆留在浏览器，绝不上传','home.f3.t':'按次付费','home.f3.d':'用多少付多少，积分明码标价','home.contact.title':'联系我们','home.contact.xhs':'小红书','home.contact.email':'邮箱',
+ 'acct.account':'账号（8 位纯数字）','acct.account.ph':'8 位数字','acct.skip':'暂不登录，直接开始使用 →','acct.badaccount':'账号必须是 8 位数字','acct.badpassfmt':'密码需 8-16 位字母或数字','acct.needfield':'请输入账号和密码','acct.baduser':'用户名不能超过 32 个字符','acct.username.ph':'任意昵称（≤32 字符）','acct.password.ph':'8-16 位字母或数字',
+ 'position.title':'职业定位','position.subtitle':'4 步找到你的方向：盘点技能 → 扫描市场 → 锁定路线 → 落地执行','position.runall':'一键职业定位','position.runall.title':'一键职业定位','position.runall.desc':'4 步依次执行，前一步结果自动注入下一步，无需重复输入。','position.step.section':'分步执行','position.step.section.hint':'不用一次跑完，想看哪一步就点哪一步','position.empty':'点击上方按钮开始职业定位','position.empty.desc':'我会自动读取你的信息库，作为分析背景',
+ 'pos.skill':'技能盘点','pos.market':'市场扫描','pos.pivot':'路线锁定','pos.search':'落地执行',
+ 'profile.title':'个人资料','profile.subtitle':'头像、账号与积分，都在这里','profile.avatar':'更换头像','profile.notlogged':'尚未登录，积分跟随当前设备；手机号/微信一键登录即将上线','profile.gologin':'登录 / 注册',
+ 'settings.subtitle':'语言、主题、数据与 API','settings.lang':'语言 / Language','settings.theme':'主题 / Theme','settings.data':'数据管理 / Data','settings.export':'导出本地数据','settings.clear':'清除本地数据','settings.data.note':'信息库、报告、记忆均保存在你本地浏览器；导出可备份，清除后不可恢复。','settings.exported':'已导出备份文件','settings.cleared':'本地数据已清除','settings.clear.confirm':'确定清除本地信息库、报告与记忆吗？此操作不可恢复。',
+ 'resign.title':'离职指南','resign.subtitle':'一步步收齐关键信息，生成你的离职计划、时间线与全套文书','resign.form.title':'离职信息（逐项填写）','resign.f.nca':'竞业限制协议','resign.f.city':'社保公积金所在城市','resign.f.next':'下家状态','resign.f.when':'期望离职时点','resign.f.extra':'补充说明（可选）','resign.nca.none':'没签过 / 不记得有','resign.nca.signed':'签过，且可能生效','resign.nca.unsure':'不确定','resign.city.ph':'如：深圳（跨城转移会额外说明）','resign.next.offer':'已拿到 Offer','resign.next.interview':'面试中','resign.next.bare':'裸辞 / 未定','resign.when.30d':'提前 30 天（正式员工标准）','resign.when.3d':'试用期（提前 3 天）','resign.when.asap':'尽快走','resign.extra.ph':'公司性质、当前岗位、想离职的原因、已谈好的条件等（有助于生成更有针对性的计划）...','resign.run':'生成离职计划','resign.empty':'填写上方信息后点击生成','resign.empty.desc':'会产出：离职决策自检 + 法律核查 + 时间线 + 文书模板',
+ 'onjob.title':'在职帮助','onjob.subtitle':'填好当前在职信息，生成试用期、绩效、晋升、加薪的生存与成长计划','onjob.form.title':'当前在职信息（逐项填写）','onjob.f.role':'当前岗位','onjob.role.ph':'如：产品运营 / 电商运营专员','onjob.f.company':'公司性质 / 行业','onjob.company.ph':'如：互联网电商 · 中小厂（可留空）','onjob.f.stage':'在职阶段','onjob.stage.trial':'试用期','onjob.stage.regular':'已转正','onjob.stage.new':'刚入职（<1 个月）','onjob.f.kpi':'绩效周期与 KPI','onjob.kpi.ph':'如：季度考核，考核 GMV 增长、转化率（可留空）','onjob.f.goal':'当前目标','onjob.goal.trial':'通过试用期 / 转正','onjob.goal.raise':'争取加薪','onjob.goal.promo':'争取晋升','onjob.goal.jump':'跳槽 / 骑驴找马','onjob.goal.survive':'综合生存与发展','onjob.f.extra':'补充说明（可选）','onjob.extra.ph':'直属风格、KPI 细节、当前困境、时间节点等，越具体越有针对性...','onjob.run':'生成在职计划','onjob.empty':'填写上方信息后点击生成','onjob.empty.desc':'会产出：试用期自评 + 绩效冲刺 + 向上管理 + 加薪晋升话术 + 30 天行动时间线',
 },
 en:{
  'app.title':'Pleadly — AI Job Assistant',
  'nav.memory':'Memory','nav.library':'Library','nav.analysis':'Analysis','nav.tools':'Tools','nav.reports':'Reports',
- 'library.title':'Library','library.subtitle':'Upload resumes, portfolios and projects — auto-chunked & indexed by AI',
+ 'library.title':'Library','library.subtitle':'Upload your resume, portfolio and projects — AI indexes them for instant recall',
  'lib.resume':'Resume','lib.portfolio':'Portfolio','lib.project':'Projects','lib.other':'Other',
  'lib.upload':'Click to upload','lib.upload.hint':'Upload','lib.supported':'Supports docx / pdf / txt / md',
- 'lib.empty':'No documents','lib.empty.desc':'Click the dashed area above to upload',
+ 'lib.empty':'No documents','lib.empty.desc':'Add your resume or experiences — this becomes your personal material library',
  'lib.th.name':'File','lib.th.type':'Type','lib.th.size':'Size','lib.th.action':'Actions','lib.del':'Delete','lib.preview':'Click to preview','lib.parse.fail':'Read as plain text (PDF/Word parser failed to load — you may be offline). Re-upload when online.','lib.parse.err':'Parse failed',
- 'analysis.title':'Comprehensive Analysis','analysis.subtitle':'Paste a JD — your Library is read automatically',
- 'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here...',
+ 'analysis.title':'Comprehensive Analysis','analysis.subtitle':'Paste a JD — your Library becomes your background, and the full pipeline runs end to end',
+ 'analysis.jd':'Job JD','analysis.jd.ph':'Paste the job JD here and let Pleadly take it from there...',
  'analysis.resume':'Resume','analysis.resume.select':'Select from Library','analysis.resume.ph':'Or paste your resume directly...',
  'analysis.run':'Run Comprehensive Analysis',
  'dl.word':'Download Word','dl.pdf':'Download PDF','dl.empty':'No report to download yet','dl.word.done':'Word report downloaded','dl.pdf.hint':'Choose "Save as PDF" in the print dialog',
  'step.1':'ATS','step.2':'Score','step.3':'JD Breakdown','step.4':'Diagnosis','step.5':'Job Rank','step.6':'Study Plan','step.7':'Interview Prep','step.8':'Mock Interview','step.9':'Offer Negotiation','step.10':'Onboarding',
- 'analysis.empty':'Paste a JD, then click "Run Comprehensive Analysis"','analysis.empty.desc':'Takes about 5-10 min (the reasoning model is slow) — please be patient and do not refresh or close the page',
- 'step.section':'Run step by step','step.section.hint':'No need to run it all — run any single step on demand','step.run':'Run',
- 'analysis.running':'Running comprehensive analysis...','analysis.running.desc':'Estimated 5-10 min — please be patient and do not refresh or close the page','analysis.analyzing':'Analyzing...',
+ 'analysis.empty':'Nothing analyzed yet','analysis.empty.desc':'Takes about 5-10 minutes — sit back and do not refresh or close the page',
+ 'step.section':'Run step by step','step.section.hint':'No need to run everything — tap any step to start there','step.run':'Run',
+ 'analysis.running':'Running your full pipeline...','analysis.running.desc':'Estimated 5-10 minutes — good things take a moment, so do not refresh or close the page','analysis.analyzing':'Analyzing...',
  'analysis.offline':'Offline mode. Start the Pleadly backend and retry.','analysis.noBackend':'Backend not connected. Start the Pleadly backend and retry.',
- 'reports.title':'Reports','reports.subtitle':'Archive of past analysis reports',
- 'reports.empty':'No reports yet','reports.empty.desc':'Reports are auto-saved after analysis','reports.del':'Delete','reports.del.confirm':'Delete this report? This cannot be undone.','reports.deleted':'Report deleted',
+ 'reports.title':'Reports','reports.subtitle':'Every analysis you run is archived here, ready to revisit',
+ 'reports.empty':'No reports yet','reports.empty.desc':'After a comprehensive analysis, your report is archived here automatically','reports.del':'Delete','reports.del.confirm':'Delete this report? This cannot be undone.','reports.deleted':'Report deleted',
  'report.unspecified':'Unspecified','report.match':'Match','report.stretch':'Stretch','report.pass':'Pass',
- 'bot.ready':'Ready','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
+ 'bot.ready':'Ready when you are','bot.analyzing':'Analyzing...','bot.done':'Done','bot.offline':'Offline','bot.running':'Running:',
  'toast.added':'Added','toast.needjd':'Please enter a JD first','toast.needresume':'Upload a resume or experiences to the Library first','toast.saved':'Report saved',
  'settings.title':'Settings','settings.apiKey':'API Key','settings.apiKey.ph':'Paste your API key (sk-...)',
  'settings.baseUrl':'Base URL','settings.baseUrl.ph':'https://.../v1','settings.baseUrl.custom':'Custom',
@@ -1086,22 +1092,22 @@ en:{
  'err.generic':'Sorry, something went wrong — please try again.','err.verify':'Verification failed — please retry (switch networks if it keeps failing).',
  'err.sorry':'This run did not complete. Your points have been refunded. Please retry, or contact support.',
  'err.details':'Error details','err.detail.title':'Error details','err.detail.hint':'Copy the details or send them to support — we will look into it.','err.copy':'Copy details','err.report':'Send to support',
- 'mem.title':'My Memory','mem.subtitle':'Built automatically as you use Pleadly: analyses / mock interview feedback / offer negotiations / onboarding. Stored only on this device.',
+ 'mem.title':'My Memory','mem.subtitle':'Your personal job-search memory — built automatically, stored only on this device.',
  'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared','mem.all':'All','mem.used':'Used','mem.view':'Read more','mem.compress':'Compress','mem.compress.done':'Compressed into one summary','mem.compress.empty':'Too few memories to compress','mem.warn':'Memory nearly full — compress to free space',
- 'mem.empty':'No memories yet','mem.empty.desc':'Run a comprehensive analysis or mock interview and your key info will be recorded here automatically',
+ 'mem.empty':'No memories yet','mem.empty.desc':'Run a comprehensive analysis or mock interview, and your key info is recorded here automatically',
  'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.greet':'Greeting',
- 'extra.5.title':'Job Priority Ranking','extra.5.hint':'Pick 2+ analysis reports from your Reports library; rank them and get effort-allocation advice.',
+ 'extra.5.title':'Job Priority Ranking','extra.5.hint':'Pick 2+ reports; rank them and get effort-allocation advice.',
  'extra.9.title':'Offer Negotiation','extra.9.hint':'Pick the matching report, then add your offer package for a targeted negotiation strategy.',
  'extra.10.title':'Onboarding Guide','extra.10.hint':'Pick the matching report to generate a first-30-days onboarding guide.',
  'extra.run':'Run','extra.needkey':'Please enter your API key in the box above',
  'extra.greet.title':'Greeting Generator','extra.greet.hint':'Your Library is read automatically; paste a JD to generate a greeting for HR, with match points + honest risk notes. Built only on your real experience — never fabricated.','greet.copy':'Copy greeting','copied':'Copied to clipboard',
  'tools.greet.desc':'Paste a JD → greeting + match points + risk notes',
  'pick.title':'Select from Reports','pick.hint.single':'Select 1 analysis report','pick.hint.multi':'Select at least 2 analysis reports','pick.cancel':'Cancel','pick.confirm':'Confirm','pick.need1':'Select one report first','pick.need2':'Select at least two reports','pick.noreport':'No reports yet — run a comprehensive analysis first','pick.filled':'Filled the matching JD','pick.fromrep':'Pick from Reports',
- 'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'Type your answer...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
- 'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional, for more targeted questions)...',
+ 'mock.title':'Mock Interview','mock.phase':'Interview stage','mock.ph':'How would you answer? Write it out and I will follow up...','mock.send':'Send','mock.start':'Start interview','mock.end':'End & summarize',
+ 'mock.jd':'Job JD (optional)','mock.jd.ph':'Paste the JD (optional — questions will be more targeted)...',
  'mock.ph.hr':'HR screen','mock.ph.tech':'Technical','mock.ph.behavior':'Behavioral','mock.ph.final':'Final round',
- 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Generating question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear',
- 'tools.title':'Tools','tools.subtitle':'Standalone tools — use as needed, not part of the comprehensive analysis',
+ 'mock.needjd':'Upload a resume or experiences to the Library first, then start the mock interview','mock.running':'Preparing your next question...','mock.budget':'Rounds left: {n}','mock.limit':'Round limit reached — pay 10 more points to continue','mock.continue':'Continue','mock.report':'Selected report: ','mock.report.clear':'Clear',
+ 'tools.title':'Tools','tools.subtitle':'Standalone tools — grab one when you need it, without touching the full analysis',
  'tools.5.desc':'Pick 2+ reports; ranked by six weighted dimensions + effort allocation',
  'tools.8.desc':'Multi-turn mock interview with follow-ups, instant feedback, and a closing summary',
  'tools.9.desc':'Pick a report + add your offer package → item-by-item strategy + scripts',
@@ -1115,18 +1121,18 @@ en:{
  'pts.unit':'pts','pts.balance':'Point Balance','pts.redeem':'Redeem Code','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'Redeem','pts.redeem.hint':'Get a redeem code from the author. Single-use; points are added on redemption.',
  'pts.insufficient':'Not enough points — redeem more first','pts.redeemed':'Redeemed, +{N} pts','pts.invalid':'Invalid redeem code','pts.used':'Code already used',
  'pts.history':'Points History','pts.history.empty':'No records yet','pts.history.redeem':'Code redeemed','pts.history.free':'Welcome gift','pts.history.spend':'Feature used','pts.history.refund':'Refund','pts.history.memory':'Memory summary','pts.history.balance':'Balance',
- 'acct.title':'Account (sync points across devices)','acct.username':'Username','acct.username.ph':'2-32 chars','acct.password':'Password (8-16 letters or digits)','acct.password.ph':'At least 6 chars','acct.login':'Log in','acct.register':'Sign up','acct.hint':'Points follow your account across devices; existing device points merge on signup.','acct.loggedin':'Logged in','acct.logout':'Log out','acct.loggedin.hint':'Points are bound to your account — log in on any device to sync.','acct.needfield':'Enter username and password','acct.baduser':'Username must be 2-32 chars','acct.shortpass':'Password must be at least 6 chars','acct.noaccount':'Account not found','acct.badpass':'Wrong password','acct.taken':'Username taken','acct.fail':'Failed — try again later','acct.loggedout':'Logged out',
- 'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Click Run above to generate the result',
+ 'acct.title':'Account (sync points across devices)','acct.username':'Username','acct.password':'Password (8-16 letters or digits)','acct.login':'Log in','acct.register':'Sign up','acct.hint':'Points follow your account across devices; existing device points merge on signup.','acct.loggedin':'Logged in','acct.logout':'Log out','acct.loggedin.hint':'Points are bound to your account — log in on any device to sync.','acct.shortpass':'Password must be at least 6 chars','acct.noaccount':'Account not found','acct.badpass':'Wrong password','acct.taken':'Username taken','acct.fail':'Failed — try again later','acct.loggedout':'Logged out',
+ 'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Tap Run above and your result appears here',
  'side.analysis':'Job Analysis','side.resume':'Resume','side.explore':'Career Explore','side.execute':'Job Execution','side.offer':'Interview & Offer','side.onoff':'Onboarding & Resignation','side.data':'Data','side.about':'About & Help',
  'info.home':'Home','info.rules':'Features & Points','info.guide':'How to use','info.faq':'FAQ','info.privacy':'Privacy','info.terms':'Terms','info.service':'Support','info.disclaimer':'Disclaimer',
- 'home.title':'Pleadly','home.tagline':'An AI job assistant — from career positioning, role matching and resume diagnosis to interviews, offer negotiation, onboarding and resignation, end to end.','home.cta.start':'→ Start your career journey','home.cta.full':'Start analysis','home.cta.rules':'See points rules','home.steps.title':'A 10-step full pipeline','home.contact.title':'Contact us','home.contact.xhs':'Xiaohongshu','home.contact.email':'Email',
- 'acct.account':'Account (8 digits)','acct.account.ph':'8 digits','acct.skip':'Skip and use directly →','acct.badaccount':'Account must be 8 digits','acct.badpassfmt':'Password must be 8-16 letters or digits','acct.needfield':'Enter account and password','acct.baduser':'Username max 32 chars','acct.username.ph':'Any nickname (≤32 chars)','acct.password.ph':'8-16 letters or digits',
- 'position.title':'Career Positioning','position.subtitle':'Locate your career direction in 4 steps: skill audit → market scan → pivot routes → search plan','position.runall':'One-click positioning','position.runall.title':'One-click positioning','position.runall.desc':'Runs the 4 steps in order; each step\'s output feeds the next automatically.','position.step.section':'Run step by step','position.step.section.hint':'No need to run it all — run any single step on demand','position.empty':'Click above to start positioning','position.empty.desc':'Your Library is read automatically as background',
+ 'home.title':'Pleadly','home.tagline':'Your AI career coach — from finding your direction and nailing the JD, to interviews, salary talks, onboarding and beyond.','home.cta.start':'→ Start your career journey','home.cta.full':'Start analysis','home.cta.rules':'See points rules','home.steps.title':'A 10-step full pipeline','home.f1.t':'A 10-step pipeline','home.f1.d':'From ATS to offer negotiation and beyond','home.f2.t':'Local by design','home.f2.d':'Your resume and memory stay in your browser','home.f3.t':'Pay as you go','home.f3.d':'Points with clear, upfront pricing','home.contact.title':'Contact us','home.contact.xhs':'Xiaohongshu','home.contact.email':'Email',
+ 'acct.account':'Account (8 digits)','acct.account.ph':'8 digits','acct.skip':'Skip and get started →','acct.badaccount':'Account must be 8 digits','acct.badpassfmt':'Password must be 8-16 letters or digits','acct.needfield':'Enter account and password','acct.baduser':'Username max 32 chars','acct.username.ph':'Any nickname (≤32 chars)','acct.password.ph':'8-16 letters or digits',
+ 'position.title':'Career Positioning','position.subtitle':'Find your direction in 4 steps: skill audit → market scan → pivot routes → search plan','position.runall':'One-click positioning','position.runall.title':'One-click positioning','position.runall.desc':'Runs the 4 steps in order; each step\'s output feeds the next automatically.','position.step.section':'Run step by step','position.step.section.hint':'No need to run everything — tap any step to start there','position.empty':'Click above to start positioning','position.empty.desc':'Your Library is read automatically as your background',
  'pos.skill':'Skill Audit','pos.market':'Market Scan','pos.pivot':'Pivot Routes','pos.search':'Search Plan',
- 'profile.title':'Profile','profile.subtitle':'Avatar, account and points','profile.avatar':'Change avatar','profile.notlogged':'Not logged in — points follow this device. Phone/WeChat sign-in coming soon','profile.gologin':'Log in / Sign up',
- 'settings.subtitle':'Language settings','settings.lang':'Language','settings.theme':'Theme','settings.data':'Data','settings.export':'Export data','settings.clear':'Clear data','settings.data.note':'Library, reports and memory are stored in your browser. Export to back up; clearing cannot be undone.','settings.exported':'Backup exported','settings.cleared':'Local data cleared','settings.clear.confirm':'Clear local library, reports and memory? This cannot be undone.',
- 'resign.title':'Resignation Guide','resign.subtitle':'Collect key info by timeline and produce a personal resignation plan + timeline + document templates','resign.form.title':'Resignation info (used for legal branching)','resign.f.nca':'Non-compete agreement','resign.f.city':'Social insurance & housing fund city','resign.f.next':'Next job status','resign.f.when':'Expected timing','resign.f.extra':'Extra notes (optional)','resign.nca.none':'Never signed / not that I recall','resign.nca.signed':'Signed and may be in effect','resign.nca.unsure':'Not sure','resign.city.ph':'e.g. Shenzhen (cross-city transfer explained separately)','resign.next.offer':'Have an offer','resign.next.interview':'Interviewing','resign.next.bare':'Bare quit / undecided','resign.when.30d':'30 days notice (standard employee)','resign.when.3d':'Probation (3 days notice)','resign.when.asap':'As soon as possible','resign.extra.ph':'Company type, current role, reason for leaving, terms already agreed...','resign.run':'Generate plan','resign.empty':'Fill the form above and click generate','resign.empty.desc':'Produces: decision self-check + legal review + timeline + templates',
- 'onjob.title':'On-the-Job Help','onjob.subtitle':'Fill in your current job info for a probation/performance/promotion/raise survival & growth plan','onjob.form.title':'Current job info (fill in each item)','onjob.f.role':'Current role','onjob.role.ph':'e.g. Product Operations','onjob.f.company':'Company type / industry','onjob.company.ph':'e.g. e-commerce SME (optional)','onjob.f.stage':'Stage','onjob.stage.trial':'Probation','onjob.stage.regular':'Regular','onjob.stage.new':'Just joined (<1 month)','onjob.f.kpi':'Performance cycle & KPI','onjob.kpi.ph':'e.g. quarterly, GMV growth & conversion (optional)','onjob.f.goal':'Primary goal','onjob.goal.trial':'Pass probation','onjob.goal.raise':'Ask for a raise','onjob.goal.promo':'Get promoted','onjob.goal.jump':'Change jobs','onjob.goal.survive':'Survive & grow overall','onjob.f.extra':'Extra notes (optional)','onjob.extra.ph':'Manager style, KPI details, current pain points, deadlines — the more specific the better...','onjob.run':'Generate plan','onjob.empty':'Fill the form above and click generate','onjob.empty.desc':'Produces: probation/self-review + performance sprint + upward management + raise/promotion scripts + 30-day timeline',
+ 'profile.title':'Profile','profile.subtitle':'Your avatar, account and points, all in one place','profile.avatar':'Change avatar','profile.notlogged':'Not logged in — points follow this device. Phone/WeChat sign-in coming soon','profile.gologin':'Log in / Sign up',
+ 'settings.subtitle':'Language, theme, data and API','settings.lang':'Language','settings.theme':'Theme','settings.data':'Data','settings.export':'Export data','settings.clear':'Clear data','settings.data.note':'Library, reports and memory are stored in your browser. Export to back up; clearing cannot be undone.','settings.exported':'Backup exported','settings.cleared':'Local data cleared','settings.clear.confirm':'Clear local library, reports and memory? This cannot be undone.',
+ 'resign.title':'Resignation Guide','resign.subtitle':'Gather the key facts step by step into your resignation plan, timeline and document templates','resign.form.title':'Resignation info (fill in each field)','resign.f.nca':'Non-compete agreement','resign.f.city':'Social insurance & housing fund city','resign.f.next':'Next job status','resign.f.when':'Expected timing','resign.f.extra':'Extra notes (optional)','resign.nca.none':'Never signed / not that I recall','resign.nca.signed':'Signed and may be in effect','resign.nca.unsure':'Not sure','resign.city.ph':'e.g. Shenzhen (cross-city transfer explained separately)','resign.next.offer':'Have an offer','resign.next.interview':'Interviewing','resign.next.bare':'Bare quit / undecided','resign.when.30d':'30 days notice (standard employee)','resign.when.3d':'Probation (3 days notice)','resign.when.asap':'As soon as possible','resign.extra.ph':'Company type, current role, reason for leaving, terms already agreed...','resign.run':'Generate plan','resign.empty':'Fill the form above and click generate','resign.empty.desc':'Produces: decision self-check + legal review + timeline + templates',
+ 'onjob.title':'On-the-Job Help','onjob.subtitle':'Fill in your current job info for a probation, performance, promotion and raise plan','onjob.form.title':'Current job info (fill in each item)','onjob.f.role':'Current role','onjob.role.ph':'e.g. Product Operations','onjob.f.company':'Company type / industry','onjob.company.ph':'e.g. e-commerce SME (optional)','onjob.f.stage':'Stage','onjob.stage.trial':'Probation','onjob.stage.regular':'Regular','onjob.stage.new':'Just joined (<1 month)','onjob.f.kpi':'Performance cycle & KPI','onjob.kpi.ph':'e.g. quarterly, GMV growth & conversion (optional)','onjob.f.goal':'Primary goal','onjob.goal.trial':'Pass probation','onjob.goal.raise':'Ask for a raise','onjob.goal.promo':'Get promoted','onjob.goal.jump':'Change jobs','onjob.goal.survive':'Survive & grow overall','onjob.f.extra':'Extra notes (optional)','onjob.extra.ph':'Manager style, KPI details, current pain points, deadlines — the more specific the better...','onjob.run':'Generate plan','onjob.empty':'Fill the form above and click generate','onjob.empty.desc':'Produces: probation/self-review + performance sprint + upward management + raise/promotion scripts + 30-day timeline',
 }
 };
 var lang=localStorage.getItem('plang')||'zh';
@@ -2673,19 +2679,19 @@ var INFO_ITEMS=[
 ];
 var FEATURES=[
   {key:'full',group:'analysis',ic:'bolt',title:{zh:'全面分析',en:'Comprehensive Analysis'},cost:10,special:'full'},
-  {key:'ats',group:'analysis',ic:'target',tone:'#e11d48',title:{zh:'ATS关键词检测',en:'ATS Keywords'},cost:1,input:'jd',kind:'step',step:0,desc:{zh:'从JD提取关键词，逐条核对简历命中率',en:'Extract JD keywords and check the resume hit rate'}},
-  {key:'score',group:'analysis',ic:'trend',tone:'#ea580c',title:{zh:'匹配度评分',en:'Fit Score'},cost:2,input:'jd',kind:'step',step:1,desc:{zh:'六维加权打分，给出冲/稳/保结论',en:'Six-dimension weighted score with a go/safe/skip verdict'}},
-  {key:'jd',group:'analysis',ic:'search',tone:'#2383e2',title:{zh:'JD深度拆解',en:'JD Breakdown'},cost:2,input:'jd',kind:'step',step:2,desc:{zh:'公司背景、硬性/隐形要求、面试追问方向',en:'Company context, hard & hidden requirements, follow-up questions'}},
-  {key:'diag',group:'analysis',ic:'pulse',tone:'#7c3aed',title:{zh:'简历诊断改写',en:'Resume Diagnosis'},cost:3,input:'jd',kind:'step',step:3,desc:{zh:'逐行诊断并给出可溯源的三栏改写表',en:'Line-by-line diagnosis with a traceable rewrite table'}},
-  {key:'study',group:'analysis',ic:'book',tone:'#059669',title:{zh:'差距学习计划',en:'Study Plan'},cost:2,input:'jd',kind:'step',step:4,desc:{zh:'按严重度×紧急度排序，附资源与可验证产出',en:'Gaps ranked by severity × urgency with resources & checkpoints'}},
-  {key:'interview',group:'analysis',ic:'mic',tone:'#0891b2',title:{zh:'面试准备题库',en:'Interview Prep'},cost:2,input:'jd',kind:'step',step:5,desc:{zh:'六阶段模拟题库，含逐字话术',en:'Six-stage question bank with word-for-word scripts'}},
+  {key:'ats',group:'analysis',ic:'target',tone:'#e11d48',title:{zh:'ATS关键词检测',en:'ATS Keywords'},cost:1,input:'jd',kind:'step',step:0,desc:{zh:'从 JD 提取关键词，逐条比对你的简历命中情况',en:'Extract JD keywords and check each one against your resume'}},
+  {key:'score',group:'analysis',ic:'trend',tone:'#ea580c',title:{zh:'匹配度评分',en:'Fit Score'},cost:2,input:'jd',kind:'step',step:1,desc:{zh:'六个维度加权打分，直接告诉你该冲、该稳还是该放弃',en:'Six weighted dimensions, with a clear go / safe / skip verdict'}},
+  {key:'jd',group:'analysis',ic:'search',tone:'#2383e2',title:{zh:'JD深度拆解',en:'JD Breakdown'},cost:2,input:'jd',kind:'step',step:2,desc:{zh:'拆出公司背景、硬性与隐性要求，以及面试会追问的方向',en:'Company context, hard and hidden requirements, and likely interview follow-ups'}},
+  {key:'diag',group:'analysis',ic:'pulse',tone:'#7c3aed',title:{zh:'简历诊断改写',en:'Resume Diagnosis'},cost:3,input:'jd',kind:'step',step:3,desc:{zh:'逐行诊断简历，给出一张可溯源的三栏改写表',en:'Line-by-line diagnosis with a traceable three-column rewrite table'}},
+  {key:'study',group:'analysis',ic:'book',tone:'#059669',title:{zh:'差距学习计划',en:'Study Plan'},cost:2,input:'jd',kind:'step',step:4,desc:{zh:'按「严重度 × 紧急度」排序的差距清单，附资源与可验证产出',en:'Gaps ranked by severity × urgency with resources & checkpoints'}},
+  {key:'interview',group:'analysis',ic:'mic',tone:'#0891b2',title:{zh:'面试准备题库',en:'Interview Prep'},cost:2,input:'jd',kind:'step',step:5,desc:{zh:'六阶段面试题库，含逐字话术，照着练就行',en:'Six-stage question bank with word-for-word scripts'}},
   {key:'build',group:'resume',ic:'file',title:{zh:'简历定制',en:'Custom Resume'},cost:3,special:'build'},
   {key:'position',group:'explore',ic:'compass',title:{zh:'职业定位',en:'Career Positioning'},cost:10,special:'position'},
-  {key:'rank',group:'execute',ic:'chart',tone:'#0891b2',title:{zh:'岗位优先级排序',en:'Job Priority Ranking'},cost:2,input:'text',kind:'extra',ekey:'5',pick:true,desc:{zh:'多岗位六维排序+精力分配建议',en:'Rank roles on 6 dimensions + effort allocation'}},
-  {key:'greet',group:'execute',ic:'mail',tone:'#c0501f',title:{zh:'招呼语生成',en:'Greeting'},cost:1,input:'jd',kind:'greet',pick:true,desc:{zh:'生成可直接发给HR的招呼语',en:'A greeting ready to send to HR'}},
+  {key:'rank',group:'execute',ic:'chart',tone:'#0891b2',title:{zh:'岗位优先级排序',en:'Job Priority Ranking'},cost:2,input:'text',kind:'extra',ekey:'5',pick:true,desc:{zh:'多个岗位按六维度排序，告诉你精力该往哪放',en:'Rank roles across six dimensions and see where to focus'}},
+  {key:'greet',group:'execute',ic:'mail',tone:'#c0501f',title:{zh:'招呼语生成',en:'Greeting'},cost:1,input:'jd',kind:'greet',pick:true,desc:{zh:'生成一条能直接发给 HR 的招呼语',en:'A greeting ready to send to HR'}},
   {key:'mock',group:'offer',ic:'chat',title:{zh:'模拟面试',en:'Mock Interview'},cost:10,special:'mock'},
-  {key:'offer',group:'offer',ic:'coin',tone:'#c0501f',title:{zh:'Offer谈判',en:'Offer Negotiation'},cost:3,input:'text',kind:'extra',ekey:'9',pick:true,desc:{zh:'逐项谈判策略+可直接复制的消息模板',en:'Per-item strategy + ready-to-send scripts'}},
-  {key:'onboard',group:'onoff',ic:'send',tone:'#059669',title:{zh:'入职指南',en:'Onboarding'},cost:3,input:'text',kind:'extra',ekey:'10',pick:true,desc:{zh:'入职前30天生存指南',en:'First-30-days onboarding guide'}},
+  {key:'offer',group:'offer',ic:'coin',tone:'#c0501f',title:{zh:'Offer谈判',en:'Offer Negotiation'},cost:3,input:'text',kind:'extra',ekey:'9',pick:true,desc:{zh:'逐项谈判策略，附可直接复制的消息模板',en:'Item-by-item strategy with ready-to-send message templates'}},
+  {key:'onboard',group:'onoff',ic:'send',tone:'#059669',title:{zh:'入职指南',en:'Onboarding'},cost:3,input:'text',kind:'extra',ekey:'10',pick:true,desc:{zh:'入职前 30 天的生存指南',en:'A first-30-days survival guide'}},
   {key:'resign',group:'onoff',ic:'logout',tone:'#dc2626',title:{zh:'离职指南',en:'Resignation Guide'},cost:4,special:'resign'},
   {key:'onjob',group:'onoff',ic:'clipboard',tone:'#2383e2',title:{zh:'在职帮助',en:'On-the-Job Help'},cost:5,special:'onjob'}
 ];
@@ -2821,7 +2827,7 @@ var POSITION_STEPS=[
   {key:'pos.skill',ic:'repeat',tone:'#ea580c',title:{zh:'技能盘点',en:'Skill Audit'},cost:2,desc:{zh:'把经历翻译成雇主看得懂的可转移技能',en:'Translate experience into transferable skills employers value'}},
   {key:'pos.market',ic:'grid',tone:'#2383e2',title:{zh:'市场扫描',en:'Market Scan'},cost:4,desc:{zh:'扫描对口与跨界行业，按需求/薪酬/难度评估',en:'Scan direct + cross-field industries by demand, pay and difficulty'}},
   {key:'pos.pivot',ic:'map',tone:'#7c3aed',title:{zh:'路线锁定',en:'Pivot Routes'},cost:3,desc:{zh:'锁定 3-5 条现实路线，附 30 天过渡计划',en:'Lock 3-5 realistic routes with a 30-day plan'}},
-  {key:'pos.search',ic:'compass',tone:'#059669',title:{zh:'搜索执行',en:'Search Plan'},cost:3,desc:{zh:'30 天搜索计划：关键词、渠道、投递节奏',en:'30-day search plan: keywords, channels, cadence'}}
+  {key:'pos.search',ic:'compass',tone:'#059669',title:{zh:'落地执行',en:'Search Plan'},cost:3,desc:{zh:'30 天搜索计划：关键词、渠道、投递节奏',en:'30-day search plan: keywords, channels, cadence'}}
 ];
 var POSITION_PROMPTS=[
   {zh:'你是可转移技能分析专家。审阅候选人简历，提取每一项雇主可能重视的可转移技能，并把每项技能关联到合适的行业、部门、职位名称，解释过往经历如何证明能胜任这些角色。\n\n## 候选人简历\n{PROFILE}\n\n## 输出要求\n1. 表格：| 可转移技能 | 适配行业/部门/职位 | 简历中的证据 | 为什么有价值 |\n2. 每条技能都要有具体证据（引用简历原文的经历或数字）\n3. 最后总结「最抗打」的 3 个跨界方向\n\n只基于简历真实内容，不编造。',
