@@ -534,7 +534,9 @@ body.standalone .page{max-width:none;padding:0;}
     <input type="text" id="mem-search" data-i18n-ph="mem.search.ph" placeholder="搜索记忆..." oninput="renderMemory()" style="width:220px;">
     <span id="mem-count" style="font-size:13px;color:var(--text3);"></span>
     <span id="mem-warn" style="font-size:12px;color:var(--accent);display:none;"></span>
-    <button class="btn btn-ghost btn-sm" onclick="compressMem()"><span data-i18n="mem.compress">压缩记忆</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>1</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="confirmCompressAll()"><span data-i18n="mem.compress">压缩记忆</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>1</span></button>
+    <button class="btn btn-ghost btn-sm" id="mem-compress-sel" onclick="confirmCompressSel()" style="display:none;"><span data-i18n="mem.compress.sel">压缩所选</span> <span id="mem-sel-n" style="font-weight:600;">0</span><span class="pts-tag"><svg class="ic"><use href="#i-coin"/></svg>1</span></button>
+    <button class="btn btn-ghost btn-sm" id="mem-sel-cancel" onclick="cancelMemSel()" style="display:none;" data-i18n="mem.sel.cancel">取消选择</button>
     <button class="btn btn-ghost btn-sm" onclick="clearMem()" data-i18n="mem.clear" style="margin-left:auto;">清空</button>
   </div>
   <div class="mem-tabs" id="mem-tabs"></div>
@@ -1013,7 +1015,7 @@ zh:{
  'err.sorry':'这次没能生成完整结果，积分已自动退回。请稍后再试，或找客服帮你。',
  'err.details':'报错详情','err.detail.title':'报错详情','err.detail.hint':'复制详情或发送给客服，我们会尽快处理。','err.copy':'复制详情','err.report':'发送给客服',
  'mem.title':'个人记忆','mem.subtitle':'你的专属求职记忆——分析结论、面试反馈、谈判要点，自动积累，只存本机、绝不上传。',
- 'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空','mem.all':'全部','mem.used':'已用','mem.view':'查看全文','mem.compress':'压缩记忆','mem.compress.done':'已压缩为一条长期摘要','mem.compress.empty':'记忆不足，无需压缩','mem.warn':'记忆接近上限，可压缩腾出空间',
+ 'mem.search.ph':'搜索记忆...','mem.count':'条','mem.clear':'清空','mem.cleared':'记忆已清空','mem.all':'全部','mem.used':'已用','mem.view':'查看全文','mem.compress':'压缩记忆','mem.compress.done':'已压缩为一条长期摘要','mem.compress.empty':'记忆不足，无需压缩','mem.compress.confirm':'压缩后这 {n} 条记忆将合并为 1 条摘要，原文会被删除且无法恢复。确定继续？','mem.compress.sel':'压缩所选','mem.sel.cancel':'取消选择','mem.warn':'记忆接近上限，可压缩腾出空间',
  'mem.empty':'还没有记忆','mem.empty.desc':'跑一次全面分析或模拟面试，关键信息会自动记在这里',
  'mem.kind.analysis':'分析','mem.kind.mock':'模拟面试','mem.kind.rank':'岗位排序','mem.kind.offer':'Offer谈判','mem.kind.onboard':'入职指南','mem.kind.greet':'招呼语',
  'extra.5.title':'岗位优先级排序','extra.5.hint':'从报告库选 2 份以上报告，按六维度排序，并给出你的精力分配建议。',
@@ -1090,7 +1092,7 @@ en:{
  'err.sorry':'This run did not complete. Your points have been refunded. Please retry, or contact support.',
  'err.details':'Error details','err.detail.title':'Error details','err.detail.hint':'Copy the details or send them to support — we will look into it.','err.copy':'Copy details','err.report':'Send to support',
  'mem.title':'My Memory','mem.subtitle':'Your personal job-search memory — built automatically, stored only on this device.',
- 'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared','mem.all':'All','mem.used':'Used','mem.view':'Read more','mem.compress':'Compress','mem.compress.done':'Compressed into one summary','mem.compress.empty':'Too few memories to compress','mem.warn':'Memory nearly full — compress to free space',
+ 'mem.search.ph':'Search memory...','mem.count':'items','mem.clear':'Clear all','mem.cleared':'Memory cleared','mem.all':'All','mem.used':'Used','mem.view':'Read more','mem.compress':'Compress','mem.compress.done':'Compressed into one summary','mem.compress.empty':'Too few memories to compress','mem.compress.confirm':'This will merge {n} memories into one summary; the originals will be deleted and cannot be recovered. Continue?','mem.compress.sel':'Compress selected','mem.sel.cancel':'Cancel','mem.warn':'Memory nearly full — compress to free space',
  'mem.empty':'No memories yet','mem.empty.desc':'Run a comprehensive analysis or mock interview, and your key info is recorded here automatically',
  'mem.kind.analysis':'Analysis','mem.kind.mock':'Mock','mem.kind.rank':'Ranking','mem.kind.offer':'Offer','mem.kind.onboard':'Onboarding','mem.kind.greet':'Greeting',
  'extra.5.title':'Job Priority Ranking','extra.5.hint':'Pick 2+ reports; rank them and get effort-allocation advice.',
@@ -2251,6 +2253,7 @@ function addMem(kind,text){
   saveMem(m);
 }
 var _memTab='all';
+var _memSel={};
 function renderMemory(){
   var c=document.getElementById('memory-container');
   var all=loadMem();
@@ -2280,11 +2283,13 @@ function renderMemory(){
     var it=m[i];
     var sum=(it.summary||'').trim()||(it.text||'').split('\n')[0].trim();
     h+='<div class="card mem-card" onclick="openMemModal(\''+it.id+'\')">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span><span class="tag">'+t('mem.kind.'+it.kind)+'</span><span style="font-size:12px;color:var(--text3);margin-left:8px;">'+it.date+'</span></span><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();delMem(\''+it.id+'\')">'+t('lib.del')+'</button></div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="display:flex;align-items:center;gap:8px;min-width:0;"><input type="checkbox" class="mem-sel" data-id="'+it.id+'"'+( _memSel[it.id]?' checked':'')+'><span class="tag">'+t('mem.kind.'+it.kind)+'</span><span style="font-size:12px;color:var(--text3);">'+it.date+'</span></span><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();delMem(\''+it.id+'\')">'+t('lib.del')+'</button></div>';
     h+='<div class="know-body mem-summary" style="margin-top:8px;">'+esc(sum)+'</div>';
     h+='<div style="font-size:12px;color:var(--text3);margin-top:6px;">'+t('mem.view')+' →</div></div>';
   }
   c.innerHTML=h;
+  c.querySelectorAll('.mem-sel').forEach(function(cb){cb.addEventListener('click',function(e){e.stopPropagation();});cb.addEventListener('change',function(){toggleMemSel(this.getAttribute('data-id'),this);});});
+  updateMemSelBar();
 }
 function setMemTab(k){_memTab=k;renderMemory();}
 function openMemModal(id){
@@ -2296,23 +2301,35 @@ function openMemModal(id){
   document.getElementById('mem-modal').classList.add('open');
 }
 function closeMemModal(){document.getElementById('mem-modal').classList.remove('open');}
-function delMem(id){var m=loadMem();m=m.filter(function(x){return x.id!==id;});saveMem(m);renderMemory();}
-function clearMem(){saveMem([]);renderMemory();showToast(t('mem.cleared'),false);}
-async function compressMem(){
-  var m=loadMem();
+function delMem(id){var m=loadMem();m=m.filter(function(x){return x.id!==id;});saveMem(m);delete _memSel[id];updateMemSelBar();renderMemory();}
+function clearMem(){saveMem([]);_memSel={};updateMemSelBar();renderMemory();showToast(t('mem.cleared'),false);}
+function toggleMemSel(id,el){if(el.checked)_memSel[id]=true;else delete _memSel[id];updateMemSelBar();}
+function cancelMemSel(){_memSel={};renderMemory();}
+function updateMemSelBar(){var n=Object.keys(_memSel).length;var b=document.getElementById('mem-compress-sel'),c=document.getElementById('mem-sel-cancel'),ne=document.getElementById('mem-sel-n');if(b)b.style.display=n>0?'':'none';if(c)c.style.display=n>0?'':'none';if(ne)ne.textContent=n;}
+function confirmCompressAll(){var n=loadMem().length;if(n<2){showToast(t('mem.compress.empty'),true);return;}if(!confirm(t('mem.compress.confirm').replace('{n}',n)))return;compressMem();}
+function confirmCompressSel(){var ids=Object.keys(_memSel);if(ids.length<2){showToast(t('mem.compress.empty'),true);return;}if(!confirm(t('mem.compress.confirm').replace('{n}',ids.length)))return;compressMem(ids);}
+async function compressMem(ids){
+  var all=loadMem();
+  var m=all;
+  if(ids&&ids.length){var keep={};for(var k=0;k<ids.length;k++)keep[ids[k]]=1;m=all.filter(function(x){return keep[x.id];});}
   if(m.length<2){showToast(t('mem.compress.empty'),true);return;}
   if(!requirePoints(1,'memory'))return;
-  var all=m.map(function(x){return '['+(t('mem.kind.'+x.kind)||x.kind)+']\n'+(x.text||'');}).join('\n\n---\n\n');
-  var pl=detectLang(all);
+  var text=m.map(function(x){return '['+(t('mem.kind.'+x.kind)||x.kind)+']\n'+(x.text||'');}).join('\n\n---\n\n');
+  var pl=detectLang(text);
   var sys=pl==='en'
-    ?'You are a career-memory organizer. Merge the user\'s past notes below into ONE concise long-term summary (under 400 words). Keep key facts, numbers, preferences, and conclusions. Drop redundancy and unimportant details.'
-    :'你是求职记忆整理助手。把用户下面全部的记忆合并成一条精炼的长期摘要（500 字以内），保留关键事实、数字、偏好和结论，去除重复与无关细节。';
-  var user=pl==='en'?'## All past memories\n'+all:'## 全部记忆\n'+all;
+    ?'You are a career-memory organizer. Merge the notes below into ONE concise long-term summary (under 400 words). Keep key facts, numbers, preferences, and conclusions. Drop redundancy and unimportant details.'
+    :'你是求职记忆整理助手。把用户下面这些记忆合并成一条精炼的长期摘要（500 字以内），保留关键事实、数字、偏好和结论，去除重复与无关细节。';
+  var user=pl==='en'?'## Memories to compress\n'+text:'## 待压缩的记忆\n'+text;
   setBusy(true);
   try{
     var res=await callLLM(sys,user);
     var now=new Date();
-    saveMem([{id:now.getTime().toString(36),date:now.toISOString().slice(0,10),kind:'analysis',text:res,summary:(res.split('\n')[0]||'').trim().slice(0,80)}]);
+    var summary={id:now.getTime().toString(36),date:now.toISOString().slice(0,10),kind:'analysis',text:res,summary:(res.split('\n')[0]||'').trim().slice(0,80)};
+    var remaining=[];
+    if(ids&&ids.length){var keep2={};for(var j=0;j<ids.length;j++)keep2[ids[j]]=1;remaining=all.filter(function(x){return !keep2[x.id];});}
+    remaining.unshift(summary);
+    saveMem(remaining);
+    _memSel={};
     renderMemory();
     showToast(t('mem.compress.done'),false);
   }catch(e){
