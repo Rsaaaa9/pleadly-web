@@ -261,6 +261,16 @@ tr:hover td{background:var(--surface2);}
 .pts-box .pts-num{font-size:20px;font-weight:700;color:var(--text);}
 .pts-redeem{display:flex;gap:8px;flex:1;min-width:200px;}
 .pts-redeem input{flex:1;}
+.txn-list{display:flex;flex-direction:column;gap:0;margin-top:4px;max-height:320px;overflow-y:auto;}
+.txn-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--separator);}
+.txn-row:last-child{border-bottom:none;}
+.txn-main{flex:1;min-width:0;}
+.txn-title{font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.txn-time{font-size:11px;color:var(--text3);margin-top:1px;}
+.txn-amt{font-weight:700;font-size:13px;white-space:nowrap;}
+.txn-amt.pos{color:var(--green);}
+.txn-amt.neg{color:var(--red);}
+.txn-bal{font-size:11px;color:var(--text3);white-space:nowrap;min-width:56px;text-align:right;}
 @media(max-width:860px){
   .layout{flex-direction:column;}
   .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--separator);padding:10px 12px;}
@@ -623,6 +633,12 @@ body.standalone .page{max-width:none;padding:0;}
         <button class="btn btn-primary btn-sm" onclick="redeem()" data-i18n="pts.redeembtn">兑换</button>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:6px;" data-i18n="pts.redeem.hint">兑换码可向作者获取，一次性使用，兑换后积分累加。</div>
+    </div>
+    <div class="settings-field">
+      <label data-i18n="pts.history">积分明细</label>
+      <div class="txn-list" id="txn-list">
+        <div style="font-size:12px;color:var(--text3);padding:6px 2px;" id="txn-empty" data-i18n="pts.history.empty">暂无明细</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1011,6 +1027,7 @@ zh:{
  'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败',
  'pts.unit':'积分','pts.balance':'积分余额','pts.redeem':'兑换码','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'兑换','pts.redeem.hint':'兑换码可向作者获取，一次性使用，兑换后积分累加。',
  'pts.insufficient':'积分不足，请先兑换积分','pts.redeemed':'兑换成功，+{N} 积分','pts.invalid':'兑换码无效','pts.used':'兑换码已被使用',
+ 'pts.history':'积分明细','pts.history.empty':'暂无明细','pts.history.redeem':'兑换码充值','pts.history.free':'新用户赠送','pts.history.spend':'功能消费','pts.history.refund':'退款','pts.history.memory':'记忆整理','pts.history.balance':'余额',
  'acct.title':'账号（跨设备同步积分）','acct.username':'用户名','acct.username.ph':'2-32 字符','acct.password':'密码（8-16 位数字或英文字母）','acct.password.ph':'至少 6 位','acct.login':'登录','acct.register':'注册','acct.hint':'注册后积分跟随账号，可跨设备同步；注册时自动合并本设备已有积分。','acct.loggedin':'已登录','acct.logout':'退出登录','acct.loggedin.hint':'积分已与账号绑定，换设备登录即可同步。','acct.needfield':'请输入用户名和密码','acct.baduser':'用户名需 2-32 个字符','acct.shortpass':'密码至少 6 位','acct.noaccount':'账号不存在','acct.badpass':'密码错误','acct.taken':'用户名已被占用','acct.fail':'操作失败，请稍后重试','acct.loggedout':'已退出登录',
  'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点击上方「运行」按钮生成结果',
  'side.analysis':'求职分析','side.resume':'简历','side.explore':'职业探索','side.execute':'求职执行','side.offer':'面试与Offer','side.onoff':'入职与离职','side.data':'数据','side.about':'关于与帮助',
@@ -1087,6 +1104,7 @@ en:{
  'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed',
  'pts.unit':'pts','pts.balance':'Point Balance','pts.redeem':'Redeem Code','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'Redeem','pts.redeem.hint':'Get a redeem code from the author. Single-use; points are added on redemption.',
  'pts.insufficient':'Not enough points — redeem more first','pts.redeemed':'Redeemed, +{N} pts','pts.invalid':'Invalid redeem code','pts.used':'Code already used',
+ 'pts.history':'Points History','pts.history.empty':'No records yet','pts.history.redeem':'Code redeemed','pts.history.free':'Welcome gift','pts.history.spend':'Feature used','pts.history.refund':'Refund','pts.history.memory':'Memory summary','pts.history.balance':'Balance',
  'acct.title':'Account (sync points across devices)','acct.username':'Username','acct.username.ph':'2-32 chars','acct.password':'Password (8-16 letters or digits)','acct.password.ph':'At least 6 chars','acct.login':'Log in','acct.register':'Sign up','acct.hint':'Points follow your account across devices; existing device points merge on signup.','acct.loggedin':'Logged in','acct.logout':'Log out','acct.loggedin.hint':'Points are bound to your account — log in on any device to sync.','acct.needfield':'Enter username and password','acct.baduser':'Username must be 2-32 chars','acct.shortpass':'Password must be at least 6 chars','acct.noaccount':'Account not found','acct.badpass':'Wrong password','acct.taken':'Username taken','acct.fail':'Failed — try again later','acct.loggedout':'Logged out',
  'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Click Run above to generate the result',
  'side.analysis':'Job Analysis','side.resume':'Resume','side.explore':'Career Explore','side.execute':'Job Execution','side.offer':'Interview & Offer','side.onoff':'Onboarding & Resignation','side.data':'Data','side.about':'About & Help',
@@ -1188,7 +1206,7 @@ function getTurnstileToken(){
   __tsQueue=p.then(function(){},function(){});
   return p;
 }
-var _sessionId='',_pendingCost=0,_sessionPromise=null;
+var _sessionId='',_pendingCost=0,_pendingLabel='',_sessionPromise=null;
 function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():('d-'+Date.now()+'-'+Math.random().toString(16).slice(2));}catch(e){id='d-'+Date.now()+'-'+Math.random().toString(16).slice(2);}localStorage.setItem(k,id);}return id;}
 function authToken(){return localStorage.getItem('p_token')||'';}
 function acctUser(){return localStorage.getItem('p_user')||'';}
@@ -1196,10 +1214,11 @@ async function _openSession(cost){
   var resp=null;
   for(var attempt=0;attempt<3;attempt++){
     var tk=await getTurnstileToken();
-    resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),turnstileToken:tk})});
+    resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),label:_pendingLabel,turnstileToken:tk})});
     if(resp.status!==403)break; // 403=人机验证失败，换新 token 重试
     await new Promise(function(r){setTimeout(r,500);});
   }
+  _pendingLabel='';
   if(resp.status===402){var e=new Error('nopoints');e.nopoints=true;throw e;}
   if(resp.status===403){var e=new Error('verify');e.verify=true;throw e;}
   if(!resp.ok){var e=new Error('session error '+resp.status);throw e;}
@@ -1267,7 +1286,50 @@ async function redeem(){
     showToast(t('pts.redeemed').replace('{N}',r.pts),false);
   }finally{_redeeming=false;}
 }
-function requirePoints(cost){if(FREE_MODE)return true;_pendingCost=cost;_sessionId='';_sessionPromise=null;if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
+function featureTitle(key){
+  var f=featureByKey(key);
+  if(f)return lang==='en'?f.title.en:f.title.zh;
+  for(var i=0;i<POSITION_STEPS.length;i++){if(POSITION_STEPS[i].key===key)return lang==='en'?POSITION_STEPS[i].title.en:POSITION_STEPS[i].title.zh;}
+  if(key==='memory')return t('pts.history.memory');
+  return key;
+}
+function txnDesc(tx){
+  var lab=tx.label||'';
+  if(tx.type==='redeem')return t('pts.history.redeem')+(lab?' · '+lab:'');
+  if(tx.type==='free')return t('pts.history.free');
+  if(tx.type==='refund')return t('pts.history.refund')+(lab?' · '+featureTitle(lab):'');
+  if(tx.type==='spend')return t('pts.history.spend')+(lab?' · '+featureTitle(lab):'');
+  return lab||tx.type;
+}
+function fmtTxnTime(ts){
+  var d=new Date(ts);
+  var p=function(n){return (n<10?'0':'')+n;};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+async function loadTxnHistory(){
+  var list=document.getElementById('txn-list');
+  if(!list)return;
+  var txns=[];
+  if(!FREE_MODE){
+    try{
+      var resp=await fetch(API_BASE+'/transactions?deviceId='+encodeURIComponent(deviceId())+'&token='+encodeURIComponent(authToken()));
+      if(resp.ok){var d=await resp.json();txns=d.transactions||[];}
+    }catch(e){}
+  }
+  var h='';
+  if(!txns.length){h='<div style="font-size:12px;color:var(--text3);padding:6px 2px;">'+t('pts.history.empty')+'</div>';}
+  for(var i=0;i<txns.length;i++){
+    var tx=txns[i];
+    var pos=tx.amount>0;
+    h+='<div class="txn-row">'
+      +'<div class="txn-main"><div class="txn-title">'+esc(txnDesc(tx))+'</div><div class="txn-time">'+fmtTxnTime(tx.ts)+'</div></div>'
+      +'<div class="txn-bal">'+t('pts.history.balance')+' '+tx.balance+'</div>'
+      +'<div class="txn-amt '+(pos?'pos':'neg')+'">'+(pos?'+':'')+tx.amount+'</div>'
+      +'</div>';
+  }
+  list.innerHTML=h;
+}
+function requirePoints(cost,label){if(FREE_MODE)return true;_pendingCost=cost;_pendingLabel=label||'';_sessionId='';_sessionPromise=null;if(getBalance()<cost){showToast(t('pts.insufficient'),true);goPersonal('profile');return false;}return true;}
 /* ============ 账号 + 个人页 + 头像 + 设置 ============ */
 function authAccount(){return localStorage.getItem('p_account')||'';}
 function setAuthTab(tab){
@@ -1295,6 +1357,7 @@ function renderProfile(){
   if(lo)lo.style.display=tok?'none':'';
   if(li)li.style.display=tok?'':'none';
   updatePointsUI();
+  loadTxnHistory();
 }
 function renderAvatar(){
   var img=localStorage.getItem('p_avatar');
@@ -1896,7 +1959,7 @@ async function runAnalysis(){
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(10))return;
+  if(!requirePoints(10,'full'))return;
   setBusy(true);
   _startGreet(jd,profile);
   setBot(t('bot.analyzing'));
@@ -1923,7 +1986,7 @@ async function runResumeBuild(){
   if(!_g2.ok){showToast(t('guard.inject'),true);return;}
   if(_g2.truncated){profile=_g2.text;showToast(t('guard.len'),true);}
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(3))return;
+  if(!requirePoints(3,'build'))return;
   setBusy(true);
   var pl=detectLang(jd);
   var sys=(pl==='en'?SYSTEM_PROMPT_EN:SYSTEM_PROMPT)+memorySummary(pl);
@@ -2213,7 +2276,7 @@ function clearMem(){saveMem([]);renderMemory();showToast(t('mem.cleared'),false)
 async function compressMem(){
   var m=loadMem();
   if(m.length<2){showToast(t('mem.compress.empty'),true);return;}
-  if(!requirePoints(1))return;
+  if(!requirePoints(1,'memory'))return;
   var all=m.map(function(x){return '['+(t('mem.kind.'+x.kind)||x.kind)+']\n'+(x.text||'');}).join('\n\n---\n\n');
   var pl=detectLang(all);
   var sys=pl==='en'
@@ -2315,7 +2378,7 @@ function featErr(e){return errHtml(e);}
 async function runFeature(){
   var f=featureByKey(curFeature);if(!f)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(f.cost))return;
+  if(!requirePoints(f.cost,f.key))return;
   setBusy(true);
   var key=curFeature;
   try{
@@ -2450,7 +2513,7 @@ function setMockLimited(on){
   var b=document.getElementById('mock-budget');if(b)b.textContent=on?t('mock.limit'):mockBudgetText();
 }
 function mockContinue(){
-  if(!requirePoints(5))return;
+  if(!requirePoints(5,'mock'))return;
   mockRounds=0;
   setMockLimited(false);
   setBot(t('bot.ready'));
@@ -2485,7 +2548,7 @@ function mockAdd(role,text){
 async function mockStart(){
   var base=mockSystem();if(!base)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(5))return;
+  if(!requirePoints(5,'mock'))return;
   setBusy(true);
   mockMessages=base;
   mockRounds=0;
@@ -2693,7 +2756,7 @@ function toggleStep(i){
 async function runStepInline(i){
   var f=STEP_FEATURES[i];if(!f)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(f.cost))return;
+  if(!requirePoints(f.cost,f.key))return;
   setBusy(true);
   try{await runStepFeature(f,document.getElementById('jd-input'),document.getElementById('analysis-output'));}
   finally{setBusy(false);}
@@ -2736,7 +2799,7 @@ function renderPositionSteps(){
 function togglePositionStep(i){var c=document.getElementById('position-card-'+i);if(c)c.classList.toggle('open');}
 async function runPositionAll(){
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(10))return;
+  if(!requirePoints(10,'position'))return;
   setBusy(true);
   var out=document.getElementById('position-output');
   out.innerHTML=prog();
@@ -2765,7 +2828,7 @@ async function runPositionAll(){
 async function runPositionStep(i){
   var st=POSITION_STEPS[i];if(!st)return;
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(st.cost))return;
+  if(!requirePoints(st.cost,st.key))return;
   setBusy(true);
   var out=document.getElementById('position-output');
   out.innerHTML=prog();
@@ -2788,7 +2851,7 @@ var RESIGN_PROMPT='你是资深劳动法与职业生涯顾问。基于候选人�
 var RESIGN_PROMPT_EN='You are a senior labor-law and career advisor. Based on the candidate\'s real resume and the resignation info below, produce a personal resignation plan covering decision self-check, legal review, timeline, and document templates. Output in Markdown.\n\n## Candidate resume\n{PROFILE}\n\n## Resignation info\n{CTX}\n\n## Output structure (14 modules)\n1. Decision self-check (3 reasons + risk matrix)\n2. Legal review (non-compete validity, penalty clauses, severance N/2N/N+1)\n3. Exit method: voluntary resignation vs mutual termination vs constructive dismissal — with recommendation\n4. Notice period & process (30 days / 3-day probation timeline)\n5. Resignation letter template (with name/date placeholders)\n6. Handover checklist (work, access, docs, client handoffs)\n7. Social insurance & housing fund continuity (this-month, cross-city transfer, gaps)\n8. Non-compete handling (compensation standard, lawful avoidance)\n9. Offer & new-employer risks (background check, start-date negotiation, confidentiality)\n10. 30-day timeline (W1-W4 actions)\n11. Talking scripts (resigning to manager / HR, verbatim)\n12. Exit interview dos & don\'ts\n13. Financial reconciliation (unpaid wages, overtime, annual-leave payout, bonus, expenses)\n14. Mindset & next steps (gap planning, side projects, insurance, next positioning)\n\n## Rules\n- Precede legal conclusions with "subject to local law; consult a lawyer for material matters"\n- Base only on the resume and the info the user provided; never fabricate company, role, or pay\n- Mark non-compete/severance amounts as "estimate, subject to contract and law"';
 async function runResign(){
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(4))return;
+  if(!requirePoints(4,'resign'))return;
   var nca=document.getElementById('resign-nca').value;
   var city=document.getElementById('resign-city').value.trim();
   var next=document.getElementById('resign-next').value;
@@ -2821,7 +2884,7 @@ var ONJOB_PROMPT='你是资深职场发展与向上管理顾问。基于候选�
 var ONJOB_PROMPT_EN='You are a senior career-development and upward-management coach. Based on the candidate\'s real resume and the on-the-job info below, produce a personal on-the-job growth plan covering stage priorities, performance sprint, upward management, raise/promotion, and job-hunting protection. Output in Markdown.\n\n## Candidate resume\n{PROFILE}\n\n## On-the-job info\n{CTX}\n\n## Output structure (10 modules)\n1. **Current-stage priority**: for probation / regular / just-joined, the single most important action now and why\n2. **Probation / annual self-review template**: structured self-assessment that quantifies your output\n3. **Performance sprint plan**: break the cycle into weekly actions with verifiable outputs at each checkpoint\n4. **Upward management**: reporting rhythm, making results visible to your manager, cross-team positioning\n5. **Raise negotiation**: timing, quantified leverage, verbatim scripts, fallback if declined\n6. **Promotion path**: competency gaps, closing actions, key decision-makers and supporters, promotion window\n7. **Job-hunting while employed** (if the goal is to change jobs): confidentiality, pacing, background-check risk\n8. **Relationships & mindset**: antidotes to draining office politics, avoiding overcommitment, setting boundaries\n9. **30-day action timeline**: concrete actions by week (W1-W4)\n10. **One-line summary**: the single principle to remember this stage\n\n## Rules\n- Base only on the resume and the info the user provided; never fabricate company, role, KPI, or pay\n- Mark salary/promotion figures as "estimate / subject to company and contract"\n- Be concrete and actionable; avoid platitudes';
 async function runOnjob(){
   if(FREE_MODE&&!loadSettings().apiKey){showToast(t('needkey'),true);focusKey();return;}
-  if(!requirePoints(5))return;
+  if(!requirePoints(5,'onjob'))return;
   var role=document.getElementById('onjob-role').value.trim();
   var company=document.getElementById('onjob-company').value.trim();
   var stage=document.getElementById('onjob-stage').value;

@@ -25,6 +25,8 @@ const SESSION_WINDOW = 60 * 60;      // IP 限流窗口（秒）
 const SMS_CODE_TTL = 5 * 60;         // 短信验证码 5 分钟有效（秒）
 const SMS_RESEND = 60;               // 同一手机号重发间隔（秒）
 const SMS_MAX_TRIES = 5;             // 同一验证码最多试错次数
+const MAX_TXN = 100;                 // 积分明细每人最多保留条数
+const TXN_TTL = 365 * 24 * 60 * 60;  // 积分明细保留 1 年（秒）
 
 // —— 学历硬门槛：学校层级名单存 KV（私有，避免把学校名单/作者学校写进公开仓库）——
 // KV key 'school-tiers' → JSON 对象 {校名: 层级}，层级 ∈ {985, 211, 双一流, 一本}。
@@ -134,6 +136,8 @@ async function ensureFree(env, owner) {
   await env.PLEADLY_KV.put('freegranted:' + owner, '1');
   await env.PLEADLY_KV.put('freeat:' + owner, String(Date.now()));
   await env.PLEADLY_KV.put('free:' + owner, String(FREE_STARTER), { expirationTtl: FREE_TTL });
+  const paid = await getPaid(env, owner);
+  await appendTxn(env, owner, 'free', FREE_STARTER, paid + FREE_STARTER, '');
   return FREE_STARTER;
 }
 
@@ -201,6 +205,30 @@ async function mergeIntoAccount(env, deviceId, accountId) {
     await env.PLEADLY_KV.put('freeat:' + accountId, String(Math.min(devAt, acctAt)));
     await setFree(env, accountId, acctFree + free);
   }
+
+  // 合并积分明细：设备明细并入账号（按时间倒序合并、截断），避免登录后看不到匿名期的记录
+  const devTxns = await getTxns(env, deviceId);
+  if (devTxns.length) {
+    const acctTxns = await getTxns(env, accountId);
+    const merged = devTxns.concat(acctTxns).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, MAX_TXN);
+    await env.PLEADLY_KV.put('txn:' + accountId, JSON.stringify(merged), { expirationTtl: TXN_TTL });
+    await env.PLEADLY_KV.delete('txn:' + deviceId);
+  }
+}
+
+// ===== 积分明细：存 txn:<owner>，最新在前，最多 MAX_TXN 条，TTL 过期 =====
+async function getTxns(env, owner) {
+  const raw = await env.PLEADLY_KV.get('txn:' + owner);
+  if (!raw) return [];
+  try { const a = JSON.parse(raw); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+async function appendTxn(env, owner, type, amount, balance, label) {
+  try {
+    const arr = await getTxns(env, owner);
+    arr.unshift({ ts: Date.now(), type, amount, balance, label: label || '' });
+    if (arr.length > MAX_TXN) arr.length = MAX_TXN;
+    await env.PLEADLY_KV.put('txn:' + owner, JSON.stringify(arr), { expirationTtl: TXN_TTL });
+  } catch (e) { /* 明细写入失败不影响主流程 */ }
 }
 
 // IP 限流：同一 IP 每小时开会话数上限（防脚本刷免费分）
@@ -296,6 +324,15 @@ export default {
       });
     }
 
+    // 1b) 积分明细（充值/消费/退款/赠送，按时间倒序）
+    if (path === '/transactions' && request.method === 'GET') {
+      const deviceId = (url.searchParams.get('deviceId') || '').toString().slice(0, 64);
+      const token = (url.searchParams.get('token') || '').toString().slice(0, 80);
+      if (!deviceId) return json({ error: 'missing deviceId' }, 400);
+      const owner = await resolveOwner(env, deviceId, token);
+      return json({ transactions: await getTxns(env, owner) });
+    }
+
     // 2) 兑换码
     if (path === '/redeem' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
@@ -315,6 +352,7 @@ export default {
       const newPaid = paid + parsed.points;
       await setPaid(env, owner, newPaid);
       const free = await getFree(env, owner);
+      await appendTxn(env, owner, 'redeem', parsed.points, newPaid + free, code);
       return json({ added: parsed.points, balance: newPaid + free });
     }
 
@@ -336,14 +374,16 @@ export default {
       if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
 
       const owner = await resolveOwner(env, deviceId, token);
+      const label = (body.label || '').toString().slice(0, 64);
       const bal = await getBalance(env, owner);
       if (bal < cost) return json({ error: 'no_points' }, 402);
       const newBal = await spend(env, owner, cost);
       if (newBal === null) return json({ error: 'no_points' }, 402);
+      await appendTxn(env, owner, 'spend', -cost, newBal, label);
       const sessionId = randId(24);
       const initBudget = budgetFor(cost);
       await env.PLEADLY_KV.put('session:' + sessionId, JSON.stringify({
-        owner, cost, budget: initBudget, initBudget, expires: Date.now() + SESSION_TTL * 1000,
+        owner, cost, budget: initBudget, initBudget, label, expires: Date.now() + SESSION_TTL * 1000,
       }), { expirationTtl: SESSION_TTL });
       return json({ sessionId, balance: newBal });
     }
@@ -361,7 +401,9 @@ export default {
       const refund = Math.max(0, Math.round((sess.cost || 0) * (sess.budget || 0) / initBudget));
       if (refund > 0) await setPaid(env, sess.owner, (await getPaid(env, sess.owner)) + refund);
       await env.PLEADLY_KV.delete('session:' + sessionId);
-      return json({ refunded: refund, balance: await getBalance(env, sess.owner) });
+      const bal = await getBalance(env, sess.owner);
+      if (refund > 0) await appendTxn(env, sess.owner, 'refund', refund, bal, sess.label || '');
+      return json({ refunded: refund, balance: bal });
     }
 
     // 4) LLM 代理（凭会话）
