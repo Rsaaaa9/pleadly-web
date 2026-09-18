@@ -356,7 +356,8 @@ body.standalone .page{max-width:none;padding:0;}
 .lang-switch button{flex:1;}
 .settings-card{max-width:520px;}
 </style>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+<!-- Turnstile 不再在 <head> 同步加载：challenges.cloudflare.com 在国内常被墙，同步脚本会卡住整个首页。
+     改为 getTurnstileToken() 时按需懒加载（loadTurnstile），只影响注册/手机登录等账号类接口。 -->
 </head>
 <body class="standalone">
 <div id="turnstile-widget"></div>
@@ -1188,9 +1189,25 @@ function ensureTurnstile(){
   return __tsWidgetId;
 }
 var __tsQueue=Promise.resolve();
+var __tsScript=null;
+// 按需懒加载 Turnstile：只在需要人机验证（注册/手机登录）时才加载脚本，避免国内被墙时阻塞首页
+function loadTurnstile(){
+  if(!__tsScript){
+    __tsScript=new Promise(function(resolve){
+      var s=document.createElement('script');
+      s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async=true;
+      s.onload=function(){resolve(true);};
+      s.onerror=function(){resolve(false);};
+      document.head.appendChild(s);
+      setTimeout(function(){resolve(false);},8000); // 8 秒兜底，被墙时别让注册流程无限等待
+    });
+  }
+  return __tsScript;
+}
 function getTurnstileToken(){
-  var p=__tsQueue.then(function(){return new Promise(function(resolve){
-    if(!TURNSTILE_SITE_KEY){ resolve(''); return; }
+  var p=__tsQueue.then(function(){return loadTurnstile().then(function(loaded){return new Promise(function(resolve){
+    if(!loaded || !TURNSTILE_SITE_KEY){ resolve(''); return; }
     if(!window.turnstile || !window.turnstile.ready){ resolve(''); return; }
     window.turnstile.ready(function(){
       var id=ensureTurnstile();
@@ -1202,7 +1219,7 @@ function getTurnstileToken(){
       try{ window.turnstile.execute(id,{action:'session'}); }
       catch(e){ if(!done){done=true;__tsResolver=null;if(timer)clearTimeout(timer);resolve('');} }
     });
-  });});
+  });});});
   __tsQueue=p.then(function(){},function(){});
   return p;
 }
@@ -1211,16 +1228,9 @@ function deviceId(){var k='p_devid';var id=localStorage.getItem(k);if(!id){try{i
 function authToken(){return localStorage.getItem('p_token')||'';}
 function acctUser(){return localStorage.getItem('p_user')||'';}
 async function _openSession(cost){
-  var resp=null;
-  for(var attempt=0;attempt<3;attempt++){
-    var tk=await getTurnstileToken();
-    resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),label:_pendingLabel,turnstileToken:tk})});
-    if(resp.status!==403)break; // 403=人机验证失败，换新 token 重试
-    await new Promise(function(r){setTimeout(r,500);});
-  }
+  var resp=await fetch(API_BASE+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId(),cost:cost,token:authToken(),label:_pendingLabel})});
   _pendingLabel='';
   if(resp.status===402){var e=new Error('nopoints');e.nopoints=true;throw e;}
-  if(resp.status===403){var e=new Error('verify');e.verify=true;throw e;}
   if(!resp.ok){var e=new Error('session error '+resp.status);throw e;}
   var d=await resp.json();
   _sessionId=d.sessionId;setBalance(d.balance);updatePointsUI();
@@ -1895,7 +1905,9 @@ function errHtml(e){
     +'<p style="margin-top:6px;"><a href="javascript:;" onclick="openErrDetail()" style="color:var(--accent);text-decoration:underline;cursor:pointer;font-size:12px;">'+esc(t('err.details'))+'</a></p>';
 }
 function handleError(e){
-  renderOut(errHtml(e),'');
+  // 直接写入，不能走 renderOut → mdToHtml → stripHtml，否则会把「报错详情」的 <a> 链接剥掉导致点不开
+  var out=document.getElementById('analysis-output');
+  if(out)out.innerHTML='<div class="md-output">'+errHtml(e)+'</div>';
   if(e.needkey||e.invalidkey)focusKey();
   setBot(t('bot.offline'));
 }

@@ -368,10 +368,9 @@ export default {
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
       if (ip && (await rateLimited(env, ip))) return json({ error: 'rate_limited' }, 429);
 
-      // Turnstile 人机验证（未配置 TURNSTILE_SECRET 时放行，平滑上线）
-      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      const _ts = await verifyTurnstile(env, turnstileToken, ip);
-      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
+      // 人机验证：此处不再硬拦。/session 是国内用户高频入口，而 challenges.cloudflare.com 在国内常被墙，
+      // 硬拦会误伤真实付费用户（此前大量「session error 403」）。反滥用改由上方 IP 限流 + 积分账本兜底。
+      // 账号类接口（/register /login/phone /sms/send）仍保留 Turnstile 硬校验。
 
       const owner = await resolveOwner(env, deviceId, token);
       const label = (body.label || '').toString().slice(0, 64);
