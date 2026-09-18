@@ -318,11 +318,7 @@ body.is-busy .bottombar-dot{background:var(--orange);animation:pulse 1.2s ease-i
 .landing{max-width:660px;margin:0 auto;text-align:center;padding:32px 20px;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;}
 .landing-logo{font-size:80px;font-weight:800;letter-spacing:-0.03em;color:var(--text);font-optical-sizing:auto;line-height:1.1;}
 .landing-logo .dot{color:var(--accent);}
-.landing-tag{font-size:16px;color:var(--text2);margin:16px 0 34px;line-height:1.8;}
 .landing-cta .btn{font-size:16px;padding:13px 32px;border-radius:999px;}
-.landing-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:40px auto 0;max-width:580px;text-align:left;}
-.landing-feat{background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:14px 16px;font-size:13px;color:var(--text2);}
-.landing-feat b{display:block;color:var(--accent);font-size:12px;margin-bottom:3px;}
 .landing-contact{margin-top:38px;font-size:13px;color:var(--text3);}
 .landing-contact b{color:var(--text2);}
 .landing-about{margin-top:20px;font-size:12px;color:var(--text3);}
@@ -560,12 +556,6 @@ body.standalone .page{max-width:none;padding:0;}
 <div class="page active" id="page-home">
   <div class="landing">
     <div class="landing-logo">Pleadly</div>
-    <div class="landing-tag" data-i18n="home.tagline">你的 AI 求职教练——从定位方向、读懂 JD、打磨简历，到面试、谈薪、入职离职，全程陪你走完。</div>
-    <div class="landing-feats">
-      <div class="landing-feat"><b data-i18n="home.f1.t">10 步全流程</b><span data-i18n="home.f1.d">从 ATS 到 Offer 谈判、入职离职，一站式走完</span></div>
-      <div class="landing-feat"><b data-i18n="home.f2.t">只存本机</b><span data-i18n="home.f2.d">你的简历与记忆留在浏览器，绝不上传</span></div>
-      <div class="landing-feat"><b data-i18n="home.f3.t">按次付费</b><span data-i18n="home.f3.d">用多少付多少，积分明码标价</span></div>
-    </div>
     <div class="landing-cta">
       <button class="btn btn-primary" onclick="startJourney()" data-i18n="home.cta.start">→ 开启你的求职之旅</button>
     </div>
@@ -1055,7 +1045,7 @@ zh:{
  'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点上方「运行」，结果会出现在这里',
  'side.analysis':'求职分析','side.resume':'简历','side.explore':'职业探索','side.execute':'求职执行','side.offer':'面试与Offer','side.onoff':'入职与离职','side.data':'数据','side.about':'关于与帮助',
  'info.home':'首页','info.rules':'功能与积分规则','info.guide':'使用说明','info.faq':'常见问题','info.privacy':'隐私政策','info.terms':'用户协议','info.service':'权益与售后','info.disclaimer':'免责声明',
- 'home.title':'Pleadly','home.tagline':'你的 AI 求职教练——从定位方向、读懂 JD、打磨简历，到面试、谈薪、入职离职，全程陪你走完。','home.cta.start':'→ 开启你的求职之旅','home.cta.full':'开始全面分析','home.cta.rules':'了解积分规则','home.steps.title':'一条 10 步全流程','home.f1.t':'10 步全流程','home.f1.d':'从 ATS 到 Offer 谈判、入职离职，一站式走完','home.f2.t':'只存本机','home.f2.d':'你的简历与记忆留在浏览器，绝不上传','home.f3.t':'按次付费','home.f3.d':'用多少付多少，积分明码标价','home.contact.title':'联系我们','home.contact.xhs':'小红书','home.contact.email':'邮箱',
+ 'home.title':'Pleadly','home.cta.start':'→ 开启你的求职之旅','home.cta.full':'开始全面分析','home.cta.rules':'了解积分规则','home.steps.title':'一条 10 步全流程','home.contact.title':'联系我们','home.contact.xhs':'小红书','home.contact.email':'邮箱',
  'acct.account':'账号（8 位纯数字）','acct.account.ph':'8 位数字','acct.skip':'暂不登录，直接开始使用 →','acct.badaccount':'账号必须是 8 位数字','acct.badpassfmt':'密码需 8-16 位字母或数字','acct.needfield':'请输入账号和密码','acct.baduser':'用户名不能超过 32 个字符','acct.username.ph':'任意昵称（≤32 字符）','acct.password.ph':'8-16 位字母或数字',
  'position.title':'职业定位','position.subtitle':'4 步找到你的方向：盘点技能 → 扫描市场 → 锁定路线 → 落地执行','position.runall':'一键职业定位','position.runall.title':'一键职业定位','position.runall.desc':'4 步依次执行，前一步结果自动注入下一步，无需重复输入。','position.step.section':'分步执行','position.step.section.hint':'不用一次跑完，想看哪一步就点哪一步','position.empty':'点击上方按钮开始职业定位','position.empty.desc':'我会自动读取你的信息库，作为分析背景',
  'pos.skill':'技能盘点','pos.market':'市场扫描','pos.pivot':'路线锁定','pos.search':'落地执行',
@@ -1132,7 +1122,7 @@ en:{
  'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Tap Run above and your result appears here',
  'side.analysis':'Job Analysis','side.resume':'Resume','side.explore':'Career Explore','side.execute':'Job Execution','side.offer':'Interview & Offer','side.onoff':'Onboarding & Resignation','side.data':'Data','side.about':'About & Help',
  'info.home':'Home','info.rules':'Features & Points','info.guide':'How to use','info.faq':'FAQ','info.privacy':'Privacy','info.terms':'Terms','info.service':'Support','info.disclaimer':'Disclaimer',
- 'home.title':'Pleadly','home.tagline':'Your AI career coach — from finding your direction and nailing the JD, to interviews, salary talks, onboarding and beyond.','home.cta.start':'→ Start your career journey','home.cta.full':'Start analysis','home.cta.rules':'See points rules','home.steps.title':'A 10-step full pipeline','home.f1.t':'A 10-step pipeline','home.f1.d':'From ATS to offer negotiation and beyond','home.f2.t':'Local by design','home.f2.d':'Your resume and memory stay in your browser','home.f3.t':'Pay as you go','home.f3.d':'Points with clear, upfront pricing','home.contact.title':'Contact us','home.contact.xhs':'Xiaohongshu','home.contact.email':'Email',
+ 'home.title':'Pleadly','home.cta.start':'→ Start your career journey','home.cta.full':'Start analysis','home.cta.rules':'See points rules','home.steps.title':'A 10-step full pipeline','home.contact.title':'Contact us','home.contact.xhs':'Xiaohongshu','home.contact.email':'Email',
  'acct.account':'Account (8 digits)','acct.account.ph':'8 digits','acct.skip':'Skip and get started →','acct.badaccount':'Account must be 8 digits','acct.badpassfmt':'Password must be 8-16 letters or digits','acct.needfield':'Enter account and password','acct.baduser':'Username max 32 chars','acct.username.ph':'Any nickname (≤32 chars)','acct.password.ph':'8-16 letters or digits',
  'position.title':'Career Positioning','position.subtitle':'Find your direction in 4 steps: skill audit → market scan → pivot routes → search plan','position.runall':'One-click positioning','position.runall.title':'One-click positioning','position.runall.desc':'Runs the 4 steps in order; each step\'s output feeds the next automatically.','position.step.section':'Run step by step','position.step.section.hint':'No need to run everything — tap any step to start there','position.empty':'Click above to start positioning','position.empty.desc':'Your Library is read automatically as your background',
  'pos.skill':'Skill Audit','pos.market':'Market Scan','pos.pivot':'Pivot Routes','pos.search':'Search Plan',
