@@ -12,11 +12,11 @@
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com';
 const MODEL = 'deepseek-v4-pro';
-const FREE_STARTER = 5;         // 新设备免费试用积分（5 分，不足以跑完整「全面分析」，防白嫖策略见方案文档）
+const FREE_STARTER = 0;         // 新用户免费试用积分（0=不赠送，防反复注册刷积分）
 const MAX_OUT_TOKENS = 16384;
 const SESSION_TTL = 30 * 60;    // 会话有效期（秒）
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去 I/O/0/1 防混淆
-const DEFAULT_POINTS = 25;   // 自动补码默认面额（对应 ¥9.9=25 档）
+const DEFAULT_POINTS = 50;   // 自动补码默认面额（对应 ¥25=50 档，最小面额）
 const MIN_FRESH = 5;         // 新鲜码低于此数时自动补齐
 const REFILL_TARGET = 20;    // 补齐到的新鲜码数量
 const FREE_TTL = 7 * 24 * 60 * 60;  // 免费试用分 7 天过期（秒）
@@ -131,6 +131,7 @@ async function setPaid(env, owner, bal) {
 
 // 首次访问授予免费分（每个 owner 只授一次）
 async function ensureFree(env, owner) {
+  if (FREE_STARTER <= 0) return 0;  // 免费积分已关闭：不授予、不记 freegranted，防反复注册刷积分
   const granted = await env.PLEADLY_KV.get('freegranted:' + owner);
   if (granted) return 0;
   await env.PLEADLY_KV.put('freegranted:' + owner, '1');

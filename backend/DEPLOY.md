@@ -37,12 +37,12 @@ var API_BASE='https://api.pleadly.top';
 curl -X POST "https://<你的后端>/admin/codes" \
   -H "X-Admin-Secret: <你的ADMIN_SECRET>" \
   -H "Content-Type: application/json" \
-  -d '{"count":10,"points":60}'
+  -d '{"count":10,"points":50}'
 ```
 
 返回的 `codes` 就是明文码，**存到本地码池（建议一个表格：码 / 面额 / 状态[未售/已发出/已兑换]）**，不要提交到仓库。
 
-> 定价档位：¥9.9=60 / ¥19.9=130 / ¥49=340 / ¥99=720（积分）。
+> 定价档位：¥25=50 / ¥45=100 / ¥80=200 / ¥199=500 / ¥369=1000（积分）。
 
 ## 四、小红书售卖 & 履约
 

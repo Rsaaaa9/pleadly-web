@@ -6,8 +6,8 @@
 //
 // 用法：
 //   node tools/issue-code.js list              查看档位 + 码池状态
-//   node tools/issue-code.js issue 19.9        发货 1 个「19.9 档」码（码池空会自动补一批）
-//   node tools/issue-code.js gen 19.9 [数量]    预生成「19.9 档」码，默认 10 个
+//   node tools/issue-code.js issue 45          发货 1 个「45 档」码（码池空会自动补一批）
+//   node tools/issue-code.js gen 45 [数量]      预生成「45 档」码，默认 10 个
 //
 // 管理密钥读取顺序：环境变量 ADMIN_SECRET → 文件 tools/.admin-secret（已 gitignore，切勿提交）。
 // 后端地址可用环境变量 API_BASE 覆盖，默认 https://api.pleadly.top。
@@ -17,10 +17,11 @@ const path = require('path');
 
 // —— 价格档位表：价格(元) → 积分。按你的定价改这里 ——
 const TIERS = [
-  { price: 9.9,  points: 25 },
-  { price: 19.9, points: 55 },
-  { price: 49,   points: 150 },
-  { price: 99,   points: 320 },
+  { price: 25,  points: 50 },
+  { price: 45,  points: 100 },
+  { price: 80,  points: 200 },
+  { price: 199, points: 500 },
+  { price: 369, points: 1000 },
 ];
 const API_BASE = process.env.API_BASE || 'https://api.pleadly.top';
 const SECRET_FILE = path.join(__dirname, '.admin-secret');
