@@ -139,14 +139,10 @@ tr:hover td{background:var(--surface2);}
 .report-col-title{font-size:13px;font-weight:600;color:var(--text3);letter-spacing:0.01em;}
 .report-col-body{overflow-y:auto;min-height:320px;max-height:calc(100vh - 300px);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:16px 18px;}
 .resume-tpl-label{font-size:12px;font-weight:600;color:var(--text3);margin:0 0 10px;}
-.resume-tpl-gallery{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 16px;}
-.tpl-card{background:none;border:none;padding:0;cursor:pointer;text-align:center;font-family:inherit;-webkit-tap-highlight-color:transparent;}
-.tpl-thumb{width:150px;height:212px;overflow:hidden;position:relative;background:#fff;border:2px solid var(--separator);border-radius:8px;transition:border-color .15s,box-shadow .15s;}
-.tpl-card:hover .tpl-thumb{border-color:var(--accent);}
-.tpl-card.sel .tpl-thumb{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
-.tpl-frame{width:794px;height:1123px;border:0;pointer-events:none;transform:scale(0.1889);transform-origin:top left;background:#fff;}
-.tpl-label{display:block;margin-top:6px;font-size:12px;color:var(--text2);}
-.tpl-card.sel .tpl-label{color:var(--accent);font-weight:600;}
+.resume-tpl-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
+.tpl-pill{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--separator);cursor:pointer;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.tpl-pill:hover{color:var(--text);border-color:var(--border);}
+.tpl-pill.sel{color:#fff;background:var(--accent);border-color:var(--accent);}
 .resume-frame-wrap{position:relative;width:100%;overflow:hidden;background:var(--surface2);border:1px solid var(--separator);border-radius:10px;}
 .resume-frame{width:794px;height:1123px;border:0;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.10);transform-origin:top left;}
 
@@ -484,7 +480,7 @@ body.standalone .page{max-width:none;padding:0;}
   <div class="card">
     <div class="card-header"><span data-i18n="resume.title">简历预览</span></div>
     <div class="resume-tpl-label" data-i18n="resume.tpl">选择模板</div>
-    <div id="resume-tpl-gallery" class="resume-tpl-gallery"></div>
+    <div id="resume-tpl-bar" class="resume-tpl-bar"></div>
     <div id="resume-preview" class="md-output" style="min-height:140px;"><div class="empty"><div class="d" data-i18n="resume.preview.empty">生成简历后在此预览，可一键导出 PDF</div></div></div>
     <button class="btn btn-primary" onclick="downloadResumePdf()" style="margin-top:10px;" data-i18n="resume.export">导出 PDF</button>
   </div>
@@ -1051,7 +1047,7 @@ zh:{
  'tools.10.desc':'选对应岗位报告，生成入职前 30 天生存指南',
  'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
  'profile.empty':'信息库为空，请先到「信息库」上传简历或经历',
- 'reportbox.title':'分析报告','resume.title':'简历预览','resume.tpl':'选择模板（点击缩略图切换，生成前也可选）','resume.export':'导出 PDF','resume.build':'简历定制','resume.generate':'生成简历',
+ 'reportbox.title':'分析报告','resume.title':'简历预览','resume.tpl':'选择模板','resume.export':'导出 PDF','resume.build':'简历定制','resume.generate':'生成简历',
  'resume.preview.empty':'生成简历后在此预览，可一键导出 PDF',
  'resume.empty':'简历为空，先运行分析生成','resume.generated':'已生成定向简历，可在下方预览并导出',
  'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败',
@@ -2162,11 +2158,10 @@ var _resumeMd='';
 var _resumeTpl='classic';
 var SAMPLE_RESUME='# 王小明\n138-0000-0000 · 深圳 · 产品经理 · 3年经验\n## 个人简介\n3年互联网产品经验，擅长用户调研与数据驱动，从0到1落地过多个功能。\n## 工作经历\n### 某某科技 · 产品经理 | 2023.01 - 至今\n- 负责核心 App 增长，月活提升 40%\n- 主导推荐系统改版，转化率提升 15%\n### 某某网络 · 产品助理 | 2021.07 - 2022.12\n- 协助搭建用户画像体系，输出需求文档 20+ 份\n## 教育背景\n### 某某大学 · 计算机科学与技术 | 2017 - 2021\n## 项目经历\n### 智能客服 · 项目负责人 | 2022\n- 从 0 到 1 设计对话流程，上线后咨询量下降 30%\n## 技能\n- Axure · SQL · 数据分析 · 竞品调研';
 function renderResumePreview(){
-  renderTplGallery();
+  renderTplBar();
   var pv=document.getElementById('resume-preview');
   if(!pv)return;
-  if(!_resumeMd){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
-  var res=parseResume(_resumeMd);
+  var res=parseResume(_resumeMd||SAMPLE_RESUME);
   if(!res.name&&!res.sections.length){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
   var html=_resumeDoc(res);
   pv.innerHTML='<div class="resume-frame-wrap"><iframe class="resume-frame" title="'+esc(res.name||'Resume')+'"></iframe></div>';
@@ -2191,23 +2186,16 @@ function currentResumeTpl(){
   for(var i=0;i<RESUME_TPLS.length;i++)if(RESUME_TPLS[i].key===_resumeTpl)return RESUME_TPLS[i];
   return RESUME_TPLS[0];
 }
-function renderTplGallery(){
-  var g=document.getElementById('resume-tpl-gallery');
+function renderTplBar(){
+  var g=document.getElementById('resume-tpl-bar');
   if(!g)return;
-  var res=parseResume(_resumeMd||SAMPLE_RESUME);
   g.innerHTML='';
   for(var i=0;i<RESUME_TPLS.length;i++){
     var t=RESUME_TPLS[i];
-    var card=document.createElement('button');
-    card.type='button';card.className='tpl-card'+(t.key===_resumeTpl?' sel':'');card.setAttribute('data-tpl',t.key);
-    (function(k){card.onclick=function(){selectTpl(k);};})(t.key);
-    var thumb=document.createElement('div');thumb.className='tpl-thumb';
-    var ifr=document.createElement('iframe');ifr.className='tpl-frame';ifr.setAttribute('aria-hidden','true');ifr.setAttribute('tabindex','-1');
-    ifr.srcdoc=_resumeDocTpl(t,res);
-    thumb.appendChild(ifr);
-    var lb=document.createElement('span');lb.className='tpl-label';lb.textContent=t.label;
-    card.appendChild(thumb);card.appendChild(lb);
-    g.appendChild(card);
+    var b=document.createElement('button');
+    b.type='button';b.className='tpl-pill'+(t.key===_resumeTpl?' sel':'');b.textContent=t.label;
+    (function(k){b.onclick=function(){selectTpl(k);};})(t.key);
+    g.appendChild(b);
   }
 }
 function selectTpl(key){
@@ -2361,29 +2349,6 @@ function resumeTplElegant(res){
     '.lines{font-size:11.5px;line-height:1.7;color:#3c3c3c;}';
   return {css:css,body:h};
 }
-function resumeTplFresh(res){
-  var h='<div class="hd"><div class="name">'+esc(res.name||'')+'</div>';
-  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
-  h+='</div>';
-  for(var i=0;i<res.sections.length;i++){
-    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
-  }
-  var css=_RESUME_PRINT+
-    'body{padding:16mm 18mm;}'+
-    '.hd{text-align:center;margin:0 0 20px;}'+
-    '.name{font-family:Georgia,"Songti SC","SimSun",serif;font-size:28px;font-weight:600;color:#3d4a52;letter-spacing:0.06em;margin:0 0 9px;}'+
-    '.contact{font-size:11px;color:#8a9aa6;letter-spacing:0.03em;}'+
-    '.contact span{margin:0 10px;}.contact span:before{content:"·";color:#a8c4d8;}'+
-    '.sec{margin:0 0 16px;}'+
-    '.sh{font-family:Georgia,"Songti SC","SimSun",serif;font-size:13px;font-weight:600;color:#4b8fbe;text-align:center;letter-spacing:0.14em;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #dde7ee;}'+
-    '.entry{margin:0 0 10px;}'+
-    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
-    '.entry .et-t{font-weight:600;color:#3d4a52;}'+
-    '.entry .et-m{font-size:11px;color:#a2b1bb;white-space:nowrap;}'+
-    '.entry ul{margin:3px 0 0;padding-left:16px;}.entry li{font-size:11.5px;line-height:1.7;color:#5a666e;margin:2px 0;}'+
-    '.lines{font-size:11.5px;line-height:1.7;color:#5a666e;}';
-  return {css:css,body:h};
-}
 function resumeTplBw(res){
   var h='<div class="band"><div class="name">'+esc(res.name||'')+'</div>';
   if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
@@ -2442,12 +2407,12 @@ function resumeTplHigh(res){
   }
   var css=_RESUME_PRINT+
     'body{padding:15mm 20mm;}'+
-    '.hd{margin:0 0 22px;padding-bottom:14px;border-bottom:2px solid #121c25;}'+
+    '.hd{padding:8px 0 14px 16px;border-left:6px solid #258bb1;margin:0 0 20px;}'+
     '.name{font-size:28px;font-weight:700;color:#121c25;letter-spacing:0.02em;margin:0 0 9px;}'+
     '.contact{font-size:11px;color:#7f7f7f;letter-spacing:0.03em;}'+
     '.contact span{margin:0 11px;}.contact span:before{content:"·";color:#258bb1;}'+
     '.sec{margin:0 0 16px;}'+
-    '.sh{font-size:12px;font-weight:700;color:#258bb1;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid #d7dfe4;}'+
+    '.sh{font-size:12px;font-weight:700;color:#258bb1;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;padding:2px 0 2px 12px;border-left:3px solid #258bb1;}'+
     '.entry{margin:0 0 10px;}'+
     '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
     '.entry .et-t{font-weight:600;color:#121c25;}'+
@@ -2460,7 +2425,6 @@ var RESUME_TPLS=[
   {key:'classic',label:'经典',render:resumeTplClassic},
   {key:'minimal',label:'极简',render:resumeTplMinimal},
   {key:'elegant',label:'优雅',render:resumeTplElegant},
-  {key:'fresh',label:'清新',render:resumeTplFresh},
   {key:'bw',label:'黑白',render:resumeTplBw},
   {key:'euro',label:'欧美',render:resumeTplEuro},
   {key:'high',label:'高端',render:resumeTplHigh},
