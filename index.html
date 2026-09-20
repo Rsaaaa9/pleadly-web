@@ -138,8 +138,15 @@ tr:hover td{background:var(--surface2);}
 .report-col-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .report-col-title{font-size:13px;font-weight:600;color:var(--text3);letter-spacing:0.01em;}
 .report-col-body{overflow-y:auto;min-height:320px;max-height:calc(100vh - 300px);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:16px 18px;}
-.resume-toolbar{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.resume-toolbar select{flex:none;padding:6px 30px 6px 10px;font-size:13px;border-radius:10px;background:var(--surface2);border:1px solid var(--separator);color:var(--text);cursor:pointer;font-family:inherit;}
+.resume-tpl-label{font-size:12px;font-weight:600;color:var(--text3);margin:0 0 10px;}
+.resume-tpl-gallery{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 16px;}
+.tpl-card{background:none;border:none;padding:0;cursor:pointer;text-align:center;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.tpl-thumb{width:150px;height:212px;overflow:hidden;position:relative;background:#fff;border:2px solid var(--separator);border-radius:8px;transition:border-color .15s,box-shadow .15s;}
+.tpl-card:hover .tpl-thumb{border-color:var(--accent);}
+.tpl-card.sel .tpl-thumb{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
+.tpl-frame{width:794px;height:1123px;border:0;pointer-events:none;transform:scale(0.1889);transform-origin:top left;background:#fff;}
+.tpl-label{display:block;margin-top:6px;font-size:12px;color:var(--text2);}
+.tpl-card.sel .tpl-label{color:var(--accent);font-weight:600;}
 .resume-frame-wrap{position:relative;width:100%;overflow:hidden;background:var(--surface2);border:1px solid var(--separator);border-radius:10px;}
 .resume-frame{width:794px;height:1123px;border:0;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.10);transform-origin:top left;}
 
@@ -359,7 +366,7 @@ body.standalone .page{max-width:none;padding:0;}
 .settings-card{max-width:520px;}
 </style>
 <!-- Turnstile 不再在 <head> 同步加载：challenges.cloudflare.com 在国内常被墙，同步脚本会卡住整个首页。
-     改为 getTurnstileToken() 时按需懒加载（loadTurnstile），只影响注册/手机登录等账号类接口。 -->
+     改为 getTurnstileToken() 时按需懒加载（loadTurnstile），只影响手机号登录/短信等短信类接口（注册/账密登录已不依赖）。 -->
 </head>
 <body class="standalone">
 <div id="turnstile-widget"></div>
@@ -475,7 +482,9 @@ body.standalone .page{max-width:none;padding:0;}
     </div>
   </div>
   <div class="card">
-    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span data-i18n="resume.title">简历预览</span><span class="resume-toolbar"><select id="resume-tpl" onchange="onResumeTplChange()" aria-label="简历模板"></select></span></div>
+    <div class="card-header"><span data-i18n="resume.title">简历预览</span></div>
+    <div class="resume-tpl-label" data-i18n="resume.tpl">选择模板</div>
+    <div id="resume-tpl-gallery" class="resume-tpl-gallery"></div>
     <div id="resume-preview" class="md-output" style="min-height:140px;"><div class="empty"><div class="d" data-i18n="resume.preview.empty">生成简历后在此预览，可一键导出 PDF</div></div></div>
     <button class="btn btn-primary" onclick="downloadResumePdf()" style="margin-top:10px;" data-i18n="resume.export">导出 PDF</button>
   </div>
@@ -1042,7 +1051,7 @@ zh:{
  'tools.10.desc':'选对应岗位报告，生成入职前 30 天生存指南',
  'profile.note':'已自动读取信息库 {N} 份文档作为你的背景（含简历/作品集/项目）',
  'profile.empty':'信息库为空，请先到「信息库」上传简历或经历',
- 'reportbox.title':'分析报告','resume.title':'简历预览','resume.export':'导出 PDF','resume.build':'简历定制','resume.generate':'生成简历',
+ 'reportbox.title':'分析报告','resume.title':'简历预览','resume.tpl':'选择模板（点击缩略图切换，生成前也可选）','resume.export':'导出 PDF','resume.build':'简历定制','resume.generate':'生成简历',
  'resume.preview.empty':'生成简历后在此预览，可一键导出 PDF',
  'resume.empty':'简历为空，先运行分析生成','resume.generated':'已生成定向简历，可在下方预览并导出',
  'greetstrip.title':'招呼语','greetstrip.waiting':'招呼语生成中...','greetstrip.error':'招呼语生成失败',
@@ -1119,7 +1128,7 @@ en:{
  'tools.10.desc':'Pick a report → first-30-days survival guide',
  'profile.note':'Reading {N} document(s) from your Library as your background',
  'profile.empty':'Library is empty — upload a resume or experiences first',
- 'reportbox.title':'Analysis Report','resume.title':'Resume preview','resume.export':'Export PDF','resume.build':'Custom Resume','resume.generate':'Generate Resume',
+ 'reportbox.title':'Analysis Report','resume.title':'Resume preview','resume.tpl':'Choose template','resume.export':'Export PDF','resume.build':'Custom Resume','resume.generate':'Generate Resume',
  'resume.preview.empty':'Generated resume previews here — export to PDF in one click',
  'resume.empty':'Resume is empty — run an analysis first','resume.generated':'Tailored resume generated — preview and export below',
  'greetstrip.title':'Greeting','greetstrip.waiting':'Generating greeting...','greetstrip.error':'Greeting generation failed',
@@ -1451,8 +1460,7 @@ async function acctRegister(){
   if(!/^[A-Za-z0-9]{8,16}$/.test(p)){showToast(t('acct.badpassfmt'),true);return;}
   setBusy(true);
   try{
-    var tk=await getTurnstileToken();
-    var resp=await fetch(API_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account:a,username:u,password:p,deviceId:deviceId(),turnstileToken:tk})});
+    var resp=await fetch(API_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account:a,username:u,password:p,deviceId:deviceId()})});
     var d=await resp.json().catch(function(){return{};});
     if(!resp.ok){showToast(acctErr(resp.status,d),true);return;}
     localStorage.setItem('p_token',d.token);localStorage.setItem('p_user',d.username);localStorage.setItem('p_account',d.account);
@@ -2152,7 +2160,9 @@ function downloadPdf(){
 /* ============ 简历预览：Markdown 解析 + PDF 导出 ============ */
 var _resumeMd='';
 var _resumeTpl='classic';
+var SAMPLE_RESUME='# 王小明\n138-0000-0000 · 深圳 · 产品经理 · 3年经验\n## 个人简介\n3年互联网产品经验，擅长用户调研与数据驱动，从0到1落地过多个功能。\n## 工作经历\n### 某某科技 · 产品经理 | 2023.01 - 至今\n- 负责核心 App 增长，月活提升 40%\n- 主导推荐系统改版，转化率提升 15%\n### 某某网络 · 产品助理 | 2021.07 - 2022.12\n- 协助搭建用户画像体系，输出需求文档 20+ 份\n## 教育背景\n### 某某大学 · 计算机科学与技术 | 2017 - 2021\n## 项目经历\n### 智能客服 · 项目负责人 | 2022\n- 从 0 到 1 设计对话流程，上线后咨询量下降 30%\n## 技能\n- Axure · SQL · 数据分析 · 竞品调研';
 function renderResumePreview(){
+  renderTplGallery();
   var pv=document.getElementById('resume-preview');
   if(!pv)return;
   if(!_resumeMd){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
@@ -2181,27 +2191,35 @@ function currentResumeTpl(){
   for(var i=0;i<RESUME_TPLS.length;i++)if(RESUME_TPLS[i].key===_resumeTpl)return RESUME_TPLS[i];
   return RESUME_TPLS[0];
 }
-function initResumeTpl(){
-  var sel=document.getElementById('resume-tpl');
-  if(!sel)return;
-  var saved=null;try{saved=localStorage.getItem('p_resume_tpl');}catch(e){}
-  if(saved)_resumeTpl=saved;
-  sel.innerHTML='';
+function renderTplGallery(){
+  var g=document.getElementById('resume-tpl-gallery');
+  if(!g)return;
+  var res=parseResume(_resumeMd||SAMPLE_RESUME);
+  g.innerHTML='';
   for(var i=0;i<RESUME_TPLS.length;i++){
-    var o=document.createElement('option');
-    o.value=RESUME_TPLS[i].key;
-    o.textContent=RESUME_TPLS[i].label;
-    if(RESUME_TPLS[i].key===_resumeTpl)o.selected=true;
-    sel.appendChild(o);
+    var t=RESUME_TPLS[i];
+    var card=document.createElement('button');
+    card.type='button';card.className='tpl-card'+(t.key===_resumeTpl?' sel':'');card.setAttribute('data-tpl',t.key);
+    (function(k){card.onclick=function(){selectTpl(k);};})(t.key);
+    var thumb=document.createElement('div');thumb.className='tpl-thumb';
+    var ifr=document.createElement('iframe');ifr.className='tpl-frame';ifr.setAttribute('aria-hidden','true');ifr.setAttribute('tabindex','-1');
+    ifr.srcdoc=_resumeDocTpl(t,res);
+    thumb.appendChild(ifr);
+    var lb=document.createElement('span');lb.className='tpl-label';lb.textContent=t.label;
+    card.appendChild(thumb);card.appendChild(lb);
+    g.appendChild(card);
   }
 }
-function onResumeTplChange(){
-  var sel=document.getElementById('resume-tpl');
-  _resumeTpl=sel?sel.value:'classic';
-  try{localStorage.setItem('p_resume_tpl',_resumeTpl);}catch(e){}
+function selectTpl(key){
+  _resumeTpl=key;
+  try{localStorage.setItem('p_resume_tpl',key);}catch(e){}
   renderResumePreview();
 }
-function initResumeEditor(){initResumeTpl();renderResumePreview();}
+function initResumeEditor(){
+  var saved=null;try{saved=localStorage.getItem('p_resume_tpl');}catch(e){}
+  if(saved)_resumeTpl=saved;
+  renderResumePreview();
+}
 function setResumeText(txt){
   _resumeMd=txt||'';
   renderResumePreview();
@@ -2343,15 +2361,116 @@ function resumeTplElegant(res){
     '.lines{font-size:11.5px;line-height:1.7;color:#3c3c3c;}';
   return {css:css,body:h};
 }
+function resumeTplFresh(res){
+  var h='<div class="hd"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:16mm 18mm;}'+
+    '.hd{text-align:center;margin:0 0 20px;}'+
+    '.name{font-family:Georgia,"Songti SC","SimSun",serif;font-size:28px;font-weight:600;color:#3d4a52;letter-spacing:0.06em;margin:0 0 9px;}'+
+    '.contact{font-size:11px;color:#8a9aa6;letter-spacing:0.03em;}'+
+    '.contact span{margin:0 10px;}.contact span:before{content:"·";color:#a8c4d8;}'+
+    '.sec{margin:0 0 16px;}'+
+    '.sh{font-family:Georgia,"Songti SC","SimSun",serif;font-size:13px;font-weight:600;color:#4b8fbe;text-align:center;letter-spacing:0.14em;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #dde7ee;}'+
+    '.entry{margin:0 0 10px;}'+
+    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:600;color:#3d4a52;}'+
+    '.entry .et-m{font-size:11px;color:#a2b1bb;white-space:nowrap;}'+
+    '.entry ul{margin:3px 0 0;padding-left:16px;}.entry li{font-size:11.5px;line-height:1.7;color:#5a666e;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#5a666e;}';
+  return {css:css,body:h};
+}
+function resumeTplBw(res){
+  var h='<div class="band"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:0;}'+
+    '.band{background:#111;color:#fff;padding:16mm 18mm 12mm;}'+
+    '.name{font-family:Garamond,"Times New Roman",Georgia,serif;font-size:30px;font-weight:700;letter-spacing:0.03em;color:#fff;margin:0 0 7px;}'+
+    '.contact{font-size:11px;color:#d8d8d8;letter-spacing:0.02em;}'+
+    '.contact span{margin:0 9px;}.contact span:before{content:"·";color:#888;}'+
+    '.sec{margin:14px 18mm 0;}'+
+    '.sec:last-child{padding-bottom:14mm;}'+
+    '.sh{font-family:Garamond,"Times New Roman",Georgia,serif;font-size:13px;font-weight:700;color:#111;letter-spacing:0.16em;text-transform:uppercase;margin:0 0 7px;padding-bottom:3px;border-bottom:2px solid #111;}'+
+    '.entry{margin:0 0 9px;}'+
+    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:700;color:#111;}'+
+    '.entry .et-m{font-size:11px;color:#666;white-space:nowrap;}'+
+    '.entry ul{margin:3px 0 0;padding-left:16px;}.entry li{font-size:11.5px;line-height:1.6;color:#333;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#333;}';
+  return {css:css,body:h};
+}
+function resumeTplEuro(res){
+  var h='<div class="band"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh"><span>'+esc(res.sections[i].title)+'</span></div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:0;}'+
+    '.band{background:#5d9ddb;color:#fff;padding:15mm 18mm 13mm;}'+
+    '.name{font-size:32px;font-weight:800;color:#fff;letter-spacing:0.01em;margin:0 0 8px;}'+
+    '.contact{font-size:11.5px;color:#eaf3fc;letter-spacing:0.02em;}'+
+    '.contact span{margin:0 10px;}.contact span:before{content:"·";color:#bcd9f2;}'+
+    '.sec{margin:15px 18mm 0;}'+
+    '.sec:last-child{padding-bottom:14mm;}'+
+    '.sh{margin:0 0 8px;}'+
+    '.sh span{font-size:14px;font-weight:800;color:#2b6aa8;letter-spacing:0.04em;padding-bottom:3px;border-bottom:3px solid #5d9ddb;display:inline-block;}'+
+    '.entry{margin:0 0 10px;}'+
+    '.entry .et{font-size:13.5px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:700;color:#1c2a3a;}'+
+    '.entry .et-m{font-size:11px;color:#7a8ba0;white-space:nowrap;}'+
+    '.entry ul{margin:4px 0 0;padding-left:17px;}.entry li{font-size:11.5px;line-height:1.6;color:#33465c;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#33465c;}';
+  return {css:css,body:h};
+}
+function resumeTplHigh(res){
+  var h='<div class="hd"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:15mm 20mm;}'+
+    '.hd{margin:0 0 22px;padding-bottom:14px;border-bottom:2px solid #121c25;}'+
+    '.name{font-size:28px;font-weight:700;color:#121c25;letter-spacing:0.02em;margin:0 0 9px;}'+
+    '.contact{font-size:11px;color:#7f7f7f;letter-spacing:0.03em;}'+
+    '.contact span{margin:0 11px;}.contact span:before{content:"·";color:#258bb1;}'+
+    '.sec{margin:0 0 16px;}'+
+    '.sh{font-size:12px;font-weight:700;color:#258bb1;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid #d7dfe4;}'+
+    '.entry{margin:0 0 10px;}'+
+    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:600;color:#121c25;}'+
+    '.entry .et-m{font-size:11px;color:#9aa5ac;white-space:nowrap;}'+
+    '.entry ul{margin:3px 0 0;padding-left:16px;}.entry li{font-size:11.5px;line-height:1.65;color:#414141;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#414141;}';
+  return {css:css,body:h};
+}
 var RESUME_TPLS=[
   {key:'classic',label:'经典',render:resumeTplClassic},
   {key:'minimal',label:'极简',render:resumeTplMinimal},
   {key:'elegant',label:'优雅',render:resumeTplElegant},
+  {key:'fresh',label:'清新',render:resumeTplFresh},
+  {key:'bw',label:'黑白',render:resumeTplBw},
+  {key:'euro',label:'欧美',render:resumeTplEuro},
+  {key:'high',label:'高端',render:resumeTplHigh},
 ];
-function _resumeDoc(res){
-  var t=currentResumeTpl();
+function _resumeDocTpl(t,res){
   var r=t.render(res);
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(res.name||'Resume')+'</title><style>'+r.css+'</style></head><body>'+r.body+'</body></html>';
+}
+function _resumeDoc(res){
+  return _resumeDocTpl(currentResumeTpl(),res);
 }
 function downloadResumePdf(){
   var res=parseResume(_resumeMd);

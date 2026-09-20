@@ -22,6 +22,8 @@ const REFILL_TARGET = 20;    // 补齐到的新鲜码数量
 const FREE_TTL = 7 * 24 * 60 * 60;  // 免费试用分 7 天过期（秒）
 const SESSION_PER_IP = 20;   // 同一 IP 每小时最多开会话数（防脚本刷免费分）
 const SESSION_WINDOW = 60 * 60;      // IP 限流窗口（秒）
+const REG_PER_IP = 10;       // 同一 IP 每小时最多注册账号数（防批量建号）
+const REG_WINDOW = 60 * 60;  // 注册 IP 限流窗口（秒）
 const SMS_CODE_TTL = 5 * 60;         // 短信验证码 5 分钟有效（秒）
 const SMS_RESEND = 60;               // 同一手机号重发间隔（秒）
 const SMS_MAX_TRIES = 5;             // 同一验证码最多试错次数
@@ -239,6 +241,16 @@ async function rateLimited(env, ip) {
   const n = raw !== null ? parseInt(raw, 10) : 0;
   if (n >= SESSION_PER_IP) return true;
   await env.PLEADLY_KV.put(key, String(n + 1), { expirationTtl: SESSION_WINDOW });
+  return false;
+}
+
+// 注册 IP 限流：替代 Turnstile 的防批量建号作用（注册不送积分，无薅羊毛价值）
+async function rateLimitedReg(env, ip) {
+  const key = 'rl:reg:' + ip;
+  const raw = await env.PLEADLY_KV.get(key);
+  const n = raw !== null ? parseInt(raw, 10) : 0;
+  if (n >= REG_PER_IP) return true;
+  await env.PLEADLY_KV.put(key, String(n + 1), { expirationTtl: REG_WINDOW });
   return false;
 }
 
@@ -469,11 +481,9 @@ export default {
       if (username.length > 32) return json({ error: 'bad username' }, 400);
       if (!/^[A-Za-z0-9]{8,16}$/.test(password)) return json({ error: 'bad password' }, 400);
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
-      const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
-      const _ts = await verifyTurnstile(env, turnstileToken, ip);
-      // 免费积分已关闭（FREE_STARTER=0），注册本身无可薅额度；Turnstile 挑战域名在国内常被墙，
-      // 拿不到 token（空串）时放行，拿到 token 仍照常校验（防机器人）。
-      if (!_ts.ok && turnstileToken) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
+      // 注册不送免费积分（FREE_STARTER=0），无薅羊毛价值，去掉 Turnstile（挑战域名国内常被墙致注册失败），
+      // 改用轻量 IP 限流兜底防批量建号。
+      if (ip && (await rateLimitedReg(env, ip))) return json({ error: 'rate_limited' }, 429);
       if (await env.PLEADLY_KV.get('acctNum:' + account)) return json({ error: 'taken' }, 409);
 
       const accountId = 'u-' + randId(20);
