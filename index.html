@@ -341,6 +341,10 @@ body.standalone .page{max-width:none;padding:0;}
 .auth-tab.active{color:#fff;background:var(--text);border-color:var(--text);}
 .auth-field{margin-bottom:14px;}
 .auth-field label{display:block;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:0.02em;}
+.pw-wrap{position:relative;}
+.pw-wrap .pw-input{padding-right:44px;}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;color:var(--text3);font-size:16px;cursor:pointer;padding:6px;line-height:1;border-radius:8px;}
+.pw-toggle:hover{color:var(--accent);}
 .auth-hint{font-size:12px;color:var(--text3);margin-top:12px;line-height:1.55;}
 .auth-back{display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--text3);cursor:pointer;background:none;border:none;width:100%;font-family:inherit;}
 .auth-back:hover{color:var(--accent);}
@@ -587,13 +591,13 @@ body.standalone .page{max-width:none;padding:0;}
       </div>
       <div id="auth-login">
         <div class="auth-field"><label data-i18n="acct.account">账号（8 位纯数字）</label><input type="text" id="login-account" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="username"></div>
-        <div class="auth-field"><label data-i18n="acct.password">密码（8-16 位数字或英文字母）</label><input type="password" id="login-password" placeholder="8-16 位数字或英文字母" autocomplete="current-password" onkeydown="if(event.key==='Enter')acctLogin()"></div>
+        <div class="auth-field"><label data-i18n="acct.password">密码（8-16 位数字或英文字母）</label><div class="pw-wrap"><input type="password" id="login-password" class="pw-input" placeholder="8-16 位数字或英文字母" autocomplete="current-password" onkeydown="if(event.key==='Enter')acctLogin()"><button type="button" class="pw-toggle" onclick="togglePw('login-password',this)" aria-label="显示/隐藏密码">👁</button></div></div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="acctLogin()" data-i18n="acct.login">登录</button>
       </div>
       <div id="auth-register" style="display:none;">
         <div class="auth-field"><label data-i18n="acct.account">账号（8 位纯数字）</label><input type="text" id="reg-account" inputmode="numeric" maxlength="8" placeholder="12345678"></div>
         <div class="auth-field"><label data-i18n="acct.username">用户名（任意）</label><input type="text" id="reg-username" maxlength="32" placeholder="昵称"></div>
-        <div class="auth-field"><label data-i18n="acct.password">密码（8-16 位数字或英文字母）</label><input type="password" id="reg-password" placeholder="8-16 位数字或英文字母" onkeydown="if(event.key==='Enter')acctRegister()"></div>
+        <div class="auth-field"><label data-i18n="acct.password">密码（8-16 位数字或英文字母）</label><div class="pw-wrap"><input type="password" id="reg-password" class="pw-input" placeholder="8-16 位数字或英文字母" onkeydown="if(event.key==='Enter')acctRegister()"><button type="button" class="pw-toggle" onclick="togglePw('reg-password',this)" aria-label="显示/隐藏密码">👁</button></div></div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="acctRegister()" data-i18n="acct.register">注册</button>
         <div class="auth-hint" data-i18n="acct.hint">注册后积分跟随账号跨设备同步，并自动合并本设备已有积分。</div>
       </div>
@@ -1043,7 +1047,7 @@ zh:{
  'pts.unit':'积分','pts.balance':'积分余额','pts.redeem':'兑换码','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'兑换','pts.redeem.hint':'兑换码可向作者获取，一次性使用，兑换后积分累加。',
  'pts.insufficient':'积分不足，请先兑换积分','pts.redeemed':'兑换成功，+{N} 积分','pts.invalid':'兑换码无效','pts.used':'兑换码已被使用',
  'pts.history':'积分明细','pts.history.empty':'暂无明细','pts.history.redeem':'兑换码充值','pts.history.free':'新用户赠送','pts.history.spend':'功能消费','pts.history.refund':'退款','pts.history.memory':'记忆整理','pts.history.balance':'余额',
- 'acct.title':'账号（跨设备同步积分）','acct.username':'用户名','acct.password':'密码（8-16 位数字或英文字母）','acct.login':'登录','acct.register':'注册','acct.hint':'注册后积分跟随账号，可跨设备同步；注册时自动合并本设备已有积分。','acct.loggedin':'已登录','acct.logout':'退出登录','acct.loggedin.hint':'积分已与账号绑定，换设备登录即可同步。','acct.shortpass':'密码至少 6 位','acct.noaccount':'账号不存在','acct.badpass':'密码错误','acct.taken':'该账号已被注册','acct.fail':'操作失败，请稍后重试','acct.loggedout':'已退出登录',
+ 'acct.title':'账号（跨设备同步积分）','acct.username':'用户名','acct.password':'密码（8-16 位数字或英文字母）','acct.login':'登录','acct.register':'注册','acct.hint':'注册后积分跟随账号，可跨设备同步；注册时自动合并本设备已有积分。','acct.loggedin':'已登录','acct.logout':'退出登录','acct.loggedin.hint':'积分已与账号绑定，换设备登录即可同步。','acct.shortpass':'密码至少 6 位','acct.noaccount':'账号不存在','acct.badpass':'密码错误','acct.taken':'该账号已被注册','acct.fail':'操作失败，请稍后重试','acct.verify':'人机验证未通过，请重试','acct.ratelimit':'操作太频繁，请稍后再试','acct.loggedout':'已退出登录',
  'feat.jd.label':'岗位 JD','feat.jd.ph':'在此粘贴岗位 JD ...','feat.role.label':'目标岗位 / 方向','feat.role.ph':'如：用户研究员 / 跨境电商产品开发...','feat.text.label':'输入内容','feat.text.ph':'在此粘贴内容 ...','feat.autoread':'本工具会自动读取信息库里的简历作为分析基础，无需手动粘贴。','feat.run':'运行','feat.empty':'点上方「运行」，结果会出现在这里',
  'side.analysis':'求职分析','side.resume':'简历','side.explore':'职业探索','side.execute':'求职执行','side.offer':'面试与Offer','side.onoff':'入职与离职','side.data':'数据','side.about':'关于与帮助',
  'info.home':'首页','info.rules':'功能与积分规则','info.guide':'使用说明','info.faq':'常见问题','info.privacy':'隐私政策','info.terms':'用户协议','info.service':'权益与售后','info.disclaimer':'免责声明',
@@ -1120,7 +1124,7 @@ en:{
  'pts.unit':'pts','pts.balance':'Point Balance','pts.redeem':'Redeem Code','pts.redeem.ph':'PLD-XXXX-XXXX-XXXX','pts.redeembtn':'Redeem','pts.redeem.hint':'Get a redeem code from the author. Single-use; points are added on redemption.',
  'pts.insufficient':'Not enough points — redeem more first','pts.redeemed':'Redeemed, +{N} pts','pts.invalid':'Invalid redeem code','pts.used':'Code already used',
  'pts.history':'Points History','pts.history.empty':'No records yet','pts.history.redeem':'Code redeemed','pts.history.free':'Welcome gift','pts.history.spend':'Feature used','pts.history.refund':'Refund','pts.history.memory':'Memory summary','pts.history.balance':'Balance',
- 'acct.title':'Account (sync points across devices)','acct.username':'Username','acct.password':'Password (8-16 letters or digits)','acct.login':'Log in','acct.register':'Sign up','acct.hint':'Points follow your account across devices; existing device points merge on signup.','acct.loggedin':'Logged in','acct.logout':'Log out','acct.loggedin.hint':'Points are bound to your account — log in on any device to sync.','acct.shortpass':'Password must be at least 6 chars','acct.noaccount':'Account not found','acct.badpass':'Wrong password','acct.taken':'Account already registered','acct.fail':'Failed — try again later','acct.loggedout':'Logged out',
+ 'acct.title':'Account (sync points across devices)','acct.username':'Username','acct.password':'Password (8-16 letters or digits)','acct.login':'Log in','acct.register':'Sign up','acct.hint':'Points follow your account across devices; existing device points merge on signup.','acct.loggedin':'Logged in','acct.logout':'Log out','acct.loggedin.hint':'Points are bound to your account — log in on any device to sync.','acct.shortpass':'Password must be at least 6 chars','acct.noaccount':'Account not found','acct.badpass':'Wrong password','acct.taken':'Account already registered','acct.fail':'Failed — try again later','acct.verify':'Verification failed — try again','acct.ratelimit':'Too many attempts — try later','acct.loggedout':'Logged out',
  'feat.jd.label':'Job Description','feat.jd.ph':'Paste the job JD here...','feat.role.label':'Target role / direction','feat.role.ph':'e.g. User Researcher / Cross-border Product Developer...','feat.text.label':'Input','feat.text.ph':'Paste content here...','feat.autoread':'This tool reads the resume in your Library automatically — no need to paste it.','feat.run':'Run','feat.empty':'Tap Run above and your result appears here',
  'side.analysis':'Job Analysis','side.resume':'Resume','side.explore':'Career Explore','side.execute':'Job Execution','side.offer':'Interview & Offer','side.onoff':'Onboarding & Resignation','side.data':'Data','side.about':'About & Help',
  'info.home':'Home','info.rules':'Features & Points','info.guide':'How to use','info.faq':'FAQ','info.privacy':'Privacy','info.terms':'Terms','info.service':'Support','info.disclaimer':'Disclaimer',
@@ -1398,6 +1402,25 @@ function uploadAvatar(files){
   r.onload=function(e){localStorage.setItem('p_avatar',e.target.result);renderAvatar();showToast(lang==='zh'?'头像已更新':'Avatar updated',false);};
   r.readAsDataURL(f);
 }
+function togglePw(id,btn){
+  var el=document.getElementById(id);
+  var show=el.type==='password';
+  el.type=show?'text':'password';
+  btn.textContent=show?'🙈':'👁';
+}
+function acctErr(status,d){
+  var e=(d&&d.error)||'';
+  if(status===409||e==='taken') return t('acct.taken');
+  if(status===404||e==='no_account') return t('acct.noaccount');
+  if(status===401||e==='bad_password') return t('acct.badpass');
+  if(status===403||e==='verify_failed') return t('acct.verify');
+  if(status===429) return t('acct.ratelimit');
+  if(e==='bad account') return t('acct.badaccount');
+  if(e==='bad username') return t('acct.baduser');
+  if(e==='bad password') return t('acct.badpassfmt');
+  if(e==='missing fields') return t('acct.needfield');
+  return t('acct.fail') + (e?('（'+e+'）'):'');
+}
 async function acctLogin(){
   var a=document.getElementById('login-account').value.trim();
   var p=document.getElementById('login-password').value;
@@ -1406,7 +1429,7 @@ async function acctLogin(){
   try{
     var resp=await fetch(API_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account:a,password:p,deviceId:deviceId()})});
     var d=await resp.json().catch(function(){return{};});
-    if(!resp.ok){showToast(t(resp.status===404?'acct.noaccount':resp.status===401?'acct.badpass':'acct.fail'),true);return;}
+    if(!resp.ok){showToast(acctErr(resp.status,d),true);return;}
     localStorage.setItem('p_token',d.token);localStorage.setItem('p_user',d.username);localStorage.setItem('p_account',d.account);
     setBalance(d.balance);updatePointsUI();
     document.getElementById('login-password').value='';
@@ -1429,7 +1452,7 @@ async function acctRegister(){
     var tk=await getTurnstileToken();
     var resp=await fetch(API_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account:a,username:u,password:p,deviceId:deviceId(),turnstileToken:tk})});
     var d=await resp.json().catch(function(){return{};});
-    if(!resp.ok){showToast(t(resp.status===409?'acct.taken':'acct.fail'),true);return;}
+    if(!resp.ok){showToast(acctErr(resp.status,d),true);return;}
     localStorage.setItem('p_token',d.token);localStorage.setItem('p_user',d.username);localStorage.setItem('p_account',d.account);
     setBalance(d.balance);updatePointsUI();
     showToast(t('acct.loggedin'),false);

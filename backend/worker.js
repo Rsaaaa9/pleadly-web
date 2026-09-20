@@ -471,7 +471,9 @@ export default {
       const ip = (request.headers.get('CF-Connecting-IP') || '').split(',')[0].trim();
       const turnstileToken = (body.turnstileToken || '').toString().slice(0, 4096);
       const _ts = await verifyTurnstile(env, turnstileToken, ip);
-      if (!_ts.ok) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
+      // 免费积分已关闭（FREE_STARTER=0），注册本身无可薅额度；Turnstile 挑战域名在国内常被墙，
+      // 拿不到 token（空串）时放行，拿到 token 仍照常校验（防机器人）。
+      if (!_ts.ok && turnstileToken) return json({ error: 'verify_failed', codes: _ts.codes }, 403);
       if (await env.PLEADLY_KV.get('acctNum:' + account)) return json({ error: 'taken' }, 409);
 
       const accountId = 'u-' + randId(20);
