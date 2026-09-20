@@ -140,6 +140,8 @@ tr:hover td{background:var(--surface2);}
 .report-col-body{overflow-y:auto;min-height:320px;max-height:calc(100vh - 300px);background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius-lg);padding:16px 18px;}
 .resume-toolbar{display:flex;align-items:center;gap:8px;margin-left:auto;}
 .resume-toolbar select{flex:none;padding:6px 30px 6px 10px;font-size:13px;border-radius:10px;background:var(--surface2);border:1px solid var(--separator);color:var(--text);cursor:pointer;font-family:inherit;}
+.resume-frame-wrap{position:relative;width:100%;overflow:hidden;background:var(--surface2);border:1px solid var(--separator);border-radius:10px;}
+.resume-frame{width:794px;height:1123px;border:0;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.10);transform-origin:top left;}
 
 .md-output{line-height:1.7;font-size:14.5px;}
 .md-output h1{font-size:20px;font-weight:800;letter-spacing:-0.01em;margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--separator);}
@@ -473,7 +475,7 @@ body.standalone .page{max-width:none;padding:0;}
     </div>
   </div>
   <div class="card">
-    <div class="card-header" data-i18n="resume.title">简历预览</div>
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span data-i18n="resume.title">简历预览</span><span class="resume-toolbar"><select id="resume-tpl" onchange="onResumeTplChange()" aria-label="简历模板"></select></span></div>
     <div id="resume-preview" class="md-output" style="min-height:140px;"><div class="empty"><div class="d" data-i18n="resume.preview.empty">生成简历后在此预览，可一键导出 PDF</div></div></div>
     <button class="btn btn-primary" onclick="downloadResumePdf()" style="margin-top:10px;" data-i18n="resume.export">导出 PDF</button>
   </div>
@@ -2149,13 +2151,57 @@ function downloadPdf(){
 
 /* ============ 简历预览：Markdown 解析 + PDF 导出 ============ */
 var _resumeMd='';
+var _resumeTpl='classic';
 function renderResumePreview(){
   var pv=document.getElementById('resume-preview');
   if(!pv)return;
   if(!_resumeMd){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
-  pv.innerHTML=mdToHtml(_resumeMd);
+  var res=parseResume(_resumeMd);
+  if(!res.name&&!res.sections.length){pv.innerHTML='<div class="empty"><div class="d">'+t('resume.preview.empty')+'</div></div>';return;}
+  var html=_resumeDoc(res);
+  pv.innerHTML='<div class="resume-frame-wrap"><iframe class="resume-frame" title="'+esc(res.name||'Resume')+'"></iframe></div>';
+  var fr=pv.querySelector('.resume-frame');
+  fr.srcdoc=html;
+  fr.onload=function(){resizeResumeFrame(fr);};
+  resizeResumeFrame(fr);
 }
-function initResumeEditor(){renderResumePreview();}
+function resizeResumeFrame(fr){
+  if(!fr||!fr.parentNode)return;
+  var wrap=fr.parentNode;
+  var avail=wrap.clientWidth||600;
+  var scale=Math.max(0.35,Math.min(1,avail/794));
+  var h=1123;
+  try{if(fr.contentDocument&&fr.contentDocument.body)h=Math.max(1123,fr.contentDocument.body.scrollHeight);}catch(e){}
+  fr.style.height=h+'px';
+  fr.style.transform='scale('+scale+')';
+  fr.style.transformOrigin='top left';
+  wrap.style.height=Math.round(h*scale)+'px';
+}
+function currentResumeTpl(){
+  for(var i=0;i<RESUME_TPLS.length;i++)if(RESUME_TPLS[i].key===_resumeTpl)return RESUME_TPLS[i];
+  return RESUME_TPLS[0];
+}
+function initResumeTpl(){
+  var sel=document.getElementById('resume-tpl');
+  if(!sel)return;
+  var saved=null;try{saved=localStorage.getItem('p_resume_tpl');}catch(e){}
+  if(saved)_resumeTpl=saved;
+  sel.innerHTML='';
+  for(var i=0;i<RESUME_TPLS.length;i++){
+    var o=document.createElement('option');
+    o.value=RESUME_TPLS[i].key;
+    o.textContent=RESUME_TPLS[i].label;
+    if(RESUME_TPLS[i].key===_resumeTpl)o.selected=true;
+    sel.appendChild(o);
+  }
+}
+function onResumeTplChange(){
+  var sel=document.getElementById('resume-tpl');
+  _resumeTpl=sel?sel.value:'classic';
+  try{localStorage.setItem('p_resume_tpl',_resumeTpl);}catch(e){}
+  renderResumePreview();
+}
+function initResumeEditor(){initResumeTpl();renderResumePreview();}
 function setResumeText(txt){
   _resumeMd=txt||'';
   renderResumePreview();
@@ -2223,7 +2269,7 @@ function _resEntriesHtml(s){
   if(s.lines.length)h+='<div class="lines">'+s.lines.map(_mdInline).join('<br>')+'</div>';
   return h;
 }
-var _RESUME_PRINT='@page{size:A4;margin:14mm 16mm;}'+
+var _RESUME_PRINT='@page{size:A4;margin:0;}'+
 '*{box-sizing:border-box;}'+
 'body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#1c1c1e;margin:0;}'+
 '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}';
@@ -2234,6 +2280,7 @@ function resumeTplClassic(res){
     h+='<div class="sec"><h2>'+esc(res.sections[i].title)+'</h2>'+_resEntriesHtml(res.sections[i])+'</div>';
   }
   var css=_RESUME_PRINT+
+    'body{padding:14mm 16mm;}'+
     '.name{font-size:30px;font-weight:800;letter-spacing:0.01em;margin:0 0 4px;}'+
     '.contact{font-size:11.5px;color:#444;margin-bottom:8px;}'+
     '.contact i{font-style:normal;margin:0 7px;}.contact i:before{content:"·";color:#999;}'+
@@ -2248,9 +2295,63 @@ function resumeTplClassic(res){
     '.lines{font-size:11.5px;line-height:1.7;color:#333;}';
   return {css:css,body:h};
 }
+function resumeTplMinimal(res){
+  var h='<div class="hd"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:15mm 18mm;}'+
+    '.hd{margin:0 0 18px;}'+
+    '.name{font-size:26px;font-weight:600;color:#16181d;letter-spacing:0.02em;margin:0 0 10px;}'+
+    '.contact{font-size:11px;color:#6b7280;line-height:1.9;}'+
+    '.contact span{display:inline-block;margin-right:18px;}'+
+    '.sec{margin:0 0 16px;}'+
+    '.sh{font-size:12px;font-weight:600;color:#16181d;letter-spacing:0.06em;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid #e5e7eb;}'+
+    '.entry{margin:0 0 10px;}'+
+    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:600;color:#16181d;}'+
+    '.entry .et-m{font-size:11px;color:#9ca3af;white-space:nowrap;}'+
+    '.entry ul{margin:3px 0 0;padding-left:16px;}.entry li{font-size:11.5px;line-height:1.6;color:#374151;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#374151;}';
+  return {css:css,body:h};
+}
+function resumeTplElegant(res){
+  var h='<div class="hd"><div class="name">'+esc(res.name||'')+'</div>';
+  if(res.contact.length)h+='<div class="contact">'+res.contact.map(esc).join('<span></span>')+'</div>';
+  h+='</div>';
+  for(var i=0;i<res.sections.length;i++){
+    h+='<div class="sec"><div class="sh">'+esc(res.sections[i].title)+'</div>'+_resEntriesHtml(res.sections[i])+'</div>';
+  }
+  var css=_RESUME_PRINT+
+    'body{padding:16mm 20mm;}'+
+    '.hd{text-align:center;margin:0 0 22px;}'+
+    '.name{font-family:Georgia,"Times New Roman","Songti SC","SimSun",serif;font-size:30px;font-weight:600;color:#1c1c1e;letter-spacing:0.08em;margin:0 0 10px;}'+
+    '.contact{font-size:11px;color:#8a8a8a;letter-spacing:0.04em;}'+
+    '.contact span{margin:0 9px;}'+
+    '.contact span:before{content:"·";color:#c8b98a;}'+
+    '.sec{margin:0 0 17px;}'+
+    '.sh{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:13px;font-weight:600;color:#8a6f3c;text-align:center;letter-spacing:0.16em;margin:0 0 8px;}'+
+    '.sh:before,.sh:after{content:"";display:inline-block;width:34px;height:1px;background:#cbb98a;vertical-align:middle;margin:0 12px;}'+
+    '.entry{margin:0 0 10px;}'+
+    '.entry .et{font-size:13px;display:flex;justify-content:space-between;gap:10px;}'+
+    '.entry .et-t{font-weight:700;color:#1c1c1e;}'+
+    '.entry .et-m{font-size:11px;color:#9a9a9a;white-space:nowrap;}'+
+    '.entry ul{margin:4px 0 0;padding-left:17px;}.entry li{font-size:11.5px;line-height:1.6;color:#3c3c3c;margin:2px 0;}'+
+    '.lines{font-size:11.5px;line-height:1.7;color:#3c3c3c;}';
+  return {css:css,body:h};
+}
+var RESUME_TPLS=[
+  {key:'classic',label:'经典',render:resumeTplClassic},
+  {key:'minimal',label:'极简',render:resumeTplMinimal},
+  {key:'elegant',label:'优雅',render:resumeTplElegant},
+];
 function _resumeDoc(res){
-  var t=resumeTplClassic(res);
-  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(res.name||'Resume')+'</title><style>'+t.css+'</style></head><body>'+t.body+'</body></html>';
+  var t=currentResumeTpl();
+  var r=t.render(res);
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(res.name||'Resume')+'</title><style>'+r.css+'</style></head><body>'+r.body+'</body></html>';
 }
 function downloadResumePdf(){
   var res=parseResume(_resumeMd);
