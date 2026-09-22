@@ -5,6 +5,11 @@ codes.txt
 node_modules/
 *.log
 
+# index.html 改动前的本地备份，绝不提交
+index.html.bak-*
+*.bak-*
+*_backup.*
+
 # Cloudflare wrangler 本地缓存（含登录 token 与账号邮箱，绝不提交）
 .wrangler/
 

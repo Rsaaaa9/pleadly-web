@@ -11,7 +11,7 @@
 // KV 命名空间绑定名：PLEADLY_KV
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com';
-const MODEL = 'deepseek-v4-pro';
+const MODEL = 'deepseek-flash';
 const FREE_STARTER = 0;         // 新用户免费试用积分（0=不赠送，防反复注册刷积分）
 const MAX_OUT_TOKENS = 16384;
 const SESSION_TTL = 30 * 60;    // 会话有效期（秒）
@@ -465,7 +465,8 @@ export default {
         return json({ error: 'upstream ' + upstream.status, detail: txt.slice(0, 300) }, 502);
       }
       const data = await upstream.json();
-      const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      const ch = (data.choices && data.choices[0]) || {};
+      const content = ((ch.message && ch.message.content) || '') + (ch.finish_reason === 'length' ? '\n\n> ⚠️ 本次输出已达长度上限被截断，以下内容（尤其「改写后完整简历」与「第八部分：下一步行动清单」）可能缺失。请精简简历后重跑本步。' : '');
       return json({ content });
     }
 

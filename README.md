@@ -46,6 +46,22 @@ Pleadly（我求你了）是一个「AI 招聘经理」视角的全流程求职�
 
 自由使用、修改、分发，保留版权声明与许可声明即可。
 
+## 致谢与第三方许可
+
+本项目的部分**提示词方法论**改编自以下 MIT 许可的开源项目，版权声明已逐字保留：
+
+| 项目 | 许可 |
+|---|---|
+| [Paramchoudhary/ResumeSkills](https://github.com/Paramchoudhary/ResumeSkills) | MIT © 2026 Resume Skills |
+| [wyh0626/resume-optimizer](https://github.com/wyh0626/resume-optimizer) | MIT © 2024 wyh0626 |
+| [Claycui828/ASu-resume-skills](https://github.com/Claycui828/ASu-resume-skills) | MIT © 2026 Claycui828 |
+| [lgd8981289/ocr-skill](https://github.com/lgd8981289/ocr-skill) | MIT © 2026 lgd_sunday |
+| [campus-apply/campus-apply](https://github.com/campus-apply/campus-apply) | MIT © 2026 Wenkai Qu |
+
+未复制任何来源项目的源代码；移植的是提示词层的检查清单与方法论，且均为中文重写版本。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)，各许可证全文存于 `third_party/`。
+
+本项目与上述项目**无任何官方合作或背书关系**。
+
 ---
 
 ## English
