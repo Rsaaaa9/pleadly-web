@@ -1,7 +1,7 @@
 # Pleadly Web — AI 求职助手（Web 版）
 
-> AI 求职助手的纯前端 Web 版：**信息库 · 一键生成（简历 + 分析报告） · 报告仓库 · 模拟面试**。
-> 单文件、零依赖、可离线运行。
+> 一个页面，两个输入框，一次生成：**左边分析报告，右边针对性简历**。
+> 单文件、零依赖、可离线打开，用自己的 API Key。
 
 🔗 在线预览：**https://rsaaaa9.github.io/pleadly-web/**
 
@@ -9,30 +9,43 @@
 
 ## 这是什么
 
-Pleadly（我求你了）是一个「AI 招聘经理」视角的全流程求职助手。本仓库是它的 **Web 版**——一个单文件纯前端应用，浏览器打开即用，数据本地持久化（localStorage）。
+Pleadly（我求你了）是一个「AI 招聘经理」视角的求职助手。本仓库是它的 **Web 版**——一个单文件纯前端应用，浏览器打开即用，输入保存在本机 localStorage。
 
 完整主项目（Python 后端 + 10 步 Agent 工作流 + RAG）：[github.com/Rsaaaa9/Pleadly](https://github.com/Rsaaaa9/Pleadly)
 
-## 功能（4 个 Tab）
+## 页面结构
 
-| 功能 | 说明 |
+```
+┌───────────────── 顶部：AI 模型 + API Key ──────────────────┐
+├──────────────────────┬───────────────────────────────────┤
+│  分析报告（大框）      │  简历（大框，可点文字直接改）        │
+├──────────────────────┼───────────────────────────────────┤
+│  简历粘贴处（小框）    │  JD 粘贴处（小框）                  │
+└──────────────────────┴───────────────────────────────────┘
+                      [ 开始生成 ]
+```
+
+| 位置 | 作用 |
 |-----|------|
-| 信息库 | 简历 / 作品集 / 项目经历的本地管理，一键生成时自动作为背景 |
-| 一键生成 | 粘贴 JD → 左侧一页针对性简历（可下载 Word / PDF）+ 右侧一页分析报告（可下载 PDF），左右对称展示 |
-| 模拟面试 | 按岗位逐题追问、逐轮复盘 |
-| 报告仓库 | 每次生成自动存档，点开可还原当时的简历与报告 |
+| 顶部模型栏 | 选择模型（DeepSeek Flash / Chat / Reasoner / 自定义），填入自己的 API Key；「接口设置」可改接口地址 |
+| 左大框 | 分析报告：一句话结论、简历要改的 3 处、你还缺什么、面试大概率会问 |
+| 右大框 | 按 JD 定制的单页简历，6 套模板；**支持点选文字直接修改**；「放大」全屏编辑；「打印简历」在打印对话框里另存为 PDF |
+| 左小框 | 粘贴你现在的简历全文 |
+| 右小框 | 粘贴目标岗位 JD |
+| 开始生成 | 一次点击，两份结果并发生成 |
 
-调用方式是 BYOK：在「设置」里填自己的 API Key（DeepSeek 等 OpenAI 兼容接口），数据不出本机。
+调用方式是 BYOK：Key 只存在浏览器本地，请求直连你自己填的接口，不经过任何中转服务器。
 
 ## 使用方式
 
 1. 打开 [https://rsaaaa9.github.io/pleadly-web/](https://rsaaaa9.github.io/pleadly-web/)，或双击本仓库的 `index.html`；
-2. 在「信息库」上传简历，在「设置」填入自己的 API Key；
-3. 进入「一键生成」粘贴 JD，拿到简历和报告。
+2. 顶部选模型、填 API Key（点「保存」）；
+3. 左下粘贴简历、右下粘贴 JD，点「开始生成」；
+4. 简历不满意就换模板，或直接在简历框里改字，再点「打印简历」导出 PDF。
 
 ## 技术
 
-纯前端 HTML + CSS + JavaScript，单文件、零依赖，数据本地持久化（localStorage），无任何外部请求。
+纯前端 HTML + CSS + JavaScript，单文件、零依赖。除你自己填写的模型接口外，不向任何第三方发起请求。
 
 ## License
 
@@ -62,6 +75,6 @@ Pleadly（我求你了）是一个「AI 招聘经理」视角的全流程求职�
 
 Pleadly Web is the pure-frontend web version of [Pleadly](https://github.com/Rsaaaa9/Pleadly), a full-pipeline AI job-search assistant. Single-file, zero-dependency, runs offline.
 
-**Features:** Library (local resume/portfolio management) · One-Click (paste a JD → a one-page tailored resume on the left, downloadable as Word or PDF, and a one-page report on the right) · Mock Interview · Reports (auto-archived, reopenable).
+**One page:** pick a model and paste your own API key at the top; the report renders in the top-left pane and the tailored one-page resume in the top-right; paste your resume and the JD into the two lower panes and hit **Start**. The resume can be edited in place, enlarged to full screen, and printed to PDF.
 
-**Online preview:** https://rsaaaa9.github.io/pleadly-web/ — bring your own API key (DeepSeek or any OpenAI-compatible endpoint); nothing leaves your browser.
+**Online preview:** https://rsaaaa9.github.io/pleadly-web/ — DeepSeek or any OpenAI-compatible endpoint; nothing leaves your browser except the requests you send to that endpoint.
