@@ -1,6 +1,6 @@
 # Pleadly 桌面自动同步监视器
-# 每 0.8 秒检查一次 index.html，一旦有变化就复制到桌面。
-# 现在整站就是 BYOK（用用户自己的 API Key），不再有积分/免费版开关，复制即可用。
+# 每 0.8 秒检查一次 index.html，一旦有变化就复制到桌面并切成本地免费版。
+# 等价于「同步Pleadly.bat」的复制 + 免费版切换两步，但全自动，无需手动双击。
 $ErrorActionPreference = 'SilentlyContinue'
 
 $repo = 'G:\wwwww\lab\Pleadly-web'
@@ -24,6 +24,7 @@ function Sync-Pleadly {
     if (-not $ok) { return }
 
     $c = [System.IO.File]::ReadAllText($src)
+    $c = $c.Replace('var FREE_MODE=false;', 'var FREE_MODE=true;')
     [System.IO.File]::WriteAllText($dst, $c, $utf8NoBom)
 }
 
